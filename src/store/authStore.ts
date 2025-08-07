@@ -105,24 +105,39 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 // Initialize auth state immediately
 const initializeAuth = async () => {
+  console.log('🔄 Initializing auth...')
   try {
-    const { data: { session } } = await supabase.auth.getSession()
+    console.log('📡 Getting session from Supabase...')
+    const { data: { session }, error } = await supabase.auth.getSession()
+    
+    console.log('📋 Session data:', { session, error })
+    
+    if (error) {
+      console.error('❌ Session error:', error)
+      useAuthStore.setState(setUnauthenticatedState())
+      return
+    }
     
     if (session?.user) {
-      const { data: profile } = await supabase
+      console.log('👤 User found, fetching profile...')
+      const { data: profile, error: profileError } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', session.user.id)
         .single()
       
+      console.log('📝 Profile data:', { profile, profileError })
+      
       useAuthStore.setState(setAuthenticatedState(session.user, profile))
     } else {
+      console.log('🚫 No user session found')
       useAuthStore.setState(setUnauthenticatedState())
     }
   } catch (error) {
-    console.error('Auth initialization error:', error)
+    console.error('💥 Auth initialization error:', error)
     useAuthStore.setState(setUnauthenticatedState())
   }
+  console.log('✅ Auth initialization complete')
 }
 
 // Initialize immediately
