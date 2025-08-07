@@ -105,6 +105,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 // Initialize auth state - rely on onAuthStateChange instead of getSession
 const initializeAuth = () => {
+  // In test environment, initialize immediately without auth
+  if (import.meta.env.MODE === 'test' || process.env.NODE_ENV === 'test') {
+    useAuthStore.setState(setUnauthenticatedState())
+    return
+  }
+  
   // Set a fallback timeout in case onAuthStateChange never fires
   setTimeout(() => {
     const currentState = useAuthStore.getState()

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './setup'
 
 test.describe('Authentication', () => {
   test('should display auth form on initial load', async ({ page }) => {
