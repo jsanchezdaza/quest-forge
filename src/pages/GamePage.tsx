@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { useGameStore } from '../store/gameStore'
-import { Button, Card, LoadingSpinner, Modal } from '../components/ui'
+import { Button, Card, LoadingSpinner, Modal, AppBackground } from '../components/ui'
 import CreateCharacterModal from '../components/game/CreateCharacterModal'
 import GameSession from '../components/game/GameSession'
 
@@ -34,17 +34,7 @@ export default function GamePage() {
   }
 
   return (
-    <div 
-      className="min-h-screen"
-      style={{
-        backgroundImage: `url('/images/backgrounds/descktop-background.png'), radial-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3))`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-        backgroundRepeat: 'no-repeat',
-        backgroundBlendMode: 'overlay'
-      }}
-    >
+    <AppBackground variant="game">
       {/* Header */}
       <header className="border-b border-medieval-gold/20 bg-background-card/50 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">
@@ -114,6 +104,6 @@ export default function GamePage() {
           onClose={() => setShowCreateCharacter(false)}
         />
       </Modal>
-    </div>
+    </AppBackground>
   )
 }

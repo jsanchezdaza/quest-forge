@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useAuthStore } from '../../store/authStore'
+import { FormField, LoadingSpinner } from '../ui'
+import { VALIDATION_RULES } from '../../constants/validation'
 
 interface AuthFormProps {
   mode: 'signin' | 'signup'
@@ -46,53 +48,39 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-field"
-              required
-              placeholder="your.email@example.com"
-            />
-          </div>
+          <FormField
+            id="email"
+            type="email"
+            value={email}
+            onChange={setEmail}
+            label="Email"
+            placeholder="your.email@example.com"
+            required={VALIDATION_RULES.EMAIL_REQUIRED}
+          />
 
           {mode === 'signup' && (
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
-                Username
-              </label>
-              <input
-                type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="input-field"
-                required
-                placeholder="Choose a username"
-              />
-            </div>
+            <FormField
+              id="username"
+              type="text"
+              value={username}
+              onChange={setUsername}
+              label="Username"
+              placeholder="Choose a username"
+              required={VALIDATION_RULES.USERNAME_REQUIRED}
+              minLength={VALIDATION_RULES.USERNAME_MIN_LENGTH}
+            />
           )}
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-field"
-              required
-              placeholder="Your password"
-              minLength={6}
-            />
-          </div>
+          <FormField
+            id="password"
+            type="password"
+            value={password}
+            onChange={setPassword}
+            label="Password"
+            placeholder="Your password"
+            required={true}
+            minLength={VALIDATION_RULES.PASSWORD_MIN_LENGTH}
+          />
 
           {error && (
             <div className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg p-3">
@@ -107,7 +95,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                <div className="w-4 h-4 border-2 border-medieval-inkblack border-t-transparent rounded-full animate-spin" />
+                <LoadingSpinner size="sm" />
                 {mode === 'signin' ? 'Signing In...' : 'Creating Account...'}
               </span>
             ) : (
