@@ -103,6 +103,31 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 }))
 
+// Initialize auth state immediately
+const initializeAuth = async () => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (session?.user) {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single()
+      
+      useAuthStore.setState(setAuthenticatedState(session.user, profile))
+    } else {
+      useAuthStore.setState(setUnauthenticatedState())
+    }
+  } catch (error) {
+    console.error('Auth initialization error:', error)
+    useAuthStore.setState(setUnauthenticatedState())
+  }
+}
+
+// Initialize immediately
+initializeAuth()
+
 supabase.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_IN' && session?.user) {
     const { data: profile } = await supabase
@@ -114,7 +139,5 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     useAuthStore.setState(setAuthenticatedState(session.user, profile))
   } else if (event === 'SIGNED_OUT') {
     useAuthStore.setState(setUnauthenticatedState())
-  } else {
-    useAuthStore.setState(setLoadingState(false))
   }
 })
