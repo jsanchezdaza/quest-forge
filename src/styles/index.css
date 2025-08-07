@@ -45,4 +45,26 @@
   .input-field {
     @apply w-full px-4 py-3 bg-background-darker border border-medieval-gold/30 focus:border-medieval-gold text-gray-100 rounded-lg transition-colors placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-medieval-gold/20;
   }
+
+  /* Toast animations */
+  .animate-in {
+    animation-fill-mode: both;
+  }
+
+  .slide-in-from-right-full {
+    animation-name: slide-in-from-right;
+    animation-duration: 0.3s;
+    animation-timing-function: ease-out;
+  }
+
+  @keyframes slide-in-from-right {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
 }

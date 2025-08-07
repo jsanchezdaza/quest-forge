@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { useGameStore } from '../store/gameStore'
+import { useNotifications } from '../store/notificationStore'
 import { Button, Card, LoadingSpinner, Modal, AppBackground } from '../components/ui'
 import CreateCharacterModal from '../components/game/CreateCharacterModal'
 import GameSession from '../components/game/GameSession'
@@ -8,6 +9,7 @@ import GameSession from '../components/game/GameSession'
 export default function GamePage() {
   const { profile, signOut } = useAuthStore()
   const { currentSession, loading } = useGameStore()
+  const notifications = useNotifications()
   const [showCreateCharacter, setShowCreateCharacter] = useState(false)
 
   useEffect(() => {
@@ -20,8 +22,9 @@ export default function GamePage() {
   const handleSignOut = async () => {
     try {
       await signOut()
+      notifications.info('Signed Out', 'Thanks for playing! Your progress has been saved.')
     } catch (error) {
-      console.error('Error signing out:', error)
+      notifications.error('Sign Out Error', 'Failed to sign out. Please try again.')
     }
   }
 

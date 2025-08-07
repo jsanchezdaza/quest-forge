@@ -1,0 +1,11 @@
+export const NOTIFICATION_DURATION = {
+  DEFAULT: 5000,
+  SUCCESS: 4000,
+  ERROR: 6000,
+  WARNING: 5000,
+  INFO: 4000,
+} as const
+
+export const NOTIFICATION_LIMITS = {
+  MAX_NOTIFICATIONS: 5,
+} as const

@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useAuthStore } from '../../store/authStore'
+import { useNotifications } from '../../store/notificationStore'
 import { FormField, LoadingSpinner } from '../ui'
 import { VALIDATION_RULES } from '../../constants/validation'
+import { parseAuthError } from '../../utils/authErrors'
 
 interface AuthFormProps {
   mode: 'signin' | 'signup'
@@ -12,26 +14,34 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
-  const [error, setError] = useState('')
   
   const { signIn, signUp, loading } = useAuthStore()
+  const notifications = useNotifications()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
 
     try {
       if (mode === 'signup') {
         if (!username.trim()) {
-          setError('Username is required')
+          notifications.error('Username Required', 'Please enter a username to continue')
           return
         }
         await signUp(email, password, username)
+        notifications.success(
+          'Account Created Successfully', 
+          'Welcome to Quest Forge! You can now start your adventure.'
+        )
       } else {
         await signIn(email, password)
+        notifications.success(
+          'Welcome Back!', 
+          'Successfully signed in. Prepare for adventure!'
+        )
       }
     } catch (error) {
-      setError((error as Error).message || 'An error occurred')
+      const { title, message } = parseAuthError(error)
+      notifications.error(title, message)
     }
   }
 
@@ -81,12 +91,6 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             required={true}
             minLength={VALIDATION_RULES.PASSWORD_MIN_LENGTH}
           />
-
-          {error && (
-            <div className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg p-3">
-              {error}
-            </div>
-          )}
 
           <button
             type="submit"
