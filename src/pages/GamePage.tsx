@@ -34,7 +34,17 @@ export default function GamePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background-darker via-background-dark to-background-card">
+    <div 
+      className="min-h-screen"
+      style={{
+        backgroundImage: `url('/images/backgrounds/descktop-background.png'), radial-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3))`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
+        backgroundBlendMode: 'overlay'
+      }}
+    >
       {/* Header */}
       <header className="border-b border-medieval-gold/20 bg-background-card/50 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">

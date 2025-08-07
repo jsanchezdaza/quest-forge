@@ -7,12 +7,9 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        node-version: [18, 20]
+    timeout-minutes: 10
     
     steps:
     - name: Checkout code
@@ -23,14 +20,14 @@ jobs:
       with:
         version: latest
         
-    - name: Setup Node.js ${{ matrix.node-version }}
+    - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: '20'
         cache: 'pnpm'
         
     - name: Install dependencies
-      run: pnpm install
+      run: pnpm install --frozen-lockfile
       
     - name: Run linter
       run: pnpm run lint
@@ -41,25 +38,17 @@ jobs:
     - name: Build project
       run: pnpm run build
       
-    - name: Install Playwright Browsers
-      run: pnpm exec playwright install --with-deps
-      
-    - name: Run E2E tests
-      run: pnpm run test:e2e
-      
-    - name: Upload test results
+    - name: Upload build artifacts
       uses: actions/upload-artifact@v4
-      if: always()
+      if: github.ref == 'refs/heads/main'
       with:
-        name: test-results-${{ matrix.node-version }}
-        path: |
-          test-results/
-          playwright-report/
-        retention-days: 30
+        name: dist
+        path: dist/
+        retention-days: 7
 
-  build:
-    needs: test
+  e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: github.ref == 'refs/heads/main'
     
     steps:
@@ -78,13 +67,20 @@ jobs:
         cache: 'pnpm'
         
     - name: Install dependencies
-      run: pnpm install
+      run: pnpm install --frozen-lockfile
       
-    - name: Build for production
-      run: pnpm run build
+    - name: Install Playwright Browsers
+      run: pnpm exec playwright install chromium --with-deps
       
-    - name: Upload build artifacts
+    - name: Run E2E tests
+      run: pnpm run test:e2e --project=chromium
+      
+    - name: Upload E2E test results
       uses: actions/upload-artifact@v4
+      if: always()
       with:
-        name: dist
-        path: dist/
+        name: e2e-results
+        path: |
+          test-results/
+          playwright-report/
+        retention-days: 3

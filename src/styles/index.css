@@ -10,23 +10,6 @@
   
   body {
     @apply bg-background-dark text-gray-100 font-sans;
-    background-image: 
-      url('/images/backgrounds/desktop-bg.jpg'),
-      radial-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-    background-blend-mode: overlay;
-  }
-  
-  @media (max-width: 768px) {
-    body {
-      background-image: 
-        url('/images/backgrounds/mobile-bg.jpg'),
-        radial-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
-      background-attachment: scroll;
-    }
   }
   
   h1, h2, h3, h4, h5, h6 {
