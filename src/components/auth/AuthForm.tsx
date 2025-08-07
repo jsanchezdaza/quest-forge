@@ -28,8 +28,8 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
       } else {
         await signIn(email, password)
       }
-    } catch (error: any) {
-      setError(error.message || 'An error occurred')
+    } catch (error) {
+      setError((error as Error).message || 'An error occurred')
     }
   }
 

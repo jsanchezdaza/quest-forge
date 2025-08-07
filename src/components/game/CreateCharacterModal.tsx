@@ -27,8 +27,8 @@ export default function CreateCharacterModal({ onClose }: CreateCharacterModalPr
     try {
       await createSession(characterName.trim(), selectedClass)
       onClose()
-    } catch (error: any) {
-      setError(error.message || 'Failed to create character')
+    } catch (error) {
+      setError((error as Error).message || 'Failed to create character')
     }
   }
 

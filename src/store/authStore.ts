@@ -3,8 +3,8 @@ import { supabase } from '../lib/supabase'
 import type { AuthState } from '../types'
 
 const setLoadingState = (loading: boolean) => ({ loading })
-const setAuthenticatedState = (user: any, profile: any) => ({
-  user: { id: user.id, email: user.email! },
+const setAuthenticatedState = (user: { id: string; email?: string }, profile: { id: string; username: string; created_at: string } | null) => ({
+  user: { id: user.id, email: user.email || '' },
   profile,
   loading: false,
 })
@@ -103,41 +103,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 }))
 
-// Initialize auth state immediately
-const initializeAuth = async () => {
-  console.log('🔄 Initializing auth...')
-  try {
-    console.log('📡 Getting session from Supabase...')
-    const { data: { session }, error } = await supabase.auth.getSession()
-    
-    console.log('📋 Session data:', { session, error })
-    
-    if (error) {
-      console.error('❌ Session error:', error)
-      useAuthStore.setState(setUnauthenticatedState())
-      return
-    }
-    
-    if (session?.user) {
-      console.log('👤 User found, fetching profile...')
-      const { data: profile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single()
-      
-      console.log('📝 Profile data:', { profile, profileError })
-      
-      useAuthStore.setState(setAuthenticatedState(session.user, profile))
-    } else {
-      console.log('🚫 No user session found')
+// Initialize auth state - rely on onAuthStateChange instead of getSession
+const initializeAuth = () => {
+  // Set a fallback timeout in case onAuthStateChange never fires
+  setTimeout(() => {
+    const currentState = useAuthStore.getState()
+    if (currentState.loading) {
       useAuthStore.setState(setUnauthenticatedState())
     }
-  } catch (error) {
-    console.error('💥 Auth initialization error:', error)
-    useAuthStore.setState(setUnauthenticatedState())
-  }
-  console.log('✅ Auth initialization complete')
+  }, 2000)
 }
 
 // Initialize immediately
@@ -152,7 +126,20 @@ supabase.auth.onAuthStateChange(async (event, session) => {
       .single()
     
     useAuthStore.setState(setAuthenticatedState(session.user, profile))
-  } else if (event === 'SIGNED_OUT') {
-    useAuthStore.setState(setUnauthenticatedState())
+  } else if (event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') {
+    // Handle both sign out and initial session (which could be null)
+    if (session?.user) {
+      // User is logged in
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single()
+      
+      useAuthStore.setState(setAuthenticatedState(session.user, profile))
+    } else {
+      // No user logged in
+      useAuthStore.setState(setUnauthenticatedState())
+    }
   }
 })

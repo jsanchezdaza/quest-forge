@@ -3,17 +3,9 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-console.log('🔧 Supabase config:', { 
-  url: supabaseUrl ? 'SET' : 'MISSING', 
-  key: supabaseAnonKey ? 'SET' : 'MISSING' 
-})
-
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ Missing Supabase environment variables')
   throw new Error('Missing Supabase environment variables')
 }
-
-console.log('✅ Creating Supabase client...')
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export type Database = {
@@ -42,7 +34,15 @@ export type Database = {
           user_id: string
           character_name: string
           character_class: string
-          game_state: any
+          game_state: {
+          level: number
+          health: number
+          maxHealth: number
+          experience: number
+          currentScene: number
+          inventory: string[]
+          stats: Record<string, number>
+        }
           created_at: string
           updated_at: string
         }
@@ -51,7 +51,15 @@ export type Database = {
           user_id: string
           character_name: string
           character_class: string
-          game_state?: any
+          game_state?: {
+            level?: number
+            health?: number
+            maxHealth?: number
+            experience?: number
+            currentScene?: number
+            inventory?: string[]
+            stats?: Record<string, number>
+          }
           created_at?: string
           updated_at?: string
         }
@@ -60,7 +68,15 @@ export type Database = {
           user_id?: string
           character_name?: string
           character_class?: string
-          game_state?: any
+          game_state?: {
+            level?: number
+            health?: number
+            maxHealth?: number
+            experience?: number
+            currentScene?: number
+            inventory?: string[]
+            stats?: Record<string, number>
+          }
           updated_at?: string
         }
       }

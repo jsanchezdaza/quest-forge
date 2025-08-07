@@ -6,11 +6,8 @@ import GamePage from './pages/GamePage'
 
 function App() {
   const { user, loading } = useAuthStore()
-  
-  console.log('🎮 App render:', { user: user ? 'SET' : 'NULL', loading })
 
   if (loading) {
-    console.log('⏳ App is loading...')
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" text="Initializing Quest Forge..." />
@@ -19,7 +16,12 @@ function App() {
   }
 
   return (
-    <Router>
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <div className="min-h-screen">
         <Routes>
           <Route 
