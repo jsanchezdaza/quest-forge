@@ -21,8 +21,8 @@ export default function FormField({
 }: FormFieldProps) {
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">
-        {label}
+      <label htmlFor={id} className="block text-xs font-pixel-body text-gray-300 mb-2 uppercase tracking-wide">
+        {label.toUpperCase()}
       </label>
       <input
         type={type}
@@ -31,7 +31,7 @@ export default function FormField({
         onChange={(e) => onChange(e.target.value)}
         className="input-field"
         required={required}
-        placeholder={placeholder}
+        placeholder={placeholder.toUpperCase()}
         minLength={minLength}
       />
     </div>

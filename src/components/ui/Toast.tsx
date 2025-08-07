@@ -60,11 +60,11 @@ export default function Toast({
           {iconMap[type]}
         </span>
         <div>
-          <h4 className="font-semibold text-gray-100 mb-1">
-            {title}
+          <h4 className="font-pixel text-xs text-gray-100 mb-2 leading-relaxed uppercase tracking-wide">
+            {title.toUpperCase()}
           </h4>
           {message && (
-            <p className="text-sm opacity-90">
+            <p className="text-xs font-pixel-body opacity-90 leading-relaxed">
               {message}
             </p>
           )}

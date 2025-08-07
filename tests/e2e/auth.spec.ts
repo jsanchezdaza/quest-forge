@@ -8,31 +8,31 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL('/auth')
     
     // Should show the auth form
-    await expect(page.locator('h1')).toContainText('Quest Forge')
+    await expect(page.locator('h1')).toContainText('QUEST FORGE')
     await expect(page.locator('input[type="email"]')).toBeVisible()
     await expect(page.locator('input[type="password"]')).toBeVisible()
-    await expect(page.locator('button[type="submit"]')).toContainText('Sign In')
+    await expect(page.locator('button[type="submit"]')).toContainText('SIGN IN')
   })
 
   test('should toggle between sign in and sign up forms', async ({ page }) => {
     await page.goto('/auth')
     
     // Initially should show sign in form
-    await expect(page.locator('button[type="submit"]')).toContainText('Sign In')
+    await expect(page.locator('button[type="submit"]')).toContainText('SIGN IN')
     await expect(page.locator('input[id="username"]')).not.toBeVisible()
     
     // Click toggle to sign up
-    await page.click('text="Don\'t have an account? Sign up"')
+    await page.click('text="DON\'T HAVE AN ACCOUNT? SIGN UP"')
     
     // Should now show sign up form
-    await expect(page.locator('button[type="submit"]')).toContainText('Create Account')
+    await expect(page.locator('button[type="submit"]')).toContainText('CREATE ACCOUNT')
     await expect(page.locator('input[id="username"]')).toBeVisible()
     
     // Toggle back to sign in
-    await page.click('text="Already have an account? Sign in"')
+    await page.click('text="ALREADY HAVE AN ACCOUNT? SIGN IN"')
     
     // Should be back to sign in form
-    await expect(page.locator('button[type="submit"]')).toContainText('Sign In')
+    await expect(page.locator('button[type="submit"]')).toContainText('SIGN IN')
     await expect(page.locator('input[id="username"]')).not.toBeVisible()
   })
 
@@ -52,7 +52,7 @@ test.describe('Authentication', () => {
     await page.goto('/auth')
     
     // Switch to signup mode
-    await page.click('text="Don\'t have an account? Sign up"')
+    await page.click('text="DON\'T HAVE AN ACCOUNT? SIGN UP"')
     
     // Username field should be visible and required
     const usernameInput = page.locator('input[id="username"]')

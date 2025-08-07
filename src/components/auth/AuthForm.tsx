@@ -49,11 +49,11 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
     <div className="w-full max-w-md mx-auto">
       <div className="card">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-medieval text-medieval-gold mb-2">
-            Quest Forge
+          <h1 className="dnd-title text-2xl sm:text-3xl lg:text-4xl text-medieval-gold mb-6 leading-tight">
+            QUEST FORGE
           </h1>
-          <p className="text-gray-400">
-            {mode === 'signin' ? 'Welcome back, adventurer' : 'Begin your quest'}
+          <p className="text-gray-400 text-sm font-pixel-body uppercase tracking-wide">
+            {mode === 'signin' ? 'WELCOME BACK, ADVENTURER' : 'BEGIN YOUR QUEST'}
           </p>
         </div>
 
@@ -100,10 +100,10 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <LoadingSpinner size="sm" />
-                {mode === 'signin' ? 'Signing In...' : 'Creating Account...'}
+                {mode === 'signin' ? 'SIGNING IN...' : 'CREATING ACCOUNT...'}
               </span>
             ) : (
-              mode === 'signin' ? 'Sign In' : 'Create Account'
+              mode === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT'
             )}
           </button>
         </form>
@@ -112,11 +112,11 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
           <button
             type="button"
             onClick={onToggleMode}
-            className="text-medieval-gold hover:text-medieval-darkgold transition-colors"
+            className="text-medieval-gold hover:text-medieval-darkgold transition-colors font-pixel-body text-xs uppercase tracking-wide"
           >
             {mode === 'signin' 
-              ? "Don't have an account? Sign up" 
-              : 'Already have an account? Sign in'
+              ? "DON'T HAVE AN ACCOUNT? SIGN UP" 
+              : 'ALREADY HAVE AN ACCOUNT? SIGN IN'
             }
           </button>
         </div>

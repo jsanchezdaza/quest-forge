@@ -43,12 +43,12 @@ export default function GamePage() {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-medieval text-medieval-gold">
-                Quest Forge
+              <h1 className="dnd-title text-xl sm:text-2xl text-medieval-gold leading-tight">
+                QUEST FORGE
               </h1>
               {profile && (
-                <span className="text-gray-300">
-                  Welcome, {profile.username}
+                <span className="text-gray-300 font-pixel-body text-xs uppercase tracking-wide">
+                  WELCOME, {profile.username.toUpperCase()}
                 </span>
               )}
             </div>
@@ -82,11 +82,11 @@ export default function GamePage() {
         ) : (
           <div className="text-center py-16">
             <Card className="max-w-md mx-auto">
-              <h2 className="text-xl font-medieval text-medieval-gold mb-4">
-                Start Your Adventure
+              <h2 className="text-lg sm:text-xl text-medieval-gold mb-4 leading-tight">
+                START YOUR ADVENTURE
               </h2>
-              <p className="text-gray-300 mb-6">
-                Create a character to begin your journey in the world of Quest Forge.
+              <p className="text-gray-300 mb-6 font-pixel-body text-sm leading-relaxed uppercase tracking-wide">
+                CREATE A CHARACTER TO BEGIN YOUR JOURNEY IN THE WORLD OF QUEST FORGE.
               </p>
               <Button onClick={() => setShowCreateCharacter(true)}>
                 Create Character

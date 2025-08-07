@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Pixelify+Sans:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,14 +6,57 @@
 @layer base {
   html, html.dark {
     @apply bg-background-dark text-gray-100;
+    /* Improve pixel font rendering */
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
   }
   
   body {
-    @apply bg-background-dark text-gray-100 font-sans;
+    @apply bg-background-dark text-gray-100 font-pixel-body;
+    /* Aggressive pixel font rendering */
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: unset;
+    font-smooth: never;
+    text-rendering: geometricPrecision;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-medieval;
+    @apply font-dnd uppercase;
+    /* Ultra-sharp pixel rendering */
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: unset;
+    font-smooth: never;
+    text-rendering: geometricPrecision;
+    letter-spacing: 0.1em;
+  }
+
+  /* D&D style title sizes - larger and more dramatic */
+  h1 { @apply text-xl sm:text-2xl lg:text-4xl; }
+  h2 { @apply text-lg sm:text-xl lg:text-2xl; }
+  h3 { @apply text-base sm:text-lg lg:text-xl; }
+  h4, h5, h6 { @apply text-sm sm:text-base lg:text-lg; }
+
+  /* D&D title class for main logos */
+  .dnd-title {
+    @apply font-dnd uppercase tracking-wider;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: unset;
+    font-smooth: never;
+    text-rendering: geometricPrecision;
+    text-shadow: 
+      2px 2px 0px #000,
+      -1px -1px 0px #000,
+      1px -1px 0px #000,
+      -1px 1px 0px #000;
+  }
+
+  /* All text should be ultra-pixelated */
+  * {
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: unset;
+    font-smooth: never;
+    text-rendering: geometricPrecision;
   }
   
   ::-webkit-scrollbar {
@@ -31,11 +74,24 @@
 
 @layer components {
   .btn-primary {
-    @apply px-6 py-3 bg-medieval-gold hover:bg-medieval-darkgold text-medieval-inkblack font-semibold rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-medieval-gold/25 transform hover:scale-105;
+    @apply px-6 py-3 bg-medieval-gold hover:bg-medieval-darkgold text-medieval-inkblack font-pixel uppercase text-xs sm:text-sm rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-medieval-gold/25 transform hover:scale-105;
+    /* Ultra-pixel button styling */
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: unset;
+    font-smooth: never;
+    text-rendering: geometricPrecision;
+    image-rendering: pixelated;
+    letter-spacing: 0.05em;
   }
   
   .btn-secondary {
-    @apply px-6 py-3 bg-background-card hover:bg-background-modal text-gray-100 border border-medieval-gold/30 hover:border-medieval-gold font-semibold rounded-lg transition-all duration-200;
+    @apply px-6 py-3 bg-background-card hover:bg-background-modal text-gray-100 border border-medieval-gold/30 hover:border-medieval-gold font-pixel uppercase text-xs sm:text-sm rounded-lg transition-all duration-200;
+    /* Ultra-pixel button styling */
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: unset;
+    font-smooth: never;
+    text-rendering: geometricPrecision;
+    letter-spacing: 0.05em;
   }
   
   .card {
@@ -43,7 +99,12 @@
   }
   
   .input-field {
-    @apply w-full px-4 py-3 bg-background-darker border border-medieval-gold/30 focus:border-medieval-gold text-gray-100 rounded-lg transition-colors placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-medieval-gold/20;
+    @apply w-full px-4 py-3 bg-background-darker border border-medieval-gold/30 focus:border-medieval-gold text-gray-100 rounded-lg transition-colors placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-medieval-gold/20 font-pixel-body text-sm;
+    /* Ultra-pixel input styling */
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: unset;
+    font-smooth: never;
+    text-rendering: geometricPrecision;
   }
 
   /* Toast animations */

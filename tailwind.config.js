@@ -51,9 +51,13 @@ export default {
         }
       },
       fontFamily: {
-        'medieval': ['Cinzel', 'serif'],
-        'fantasy': ['Crimson Text', 'serif'],
-        'sans': ['Inter', 'sans-serif'],
+        'pixel': ['Press Start 2P', 'monospace'],
+        'pixel-alt': ['Silkscreen', 'monospace'],
+        'pixel-body': ['Pixelify Sans', 'monospace'],
+        'dnd': ['Press Start 2P', 'monospace'], // D&D style headers
+        'medieval': ['Press Start 2P', 'monospace'], 
+        'fantasy': ['Press Start 2P', 'monospace'],
+        'sans': ['Pixelify Sans', 'monospace'],
       },
       backgroundImage: {
         'parchment': "url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxwYXR0ZXJuIGlkPSJwYXJjaG1lbnQiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CiAgICAgIDxyZWN0IHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iI2Y0ZTRiYyIvPgogICAgICA8Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiIGZpbGw9IiNlZGQ0YTAiLz4KICAgIDwvcGF0dGVybj4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXJjaG1lbnQpIi8+Cjwvc3ZnPgo=')",
