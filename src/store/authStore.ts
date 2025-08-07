@@ -127,9 +127,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     
     useAuthStore.setState(setAuthenticatedState(session.user, profile))
   } else if (event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') {
-    // Handle both sign out and initial session (which could be null)
     if (session?.user) {
-      // User is logged in
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('*')
@@ -138,7 +136,6 @@ supabase.auth.onAuthStateChange(async (event, session) => {
       
       useAuthStore.setState(setAuthenticatedState(session.user, profile))
     } else {
-      // No user logged in
       useAuthStore.setState(setUnauthenticatedState())
     }
   }
