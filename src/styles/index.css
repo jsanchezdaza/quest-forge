@@ -4,11 +4,7 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    @apply bg-background-dark text-gray-100;
-  }
-  
-  html.dark {
+  html, html.dark {
     @apply bg-background-dark text-gray-100;
   }
   
@@ -24,7 +20,6 @@
     background-blend-mode: overlay;
   }
   
-  /* Mobile background */
   @media (max-width: 768px) {
     body {
       background-image: 
@@ -38,11 +33,6 @@
     @apply font-medieval;
   }
   
-  .prose {
-    @apply font-fantasy;
-  }
-  
-  /* Custom scrollbar */
   ::-webkit-scrollbar {
     @apply w-2;
   }
@@ -52,11 +42,7 @@
   }
   
   ::-webkit-scrollbar-thumb {
-    @apply bg-medieval-gold rounded-full;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-medieval-darkgold;
+    @apply bg-medieval-gold rounded-full hover:bg-medieval-darkgold;
   }
 }
 
@@ -75,10 +61,5 @@
   
   .input-field {
     @apply w-full px-4 py-3 bg-background-darker border border-medieval-gold/30 focus:border-medieval-gold text-gray-100 rounded-lg transition-colors placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-medieval-gold/20;
-  }
-  
-  .parchment-bg {
-    @apply bg-parchment text-medieval-inkblack;
-    background-blend-mode: multiply;
   }
 }

@@ -2,128 +2,107 @@ import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import type { AuthState } from '../types'
 
+const setLoadingState = (loading: boolean) => ({ loading })
+const setAuthenticatedState = (user: any, profile: any) => ({
+  user: { id: user.id, email: user.email! },
+  profile,
+  loading: false,
+})
+const setUnauthenticatedState = () => ({
+  user: null,
+  profile: null,
+  loading: false,
+})
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   profile: null,
   loading: true,
 
   signIn: async (email: string, password: string) => {
-    set({ loading: true })
+    set(setLoadingState(true))
     
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      
-      if (error) throw error
-      
-      if (data.user) {
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single()
-          
-        set({
-          user: {
-            id: data.user.id,
-            email: data.user.email!,
-          },
-          profile,
-          loading: false,
-        })
-      }
-    } catch (error) {
-      set({ loading: false })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      set(setLoadingState(false))
       throw error
+    }
+
+    if (data.user) {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single()
+      
+      set(setAuthenticatedState(data.user, profile))
     }
   },
 
   signUp: async (email: string, password: string, username: string) => {
-    set({ loading: true })
+    set(setLoadingState(true))
     
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      })
-      
-      if (error) throw error
-      
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .update({ username })
-          .eq('id', data.user.id)
-          
-        if (profileError) throw profileError
-        
-        set({
-          user: {
-            id: data.user.id,
-            email: data.user.email!,
-          },
-          profile: {
-            id: data.user.id,
-            username,
-            created_at: new Date().toISOString(),
-          },
-          loading: false,
-        })
-      }
-    } catch (error) {
-      set({ loading: false })
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    if (error) {
+      set(setLoadingState(false))
       throw error
+    }
+
+    if (data.user) {
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .update({ username })
+        .eq('id', data.user.id)
+      
+      if (profileError) {
+        set(setLoadingState(false))
+        throw profileError
+      }
+
+      const profile = {
+        id: data.user.id,
+        username,
+        created_at: new Date().toISOString(),
+      }
+      
+      set(setAuthenticatedState(data.user, profile))
     }
   },
 
   signOut: async () => {
-    set({ loading: true })
+    set(setLoadingState(true))
+    const { error } = await supabase.auth.signOut()
     
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      
-      set({
-        user: null,
-        profile: null,
-        loading: false,
-      })
-    } catch (error) {
-      set({ loading: false })
+    if (error) {
+      set(setLoadingState(false))
       throw error
     }
+    
+    set(setUnauthenticatedState())
   },
 
   updateProfile: async (username: string) => {
     const { user } = get()
     if (!user) throw new Error('No user logged in')
     
-    set({ loading: true })
+    set(setLoadingState(true))
     
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .update({ username })
-        .eq('id', user.id)
-        .select()
-        .single()
-        
-      if (error) throw error
-      
-      set({
-        profile: data,
-        loading: false,
-      })
-    } catch (error) {
-      set({ loading: false })
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update({ username })
+      .eq('id', user.id)
+      .select()
+      .single()
+    
+    if (error) {
+      set(setLoadingState(false))
       throw error
     }
+    
+    set({ profile: data, loading: false })
   },
 }))
 
-// Initialize auth state
 supabase.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_IN' && session?.user) {
     const { data: profile } = await supabase
@@ -131,22 +110,11 @@ supabase.auth.onAuthStateChange(async (event, session) => {
       .select('*')
       .eq('id', session.user.id)
       .single()
-      
-    useAuthStore.setState({
-      user: {
-        id: session.user.id,
-        email: session.user.email!,
-      },
-      profile,
-      loading: false,
-    })
+    
+    useAuthStore.setState(setAuthenticatedState(session.user, profile))
   } else if (event === 'SIGNED_OUT') {
-    useAuthStore.setState({
-      user: null,
-      profile: null,
-      loading: false,
-    })
+    useAuthStore.setState(setUnauthenticatedState())
   } else {
-    useAuthStore.setState({ loading: false })
+    useAuthStore.setState(setLoadingState(false))
   }
 })

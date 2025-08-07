@@ -1,4 +1,4 @@
-import { Card } from '../ui'
+import { Card, ProgressBar, StatsList } from '../ui'
 import type { GameSession } from '../../types'
 
 interface CharacterSheetProps {
@@ -7,14 +7,12 @@ interface CharacterSheetProps {
 
 export default function CharacterSheet({ session }: CharacterSheetProps) {
   const { character_name, character_class, game_state } = session
-  const { level, health, maxHealth, experience, stats } = game_state
+  const { level, health, maxHealth, experience, stats, inventory } = game_state
 
-  const healthPercentage = (health / maxHealth) * 100
   const experienceNeeded = level * 100
 
   return (
     <div className="space-y-4">
-      {/* Character Info */}
       <Card>
         <div className="text-center mb-4">
           <h2 className="text-xl font-medieval text-medieval-gold">
@@ -25,62 +23,33 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
           </p>
         </div>
 
-        {/* Health Bar */}
-        <div className="mb-4">
-          <div className="flex justify-between text-sm text-gray-400 mb-1">
-            <span>Health</span>
-            <span>{health}/{maxHealth}</span>
-          </div>
-          <div className="w-full bg-background-darker rounded-full h-3">
-            <div
-              className="bg-gradient-to-r from-red-600 to-red-500 h-3 rounded-full transition-all duration-300"
-              style={{ width: `${healthPercentage}%` }}
-            />
-          </div>
-        </div>
+        <ProgressBar
+          label="Health"
+          current={health}
+          max={maxHealth}
+          color="health"
+          className="mb-4"
+        />
 
-        {/* Experience Bar */}
-        <div className="mb-4">
-          <div className="flex justify-between text-sm text-gray-400 mb-1">
-            <span>Experience</span>
-            <span>{experience}/{experienceNeeded}</span>
-          </div>
-          <div className="w-full bg-background-darker rounded-full h-2">
-            <div
-              className="bg-gradient-to-r from-medieval-gold to-medieval-darkgold h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(experience / experienceNeeded) * 100}%` }}
-            />
-          </div>
-        </div>
+        <ProgressBar
+          label="Experience"
+          current={experience}
+          max={experienceNeeded}
+          color="experience"
+        />
       </Card>
 
-      {/* Stats */}
       <Card>
-        <h3 className="text-lg font-medieval text-medieval-gold mb-4">
-          Attributes
-        </h3>
-        <div className="space-y-3">
-          {Object.entries(stats).map(([stat, value]) => (
-            <div key={stat} className="flex justify-between">
-              <span className="text-gray-300 capitalize">
-                {stat}
-              </span>
-              <span className="text-medieval-gold font-semibold">
-                {value}
-              </span>
-            </div>
-          ))}
-        </div>
+        <StatsList stats={stats} />
       </Card>
 
-      {/* Inventory */}
       <Card>
         <h3 className="text-lg font-medieval text-medieval-gold mb-4">
           Inventory
         </h3>
-        {game_state.inventory.length > 0 ? (
+        {inventory.length > 0 ? (
           <div className="space-y-2">
-            {game_state.inventory.map((item, index) => (
+            {inventory.map((item, index) => (
               <div
                 key={index}
                 className="text-gray-300 text-sm bg-background-darker rounded p-2"
