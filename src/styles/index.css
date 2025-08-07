@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-background-dark text-gray-100;
+  }
+  
+  html.dark {
+    @apply bg-background-dark text-gray-100;
+  }
+  
+  body {
+    @apply bg-background-dark text-gray-100 font-sans;
+    background-image: 
+      url('/images/backgrounds/desktop-bg.jpg'),
+      radial-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+  }
+  
+  /* Mobile background */
+  @media (max-width: 768px) {
+    body {
+      background-image: 
+        url('/images/backgrounds/mobile-bg.jpg'),
+        radial-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
+      background-attachment: scroll;
+    }
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-medieval;
+  }
+  
+  .prose {
+    @apply font-fantasy;
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-background-darker;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-medieval-gold rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-medieval-darkgold;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-medieval-gold hover:bg-medieval-darkgold text-medieval-inkblack font-semibold rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-medieval-gold/25 transform hover:scale-105;
+  }
+  
+  .btn-secondary {
+    @apply px-6 py-3 bg-background-card hover:bg-background-modal text-gray-100 border border-medieval-gold/30 hover:border-medieval-gold font-semibold rounded-lg transition-all duration-200;
+  }
+  
+  .card {
+    @apply bg-background-card border border-medieval-gold/20 rounded-lg p-6 shadow-lg backdrop-blur-sm;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 bg-background-darker border border-medieval-gold/30 focus:border-medieval-gold text-gray-100 rounded-lg transition-colors placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-medieval-gold/20;
+  }
+  
+  .parchment-bg {
+    @apply bg-parchment text-medieval-inkblack;
+    background-blend-mode: multiply;
+  }
+}
