@@ -61,11 +61,6 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user: null, profile: null })
     }, set)
   },
-
-  updateProfile: async () => {
-    // Not implemented for basic version
-    throw new Error('Profile update not available in basic mode')
-  },
 }))
 
 // Simple initialization

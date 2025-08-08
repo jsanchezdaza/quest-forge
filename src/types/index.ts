@@ -61,7 +61,6 @@ export interface AuthState {
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string, username: string) => Promise<void>
   signOut: () => Promise<void>
-  updateProfile: (username: string) => Promise<void>
 }
 
 export interface GameStore {
