@@ -31,6 +31,35 @@ export const useGameStore = create<GameStore>((set, get) => ({
   scenes: [],
   loading: false,
 
+  updateStats: async (newStats: GameState['stats']) => {
+    const { currentSession } = get()
+    if (!currentSession) throw new Error('No active session')
+
+    const updatedGameState = {
+      ...currentSession.game_state,
+      stats: newStats,
+      // Clear previousExperience after processing level up
+      previousExperience: undefined
+    }
+
+    const updatedSession = {
+      ...currentSession,
+      game_state: updatedGameState
+    }
+
+    const { error } = await supabase
+      .from('game_sessions')
+      .update({
+        game_state: updatedGameState,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', currentSession.id)
+
+    if (error) throw error
+
+    set({ currentSession: updatedSession })
+  },
+
   loadLatestSession: async () => {
     set({ loading: true })
     

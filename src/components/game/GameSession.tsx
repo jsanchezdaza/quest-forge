@@ -1,10 +1,13 @@
 import { useGameStore } from '../../store/gameStore'
+import { useLevelUp } from '../../hooks/useLevelUp'
 import { Card } from '../ui'
 import CharacterSheet from './CharacterSheet'
 import SceneDisplay from './SceneDisplay'
+import LevelUpModal from './LevelUpModal'
 
 export default function GameSession() {
   const { currentSession, scenes, makeChoice, loading } = useGameStore()
+  const { isOpen, newLevel, availablePoints, onClose } = useLevelUp()
 
   if (!currentSession) {
     return (
@@ -68,6 +71,13 @@ export default function GameSession() {
           </Card>
         )}
       </div>
+
+      <LevelUpModal
+        isOpen={isOpen}
+        onClose={onClose}
+        newLevel={newLevel}
+        availablePoints={availablePoints}
+      />
     </div>
   )
 }

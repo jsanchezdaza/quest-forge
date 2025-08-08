@@ -42,6 +42,7 @@ export interface GameState {
   health: number
   maxHealth: number
   experience: number
+  previousExperience?: number
   currentScene: number
   inventory: string[]
   stats: {
@@ -72,4 +73,5 @@ export interface GameStore {
   loadSession: (sessionId: string) => Promise<void>
   saveProgress: () => Promise<void>
   makeChoice: (choice: string) => Promise<void>
+  updateStats: (newStats: GameState['stats']) => Promise<void>
 }

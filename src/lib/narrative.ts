@@ -82,19 +82,31 @@ export function generateChoices(choice: string): string[] {
 }
 
 export function updateGameStateForChoice(currentState: GameState): GameState {
+  const experienceGain = Math.floor(Math.random() * 20) + 5
+  const newExperience = currentState.experience + experienceGain
+  
+  // Store previous experience to detect level ups
+  const previousExperience = currentState.experience
+  
+  // Check for level up
+  let newLevel = currentState.level
+  let remainingXP = newExperience
+  
+  while (remainingXP >= newLevel * 100) {
+    remainingXP -= newLevel * 100
+    newLevel++
+  }
+  
   return {
     ...currentState,
-    experience: currentState.experience + 10,
+    level: newLevel,
+    experience: remainingXP,
+    previousExperience,
     currentScene: currentState.currentScene + 1,
-    ...(shouldLevelUp(currentState) && {
-      level: currentState.level + 1,
-      maxHealth: currentState.maxHealth + 20,
-      health: currentState.maxHealth + 20,
-      experience: 0,
+    // Increase health on level up
+    ...(newLevel > currentState.level && {
+      maxHealth: currentState.maxHealth + ((newLevel - currentState.level) * 20),
+      health: currentState.health + ((newLevel - currentState.level) * 20),
     })
   }
-}
-
-function shouldLevelUp(state: GameState): boolean {
-  return state.experience + 10 >= state.level * 100
 }
