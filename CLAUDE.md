@@ -56,3 +56,11 @@
    - Does it follow the established file structure and naming conventions?
 
 **If any refactoring is needed, do it BEFORE the commit. Keep the commit focused and clean.**
+
+## Pre-Commit File Review (MANDATORY)
+
+**ALWAYS show all modified files before committing to git:**
+- Use `git status` and `git diff` to show exactly what will be committed
+- Display the changes clearly so the user can review them
+- Only proceed with the commit after showing the file changes
+- This ensures transparency and allows for final review before version control
