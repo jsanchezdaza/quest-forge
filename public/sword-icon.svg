@@ -1,0 +1,26 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Blade -->
+  <rect x="14" y="2" width="4" height="16" fill="#e6e6e6"/>
+  <rect x="13" y="3" width="6" height="14" fill="#cccccc"/>
+  <rect x="12" y="4" width="8" height="12" fill="#b3b3b3"/>
+  
+  <!-- Blade highlight -->
+  <rect x="15" y="3" width="2" height="14" fill="#ffffff"/>
+  
+  <!-- Cross guard -->
+  <rect x="10" y="17" width="12" height="3" fill="#8b6914"/>
+  <rect x="9" y="18" width="14" height="1" fill="#d4af37"/>
+  
+  <!-- Handle -->
+  <rect x="14" y="20" width="4" height="8" fill="#654321"/>
+  <rect x="13" y="21" width="6" height="6" fill="#8b4513"/>
+  
+  <!-- Pommel -->
+  <rect x="13" y="28" width="6" height="3" fill="#8b6914"/>
+  <rect x="12" y="29" width="8" height="1" fill="#d4af37"/>
+  
+  <!-- Handle wrap -->
+  <rect x="14" y="22" width="4" height="1" fill="#4a2c17"/>
+  <rect x="14" y="24" width="4" height="1" fill="#4a2c17"/>
+  <rect x="14" y="26" width="4" height="1" fill="#4a2c17"/>
+</svg>
