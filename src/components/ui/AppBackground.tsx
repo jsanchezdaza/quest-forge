@@ -12,7 +12,7 @@ export default function AppBackground({
   const baseClasses = 'min-h-screen app-background'
   const variantClasses = {
     auth: 'flex items-center justify-center p-4',
-    game: ''
+    game: 'game-background'
   }
   
   return (
