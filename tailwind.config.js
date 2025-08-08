@@ -54,7 +54,7 @@ export default {
         'pixel': ['Press Start 2P', 'monospace'],
         'pixel-alt': ['Silkscreen', 'monospace'],
         'pixel-body': ['Pixelify Sans', 'monospace'],
-        'dnd': ['Press Start 2P', 'monospace'], // D&D style headers
+        'dnd': ['Orbitron', 'Exo 2', 'Press Start 2P', 'monospace'], // Minecraft Dungeons style
         'medieval': ['Press Start 2P', 'monospace'], 
         'fantasy': ['Press Start 2P', 'monospace'],
         'sans': ['Pixelify Sans', 'monospace'],

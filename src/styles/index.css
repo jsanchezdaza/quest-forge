@@ -37,18 +37,89 @@
   h3 { @apply text-base sm:text-lg lg:text-xl; }
   h4, h5, h6 { @apply text-sm sm:text-base lg:text-lg; }
 
-  /* D&D title class for main logos */
+  /* D&D title class - Minecraft Dungeons style with pixel texture */
   .dnd-title {
     @apply font-dnd uppercase tracking-wider;
+    font-weight: 900;
+    font-variation-settings: 'wght' 900;
+    /* Ultra-pixelated rendering */
     -webkit-font-smoothing: none;
     -moz-osx-font-smoothing: unset;
     font-smooth: never;
     text-rendering: geometricPrecision;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    /* Minecraft Dungeons style shadow with depth */
     text-shadow: 
-      2px 2px 0px #000,
-      -1px -1px 0px #000,
-      1px -1px 0px #000,
-      -1px 1px 0px #000;
+      0 0 10px rgba(212, 175, 55, 0.8),
+      0 0 20px rgba(212, 175, 55, 0.5),
+      2px 2px 0px #8b6914,
+      3px 3px 0px #6b5010,
+      4px 4px 0px #4b380b,
+      5px 5px 0px #2b2006,
+      6px 6px 8px rgba(0, 0, 0, 0.6);
+    /* Enhanced brick/block pattern with high contrast */
+    background: 
+      /* Dark mortar lines (horizontal) - much thicker */
+      repeating-linear-gradient(
+        0deg,
+        #f4d03f 0px,
+        #f4d03f 8px,
+        #2b2006 8px,
+        #2b2006 12px,
+        #d4af37 12px,
+        #d4af37 20px,
+        #2b2006 20px,
+        #2b2006 24px
+      ),
+      /* Dark mortar lines (vertical) - offset brick pattern */
+      repeating-linear-gradient(
+        90deg,
+        #f4d03f 0px,
+        #f4d03f 12px,
+        #2b2006 12px,
+        #2b2006 16px,
+        #d4af37 16px,
+        #d4af37 28px,
+        #2b2006 28px,
+        #2b2006 32px,
+        #f4d03f 32px,
+        #f4d03f 44px,
+        #2b2006 44px,
+        #2b2006 48px
+      ),
+      /* Bright golden base */
+      linear-gradient(0deg, #f4d03f 0%, #ffeb3b 50%, #f4d03f 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 100% 24px, 48px 100%, 100% 100%;
+    /* Slight 3D transform */
+    transform: perspective(500px) rotateX(15deg);
+    /* Enhanced contrast to make brick texture pop */
+    filter: contrast(1.5) saturate(1.3) brightness(1.1);
+  }
+
+  /* Responsive background images - balanced overlay */
+  .app-background {
+    background-image: 
+      url('/images/backgrounds/desktop-bg.jpeg'),
+      linear-gradient(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.08));
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+  }
+
+  /* Mobile background */
+  @media (max-width: 768px) {
+    .app-background {
+      background-image: 
+        url('/images/backgrounds/mobile-bg.jpeg'),
+        linear-gradient(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.08));
+    }
   }
 
   /* All text should be ultra-pixelated */
@@ -85,6 +156,7 @@
   .text-pixel-heading {
     @apply font-pixel text-xs text-gray-100 leading-relaxed uppercase tracking-wide;
   }
+
   .btn-primary {
     @apply px-6 py-3 bg-medieval-gold hover:bg-medieval-darkgold text-medieval-inkblack font-pixel uppercase text-xs sm:text-sm rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-medieval-gold/25 transform hover:scale-105;
     /* Ultra-pixel button styling */
@@ -107,7 +179,21 @@
   }
   
   .card {
-    @apply bg-background-card border border-medieval-gold/20 rounded-lg p-6 shadow-lg backdrop-blur-sm;
+    position: relative;
+    border: 2px solid rgba(212, 175, 55, 0.4);
+    border-radius: 12px;
+    padding: 24px;
+    /* Simple transparent background */
+    background: rgba(255, 255, 255, 0.1) !important;
+    /* Light blur effect */
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    /* Enhanced shadows for depth */
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    z-index: 10;
   }
   
   .input-field {

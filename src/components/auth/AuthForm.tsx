@@ -50,7 +50,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
     <div className="w-full max-w-md mx-auto">
       <div className="card">
         <div className="text-center mb-8">
-          <h1 className="dnd-title text-2xl sm:text-3xl lg:text-4xl text-medieval-gold mb-6 leading-tight">
+          <h1 className="dnd-title text-4xl sm:text-5xl lg:text-7xl xl:text-8xl mb-8 leading-tight">
             QUEST FORGE
           </h1>
           <p className="text-pixel-body-sm text-gray-400 uppercase tracking-wide">
