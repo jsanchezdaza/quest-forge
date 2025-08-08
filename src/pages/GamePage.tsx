@@ -43,7 +43,7 @@ export default function GamePage() {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="dnd-title text-xl sm:text-2xl text-medieval-gold leading-tight">
+              <h1 className="dnd-title text-2xl sm:text-3xl lg:text-4xl text-medieval-gold leading-tight">
                 QUEST FORGE
               </h1>
               {profile && (
