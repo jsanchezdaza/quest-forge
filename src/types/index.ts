@@ -43,6 +43,7 @@ export interface GameState {
   maxHealth: number
   experience: number
   previousExperience?: number
+  pendingLevelUp?: boolean
   currentScene: number
   inventory: string[]
   stats: {
@@ -74,4 +75,6 @@ export interface GameStore {
   saveProgress: () => Promise<void>
   makeChoice: (choice: string) => Promise<void>
   updateStats: (newStats: GameState['stats']) => Promise<void>
+  clearPreviousExperience: () => Promise<void>
+  clearPendingLevelUp: () => Promise<void>
 }

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useGameStore } from '../store/gameStore'
 
 export const useLevelUp = () => {
-  const { currentSession } = useGameStore()
+  const { currentSession, clearPendingLevelUp } = useGameStore()
   const [levelUpData, setLevelUpData] = useState<{
     isOpen: boolean
     newLevel: number
@@ -12,34 +12,27 @@ export const useLevelUp = () => {
     newLevel: 0,
     availablePoints: 0
   })
-  const [processedLevelUp, setProcessedLevelUp] = useState<number | null>(null)
-
   useEffect(() => {
     if (!currentSession) return
 
-    const { level, previousExperience } = currentSession.game_state
+    const { level, pendingLevelUp } = currentSession.game_state
     
-    // Only show level up modal if we have previousExperience, level increased, and not processed yet
-    const hasLeveledUp = previousExperience !== undefined && 
-                        level > Math.floor(previousExperience / 100) + 1 &&
-                        processedLevelUp !== level
-
-    if (hasLeveledUp) {
-      const previousLevel = Math.floor(previousExperience / 100) + 1
-      const levelsGained = level - previousLevel
-      const pointsGained = levelsGained * 3 // 3 attribute points per level
+    // Only show level up modal if pendingLevelUp flag is set
+    if (pendingLevelUp) {
+      const pointsGained = 3 // 3 attribute points per level (assuming 1 level gained)
       
       setLevelUpData({
         isOpen: true,
         newLevel: level,
         availablePoints: pointsGained
       })
-      setProcessedLevelUp(level)
     }
-  }, [currentSession?.game_state.level, currentSession?.game_state.previousExperience])
+  }, [currentSession?.game_state.pendingLevelUp])
 
   const closeLevelUpModal = () => {
     setLevelUpData(prev => ({ ...prev, isOpen: false }))
+    // Clear pendingLevelUp flag when modal is closed
+    clearPendingLevelUp()
   }
 
   return {

@@ -102,6 +102,8 @@ export function updateGameStateForChoice(currentState: GameState): GameState {
     level: newLevel,
     experience: remainingXP,
     previousExperience,
+    // Mark level up as pending if level increased
+    pendingLevelUp: newLevel > currentState.level,
     currentScene: currentState.currentScene + 1,
     // Increase health on level up
     ...(newLevel > currentState.level && {

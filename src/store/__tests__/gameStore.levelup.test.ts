@@ -168,14 +168,14 @@ describe('GameStore Level Up Logic', () => {
   test('handles multiple level ups correctly', () => {
     const gameState = {
       level: 1,
-      experience: 250 // Enough for level 3
+      experience: 350 // Enough for level 3
     }
 
     const currentLevel = gameState.level
     let newLevel = currentLevel
     let remainingXP = gameState.experience
 
-    // Calculate new level based on experience
+    // Calculate new level based on experience (matches updateGameStateForChoice logic)
     while (remainingXP >= newLevel * 100) {
       remainingXP -= newLevel * 100
       newLevel++
