@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import LevelUpModal from '../LevelUpModal'
 import * as gameStore from '../../../store/gameStore'
+import type { GameStore } from '../../../types'
 
 // Mock the game store
 jest.mock('../../../store/gameStore')
@@ -10,13 +11,21 @@ describe('LevelUpModal Component', () => {
   const mockUpdateStats = jest.fn()
   const mockOnClose = jest.fn()
 
-  const defaultGameState = {
+  const defaultGameState: Partial<GameStore> = {
     currentSession: {
       id: '1',
+      user_id: 'test-user',
       character_name: 'Test Hero',
       character_class: 'warrior',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
       game_state: {
         level: 2,
+        health: 100,
+        maxHealth: 100,
+        experience: 0,
+        currentScene: 0,
+        inventory: [],
         stats: {
           strength: 15,
           dexterity: 10,
@@ -33,7 +42,7 @@ describe('LevelUpModal Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    mockUseGameStore.mockReturnValue(defaultGameState as any)
+    mockUseGameStore.mockReturnValue(defaultGameState as GameStore)
   })
 
   test('renders level up modal when character levels up', () => {
