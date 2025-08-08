@@ -44,6 +44,7 @@ export interface GameState {
   experience: number
   previousExperience?: number
   pendingLevelUp?: boolean
+  levelsGained?: number
   currentScene: number
   inventory: string[]
   stats: {

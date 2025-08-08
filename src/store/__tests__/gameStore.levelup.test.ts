@@ -1,5 +1,7 @@
 import { renderHook, act } from '@testing-library/react'
 import { useGameStore } from '../gameStore'
+import { GAME_CONSTANTS } from '../../constants/game'
+import { calculateLevelUp, getExperienceForNextLevel } from '../../utils/levelSystem'
 
 // Mock supabase
 jest.mock('../../lib/supabase', () => ({
@@ -75,7 +77,7 @@ describe('GameStore Level Up Logic', () => {
     })
 
     // Check if level up is detected
-    const experienceNeeded = result.current.currentSession!.game_state.level * 100
+    const experienceNeeded = getExperienceForNextLevel(result.current.currentSession!.game_state.level)
     const shouldLevelUp = result.current.currentSession!.game_state.experience >= experienceNeeded
 
     expect(shouldLevelUp).toBe(true)
@@ -84,11 +86,11 @@ describe('GameStore Level Up Logic', () => {
   test('calculates correct attribute points for level up', () => {
     const baseLevel = 1
     const newLevel = 2
-    const expectedPoints = 3 // Standard D&D attribute point gain per level
+    const expectedPoints = GAME_CONSTANTS.ATTRIBUTE_POINTS_PER_LEVEL
 
     expect(newLevel - baseLevel).toBe(1)
-    // Each level up gives 3 attribute points
-    expect((newLevel - baseLevel) * 3).toBe(expectedPoints)
+    // Each level up gives attribute points based on constant
+    expect((newLevel - baseLevel) * GAME_CONSTANTS.ATTRIBUTE_POINTS_PER_LEVEL).toBe(expectedPoints)
   })
 
   test('updateStats function updates character attributes correctly', async () => {
@@ -145,7 +147,7 @@ describe('GameStore Level Up Logic', () => {
       previousExperience: 95
     }
 
-    const experienceNeeded = gameState.level * 100
+    const experienceNeeded = getExperienceForNextLevel(gameState.level)
     const hasLeveledUp = gameState.experience >= experienceNeeded && 
                         gameState.previousExperience < experienceNeeded
 
@@ -159,29 +161,21 @@ describe('GameStore Level Up Logic', () => {
       previousExperience: 90
     }
 
-    const experienceNeeded = gameState.level * 100
+    const experienceNeeded = getExperienceForNextLevel(gameState.level)
     const hasLeveledUp = gameState.experience >= experienceNeeded
 
     expect(hasLeveledUp).toBe(false)
   })
 
   test('handles multiple level ups correctly', () => {
-    const gameState = {
-      level: 1,
-      experience: 350 // Enough for level 3
-    }
+    const currentLevel = 1
+    const totalExperience = 350 // Enough for level 3
 
-    const currentLevel = gameState.level
-    let newLevel = currentLevel
-    let remainingXP = gameState.experience
+    const levelUpResult = calculateLevelUp(currentLevel, totalExperience)
 
-    // Calculate new level based on experience (matches updateGameStateForChoice logic)
-    while (remainingXP >= newLevel * 100) {
-      remainingXP -= newLevel * 100
-      newLevel++
-    }
-
-    expect(newLevel).toBe(3) // Should reach level 3
-    expect(remainingXP).toBe(50) // Should have 50 XP remaining towards level 4
+    expect(levelUpResult.newLevel).toBe(3) // Should reach level 3
+    expect(levelUpResult.remainingXP).toBe(50) // Should have 50 XP remaining towards level 4
+    expect(levelUpResult.levelsGained).toBe(2) // Should have gained 2 levels
+    expect(levelUpResult.totalAttributePoints).toBe(6) // Should have 6 attribute points (2 levels * 3 points)
   })
 })

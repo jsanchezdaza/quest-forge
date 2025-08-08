@@ -7,12 +7,13 @@ import {
   generateChoices,
   updateGameStateForChoice
 } from '../lib/narrative'
+import { GAME_CONSTANTS } from '../constants/game'
 import type { GameStore, CharacterClass, GameState } from '../types'
 
 const createInitialGameState = (characterClass: CharacterClass): GameState => ({
-  level: 1,
-  health: 100,
-  maxHealth: 100,
+  level: GAME_CONSTANTS.STARTING_LEVEL,
+  health: GAME_CONSTANTS.STARTING_HEALTH,
+  maxHealth: GAME_CONSTANTS.STARTING_HEALTH,
   experience: 0,
   currentScene: 0,
   inventory: [],
@@ -64,7 +65,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     const updatedGameState = {
       ...currentSession.game_state,
-      pendingLevelUp: false
+      pendingLevelUp: false,
+      levelsGained: undefined
     }
 
     const updatedSession = {

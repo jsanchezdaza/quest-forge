@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import LevelUpModal from '../LevelUpModal'
 import * as gameStore from '../../../store/gameStore'
 import type { GameStore } from '../../../types'
+import { GAME_CONSTANTS } from '../../../constants/game'
 
 // Mock the game store
 jest.mock('../../../store/gameStore')
@@ -57,7 +58,7 @@ describe('LevelUpModal Component', () => {
 
     expect(screen.getByText('Level Up!')).toBeInTheDocument()
     expect(screen.getByText('Congratulations! You have reached level 2')).toBeInTheDocument()
-    expect(screen.getByText('You have 3 attribute points to distribute')).toBeInTheDocument()
+    expect(screen.getByText(`You have ${GAME_CONSTANTS.ATTRIBUTE_POINTS_PER_LEVEL} attribute points to distribute`)).toBeInTheDocument()
   })
 
   test('displays all character attributes with increment buttons', () => {

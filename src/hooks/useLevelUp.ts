@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useGameStore } from '../store/gameStore'
+import { GAME_CONSTANTS } from '../constants/game'
 
 export const useLevelUp = () => {
   const { currentSession, clearPendingLevelUp } = useGameStore()
@@ -15,16 +16,16 @@ export const useLevelUp = () => {
   useEffect(() => {
     if (!currentSession) return
 
-    const { level, pendingLevelUp } = currentSession.game_state
+    const { level, pendingLevelUp, levelsGained = 1 } = currentSession.game_state
     
     // Only show level up modal if pendingLevelUp flag is set
     if (pendingLevelUp) {
-      const pointsGained = 3 // 3 attribute points per level (assuming 1 level gained)
+      const totalAttributePoints = levelsGained * GAME_CONSTANTS.ATTRIBUTE_POINTS_PER_LEVEL
       
       setLevelUpData({
         isOpen: true,
         newLevel: level,
-        availablePoints: pointsGained
+        availablePoints: totalAttributePoints
       })
     }
   }, [currentSession?.game_state.pendingLevelUp])

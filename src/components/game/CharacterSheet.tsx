@@ -1,5 +1,6 @@
 import { Card, ProgressBar, StatsList } from '../ui'
 import type { GameSession } from '../../types'
+import { getExperienceForNextLevel } from '../../utils/levelSystem'
 
 interface CharacterSheetProps {
   session: GameSession
@@ -9,7 +10,7 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
   const { character_name, character_class, game_state } = session
   const { level, health, maxHealth, experience, stats, inventory } = game_state
 
-  const experienceNeeded = level * 100
+  const experienceNeeded = getExperienceForNextLevel(level)
 
   return (
     <div className="space-y-4">

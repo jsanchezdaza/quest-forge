@@ -1,4 +1,5 @@
 import type { CharacterClass, GameSession, GameState } from '../types'
+import { generateExperienceGain, updateGameStateWithLevelUp } from '../utils/levelSystem'
 
 const CHARACTER_DESCRIPTIONS = {
   warrior: 'a mighty warrior with sword and shield',
@@ -82,33 +83,6 @@ export function generateChoices(choice: string): string[] {
 }
 
 export function updateGameStateForChoice(currentState: GameState): GameState {
-  const experienceGain = Math.floor(Math.random() * 20) + 5
-  const newExperience = currentState.experience + experienceGain
-  
-  // Store previous experience to detect level ups
-  const previousExperience = currentState.experience
-  
-  // Check for level up
-  let newLevel = currentState.level
-  let remainingXP = newExperience
-  
-  while (remainingXP >= newLevel * 100) {
-    remainingXP -= newLevel * 100
-    newLevel++
-  }
-  
-  return {
-    ...currentState,
-    level: newLevel,
-    experience: remainingXP,
-    previousExperience,
-    // Mark level up as pending if level increased
-    pendingLevelUp: newLevel > currentState.level,
-    currentScene: currentState.currentScene + 1,
-    // Increase health on level up
-    ...(newLevel > currentState.level && {
-      maxHealth: currentState.maxHealth + ((newLevel - currentState.level) * 20),
-      health: currentState.health + ((newLevel - currentState.level) * 20),
-    })
-  }
+  const experienceGain = generateExperienceGain()
+  return updateGameStateWithLevelUp(currentState, experienceGain)
 }
