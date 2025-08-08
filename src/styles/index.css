@@ -145,6 +145,13 @@
     font-smooth: never;
     text-rendering: geometricPrecision;
   }
+
+  /* Pixelated rendering for SVGs and images */
+  .pixelated {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
   
   ::-webkit-scrollbar {
     @apply w-2;
@@ -209,6 +216,25 @@
       0 8px 32px rgba(0, 0, 0, 0.5),
       0 0 0 1px rgba(255, 255, 255, 0.2),
       inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    z-index: 10;
+  }
+
+  /* More opaque cards for game pages */
+  .card-game {
+    position: relative;
+    border: 2px solid rgba(212, 175, 55, 0.6);
+    border-radius: 12px;
+    padding: 24px;
+    /* More opaque background */
+    background: rgba(0, 0, 0, 0.7) !important;
+    /* Light blur effect */
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    /* Enhanced shadows for depth */
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.6),
+      0 0 0 1px rgba(212, 175, 55, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
     z-index: 10;
   }
   

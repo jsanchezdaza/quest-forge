@@ -13,7 +13,7 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card variant="game">
         <div className="text-center mb-4">
           <h2 className="text-xl font-medieval text-medieval-gold">
             {character_name}
@@ -39,11 +39,11 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
         />
       </Card>
 
-      <Card>
+      <Card variant="game">
         <StatsList stats={stats} />
       </Card>
 
-      <Card>
+      <Card variant="game">
         <h3 className="text-lg font-medieval text-medieval-gold mb-4">
           Inventory
         </h3>

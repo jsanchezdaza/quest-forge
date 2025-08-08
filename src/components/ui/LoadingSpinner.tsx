@@ -2,12 +2,16 @@ interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg'
   color?: string
   text?: string
+  showAvatar?: boolean
 }
+
+import WalkingAvatar from './WalkingAvatar'
 
 export default function LoadingSpinner({ 
   size = 'md', 
   color = 'border-medieval-gold',
-  text 
+  text,
+  showAvatar = false 
 }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: 'w-4 h-4 border-2',
@@ -21,7 +25,13 @@ export default function LoadingSpinner({
         className={`${sizeClasses[size]} ${color} border-t-transparent rounded-full animate-spin`}
       />
       {text && (
-        <p className="text-gray-400 text-sm">{text}</p>
+        <div className="flex items-center gap-4">
+          {showAvatar && <WalkingAvatar />}
+          <p className="text-gray-300 font-pixel-body text-sm uppercase tracking-wide animate-pulse">
+            {text}
+          </p>
+          {showAvatar && <WalkingAvatar />}
+        </div>
       )}
     </div>
   )

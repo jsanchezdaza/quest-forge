@@ -45,7 +45,7 @@ export default function GamePage() {
   if (loading || !initialLoadDone) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" text="Loading your adventure..." />
+        <LoadingSpinner size="lg" text="Loading your adventure..." showAvatar={true} />
       </div>
     )
   }
@@ -94,7 +94,7 @@ export default function GamePage() {
             <GameSession />
           ) : (
             <div className="text-center py-16">
-              <Card className="max-w-md mx-auto">
+              <Card variant="game" className="max-w-md mx-auto">
                 <h2 className="text-lg sm:text-xl text-medieval-gold mb-4 leading-tight">
                   START YOUR ADVENTURE
                 </h2>

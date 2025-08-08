@@ -44,7 +44,7 @@ export default function GameSession() {
 
         {/* Scene History */}
         {scenes.length > 1 && (
-          <Card>
+          <Card variant="game">
             <h3 className="text-lg font-medieval text-medieval-gold mb-4">
               Adventure Log
             </h3>

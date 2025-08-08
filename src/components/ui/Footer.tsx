@@ -7,7 +7,7 @@ export default function Footer() {
             © 2025 Quest Forge. All rights reserved.
           </p>
           <p className="text-gray-500 font-pixel-body text-xs uppercase tracking-wide">
-            Contact: <a href="https://www.javisan.dev" target="_blank" rel="noopener noreferrer" className="text-medieval-gold hover:text-medieval-darkgold transition-colors">www.javisan.dev</a>
+            Author: <a href="https://www.javisan.dev" target="_blank" rel="noopener noreferrer" className="text-medieval-gold hover:text-medieval-darkgold transition-colors">www.javisan.dev</a>
           </p>
         </div>
       </div>

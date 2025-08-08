@@ -5,13 +5,15 @@ interface CardProps {
   className?: string
   hover?: boolean
   padding?: 'none' | 'sm' | 'md' | 'lg'
+  variant?: 'default' | 'game'
 }
 
 export default function Card({ 
   children, 
   className = '', 
   hover = false,
-  padding = 'md'
+  padding = 'md',
+  variant = 'default'
 }: CardProps) {
   const paddingClasses = {
     none: '',
@@ -24,8 +26,10 @@ export default function Card({
     ? 'hover:shadow-xl hover:shadow-medieval-gold/10 hover:border-medieval-gold/40 transition-all duration-300 cursor-pointer' 
     : ''
 
+  const cardClass = variant === 'game' ? 'card-game' : 'card'
+  
   return (
-    <div className={`card ${paddingClasses[padding]} ${hoverClasses} ${className}`}>
+    <div className={`${cardClass} ${paddingClasses[padding]} ${hoverClasses} ${className}`}>
       {children}
     </div>
   )
