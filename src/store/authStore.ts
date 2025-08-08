@@ -2,74 +2,67 @@ import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import type { AuthState } from '../types'
 
+// Helper for auth operations with consistent error handling
+const withErrorHandling = async <T>(
+  operation: () => Promise<T>,
+  setState: (state: Partial<AuthState>) => void
+): Promise<T> => {
+  setState({ loading: true })
+  try {
+    const result = await operation()
+    setState({ loading: false })
+    return result
+  } catch (error) {
+    setState({ loading: false })
+    throw error
+  }
+}
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   profile: null,
   loading: false,
 
   signIn: async (email: string, password: string) => {
-    set({ loading: true })
-    
-    try {
+    return withErrorHandling(async () => {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       
-      if (error) {
-        set({ loading: false })
-        throw error
-      }
+      if (error) throw error
 
       if (data.user) {
         set({ 
           user: { id: data.user.id, email: data.user.email || '' },
-          profile: null,
-          loading: false 
+          profile: null
         })
       }
-    } catch (error) {
-      set({ loading: false })
-      throw error
-    }
+    }, set)
   },
 
   signUp: async (email: string, password: string, username: string) => {
-    set({ loading: true })
-    
-    try {
+    return withErrorHandling(async () => {
       const { data, error } = await supabase.auth.signUp({ email, password })
       
-      if (error) {
-        set({ loading: false })
-        throw error
-      }
+      if (error) throw error
 
       if (data.user) {
         set({ 
           user: { id: data.user.id, email: data.user.email || '' },
-          profile: { id: data.user.id, username, created_at: new Date().toISOString() },
-          loading: false 
+          profile: { id: data.user.id, username, created_at: new Date().toISOString() }
         })
       }
-    } catch (error) {
-      set({ loading: false })
-      throw error
-    }
+    }, set)
   },
 
   signOut: async () => {
-    set({ loading: true })
-    
-    try {
+    return withErrorHandling(async () => {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       
-      set({ user: null, profile: null, loading: false })
-    } catch (error) {
-      set({ loading: false })
-      throw error
-    }
+      set({ user: null, profile: null })
+    }, set)
   },
 
-  updateProfile: async (_username: string) => {
+  updateProfile: async () => {
     // Not implemented for basic version
     throw new Error('Profile update not available in basic mode')
   },

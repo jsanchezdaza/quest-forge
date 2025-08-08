@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useAuthStore } from '../../store/authStore'
 import { useNotifications } from '../../store/notificationStore'
-import { FormField, LoadingSpinner } from '../ui'
+import { FormField, Button } from '../ui'
 import { VALIDATION_RULES } from '../../constants/validation'
+import { AUTH_MESSAGES } from '../../constants/auth'
 import { parseAuthError } from '../../utils/authErrors'
 
 interface AuthFormProps {
@@ -29,14 +30,14 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
         }
         await signUp(email, password, username)
         notifications.success(
-          'Account Created Successfully', 
-          'Welcome to Quest Forge! You can now start your adventure.'
+          AUTH_MESSAGES.SIGNUP_SUCCESS.title, 
+          AUTH_MESSAGES.SIGNUP_SUCCESS.message
         )
       } else {
         await signIn(email, password)
         notifications.success(
-          'Welcome Back!', 
-          'Successfully signed in. Prepare for adventure!'
+          AUTH_MESSAGES.SIGNIN_SUCCESS.title, 
+          AUTH_MESSAGES.SIGNIN_SUCCESS.message
         )
       }
     } catch (error) {
@@ -52,8 +53,8 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
           <h1 className="dnd-title text-2xl sm:text-3xl lg:text-4xl text-medieval-gold mb-6 leading-tight">
             QUEST FORGE
           </h1>
-          <p className="text-gray-400 text-sm font-pixel-body uppercase tracking-wide">
-            {mode === 'signin' ? 'WELCOME BACK, ADVENTURER' : 'BEGIN YOUR QUEST'}
+          <p className="text-pixel-body-sm text-gray-400 uppercase tracking-wide">
+            {mode === 'signin' ? AUTH_MESSAGES.WELCOME_MESSAGES.RETURNING_USER : AUTH_MESSAGES.WELCOME_MESSAGES.NEW_USER}
           </p>
         </div>
 
@@ -92,31 +93,25 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             minLength={VALIDATION_RULES.PASSWORD_MIN_LENGTH}
           />
 
-          <button
+          <Button
             type="submit"
-            disabled={loading}
-            className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="primary"
+            isLoading={loading}
+            className="w-full"
           >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <LoadingSpinner size="sm" />
-                {mode === 'signin' ? 'SIGNING IN...' : 'CREATING ACCOUNT...'}
-              </span>
-            ) : (
-              mode === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT'
-            )}
-          </button>
+            {mode === 'signin' ? AUTH_MESSAGES.SIGNIN_BUTTON : AUTH_MESSAGES.SIGNUP_BUTTON}
+          </Button>
         </form>
 
         <div className="mt-6 text-center">
           <button
             type="button"
             onClick={onToggleMode}
-            className="text-medieval-gold hover:text-medieval-darkgold transition-colors font-pixel-body text-xs uppercase tracking-wide"
+            className="text-medieval-gold hover:text-medieval-darkgold transition-colors text-pixel-label"
           >
             {mode === 'signin' 
-              ? "DON'T HAVE AN ACCOUNT? SIGN UP" 
-              : 'ALREADY HAVE AN ACCOUNT? SIGN IN'
+              ? AUTH_MESSAGES.TOGGLE_MESSAGES.TO_SIGNUP 
+              : AUTH_MESSAGES.TOGGLE_MESSAGES.TO_SIGNIN
             }
           </button>
         </div>

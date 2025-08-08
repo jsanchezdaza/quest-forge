@@ -73,6 +73,18 @@
 }
 
 @layer components {
+  /* Pixel text utility classes */
+  .text-pixel-label {
+    @apply font-pixel-body text-xs text-gray-300 uppercase tracking-wide;
+  }
+  
+  .text-pixel-body-sm {
+    @apply font-pixel-body text-sm leading-relaxed;
+  }
+  
+  .text-pixel-heading {
+    @apply font-pixel text-xs text-gray-100 leading-relaxed uppercase tracking-wide;
+  }
   .btn-primary {
     @apply px-6 py-3 bg-medieval-gold hover:bg-medieval-darkgold text-medieval-inkblack font-pixel uppercase text-xs sm:text-sm rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-medieval-gold/25 transform hover:scale-105;
     /* Ultra-pixel button styling */
