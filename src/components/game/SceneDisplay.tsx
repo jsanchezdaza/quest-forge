@@ -11,7 +11,7 @@ export default function SceneDisplay({ scene, onChoice, loading }: SceneDisplayP
   return (
     <Card>
       <div className="prose prose-invert max-w-none">
-        <div className="bg-background-darker rounded-lg p-6 mb-6 border border-medieval-gold/20">
+        <div className="bg-background-darker rounded-lg p-6 mb-6 border border-medieval-gold/20 h-64 overflow-y-auto">
           <p className="text-gray-100 leading-relaxed whitespace-pre-line">
             {scene.narrative}
           </p>

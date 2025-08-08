@@ -168,8 +168,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const { currentSession, scenes } = get()
     if (!currentSession) throw new Error('No active session')
 
-    set({ loading: true })
-
     const currentScene = scenes[scenes.length - 1]
     
     const [updateResult, newSceneResult] = await Promise.all([
@@ -182,12 +180,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     ])
 
     if (updateResult.error) {
-      set({ loading: false })
       throw updateResult.error
     }
 
     if (newSceneResult.error) {
-      set({ loading: false })
       throw newSceneResult.error
     }
 
@@ -203,7 +199,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
       .eq('id', currentSession.id)
 
     if (sessionError) {
-      set({ loading: false })
       throw sessionError
     }
 
@@ -215,7 +210,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
         ),
         newSceneResult.data
       ],
-      loading: false,
     })
   },
 }))
