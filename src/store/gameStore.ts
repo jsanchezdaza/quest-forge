@@ -31,6 +31,46 @@ export const useGameStore = create<GameStore>((set, get) => ({
   scenes: [],
   loading: false,
 
+  loadLatestSession: async () => {
+    set({ loading: true })
+    
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      set({ loading: false })
+      return
+    }
+
+    const { data: session, error: sessionError } = await supabase
+      .from('game_sessions')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (sessionError || !session) {
+      set({ loading: false })
+      return
+    }
+
+    const { data: scenes, error: scenesError } = await supabase
+      .from('scenes')
+      .select('*')
+      .eq('session_id', session.id)
+      .order('created_at', { ascending: true })
+
+    if (scenesError) {
+      set({ loading: false })
+      throw scenesError
+    }
+
+    set({
+      currentSession: session,
+      scenes: scenes || [],
+      loading: false,
+    })
+  },
+
   createSession: async (characterName: string, characterClass: CharacterClass) => {
     set({ loading: true })
     

@@ -67,6 +67,7 @@ export interface GameStore {
   currentSession: GameSession | null
   scenes: Scene[]
   loading: boolean
+  loadLatestSession: () => Promise<void>
   createSession: (characterName: string, characterClass: CharacterClass) => Promise<void>
   loadSession: (sessionId: string) => Promise<void>
   saveProgress: () => Promise<void>

@@ -8,16 +8,30 @@ import GameSession from '../components/game/GameSession'
 
 export default function GamePage() {
   const { profile, signOut } = useAuthStore()
-  const { currentSession, loading } = useGameStore()
+  const { currentSession, loading, loadLatestSession } = useGameStore()
   const notifications = useNotifications()
   const [showCreateCharacter, setShowCreateCharacter] = useState(false)
+  const [initialLoadDone, setInitialLoadDone] = useState(false)
 
   useEffect(() => {
-    // Auto-show character creation if no session exists
-    if (!currentSession && !loading) {
+    const loadSession = async () => {
+      try {
+        await loadLatestSession()
+      } catch (error) {
+        console.error('Error loading session:', error)
+      } finally {
+        setInitialLoadDone(true)
+      }
+    }
+    
+    loadSession()
+  }, [loadLatestSession])
+
+  useEffect(() => {
+    if (initialLoadDone && !currentSession && !loading) {
       setShowCreateCharacter(true)
     }
-  }, [currentSession, loading])
+  }, [currentSession, loading, initialLoadDone])
 
   const handleSignOut = async () => {
     try {
@@ -28,7 +42,7 @@ export default function GamePage() {
     }
   }
 
-  if (loading) {
+  if (loading || !initialLoadDone) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" text="Loading your adventure..." />
@@ -38,7 +52,6 @@ export default function GamePage() {
 
   return (
     <AppBackground variant="game">
-      {/* Header */}
       <header className="border-b border-medieval-gold/20 bg-background-card/50 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -75,7 +88,6 @@ export default function GamePage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
         {currentSession ? (
           <GameSession />
@@ -96,7 +108,6 @@ export default function GamePage() {
         )}
       </main>
 
-      {/* Create Character Modal */}
       <Modal
         isOpen={showCreateCharacter}
         onClose={() => !currentSession ? undefined : setShowCreateCharacter(false)}
