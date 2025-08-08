@@ -22,9 +22,9 @@ export default function ProgressBar({
   
   return (
     <div className={className}>
-      <div className="flex justify-between text-sm text-gray-400 mb-1">
-        <span>{label}</span>
-        <span>{current}/{max}</span>
+      <div className="flex justify-between text-sm text-gray-100 mb-1">
+        <span className="font-medium uppercase tracking-wide">{label}</span>
+        <span className="font-medium">{current}/{max}</span>
       </div>
       <div className="w-full bg-background-darker rounded-full h-3">
         <div

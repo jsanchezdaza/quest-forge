@@ -113,11 +113,20 @@
     background-blend-mode: overlay;
   }
 
-  /* Game page background - PNG version */
+  /* Game page background - JPEG version */
   .app-background.game-background {
     background-image: 
-      url('/images/backgrounds/desktop-bg.png'),
+      url('/images/backgrounds/desktop-bg.jpeg'),
       linear-gradient(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.08));
+  }
+
+  /* Mobile game page background */
+  @media (max-width: 768px) {
+    .app-background.game-background {
+      background-image: 
+        url('/images/backgrounds/mobile-bg.jpeg'),
+        linear-gradient(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.08));
+    }
   }
 
   /* Mobile background */

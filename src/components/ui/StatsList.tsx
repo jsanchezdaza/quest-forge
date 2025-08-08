@@ -12,10 +12,10 @@ export default function StatsList({ stats, title = 'Attributes' }: StatsListProp
       <div className="space-y-3">
         {Object.entries(stats).map(([stat, value]) => (
           <div key={stat} className="flex justify-between">
-            <span className="text-gray-300 capitalize">
+            <span className="text-gray-100 capitalize text-sm font-medium">
               {stat}
             </span>
-            <span className="text-medieval-gold font-semibold">
+            <span className="text-medieval-gold font-semibold text-sm">
               {value}
             </span>
           </div>

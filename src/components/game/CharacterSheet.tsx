@@ -18,7 +18,7 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
           <h2 className="text-xl font-medieval text-medieval-gold">
             {character_name}
           </h2>
-          <p className="text-gray-400 capitalize">
+          <p className="text-gray-100 capitalize text-sm font-medium">
             Level {level} {character_class}
           </p>
         </div>
@@ -52,14 +52,14 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
             {inventory.map((item, index) => (
               <div
                 key={index}
-                className="text-gray-300 text-sm bg-background-darker rounded p-2"
+                className="text-gray-100 text-sm bg-background-darker rounded p-2 font-medium"
               >
                 {item}
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-sm italic">
+          <p className="text-gray-400 text-sm italic">
             Your inventory is empty
           </p>
         )}
