@@ -73,6 +73,20 @@ export const parseAuthError = (error: unknown): { title: string; message: string
   if (message.includes('too many requests') || message.includes('rate limit')) {
     return errorMappings.too_many_requests
   }
+  
+  if (message.includes('user profile not found') || message.includes('complete registration')) {
+    return {
+      title: 'Complete Registration',
+      message: 'Your account exists but your profile is incomplete. Please use the sign up form to complete registration with a username.'
+    }
+  }
+  
+  if (message.includes('profile fetch') || message.includes('timeout')) {
+    return {
+      title: 'Connection Issue',
+      message: 'Unable to connect to the server. Please check your internet connection and try again.'
+    }
+  }
 
   // Fallback for unknown errors
   return {

@@ -3,10 +3,22 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+console.log('🔧 Supabase config:', { 
+  url: supabaseUrl ? '✅ Present' : '❌ Missing', 
+  key: supabaseAnonKey ? '✅ Present' : '❌ Missing' 
+})
+
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+  console.error('❌ Missing Supabase environment variables - app will use offline mode')
+  // Don't throw error, let the app handle it gracefully
 }
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+console.log('🚀 Creating Supabase client...')
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co', 
+  supabaseAnonKey || 'placeholder-key'
+)
+console.log('✅ Supabase client created')
 
 export type Database = {
   public: {
