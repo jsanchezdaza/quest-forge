@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { useGameStore } from '../store/gameStore'
 import { useNotifications } from '../store/notificationStore'
-import { Button, Card, LoadingSpinner, Modal, AppBackground } from '../components/ui'
+import { Button, Card, LoadingSpinner, Modal, AppBackground, Footer } from '../components/ui'
 import CreateCharacterModal from '../components/game/CreateCharacterModal'
 import GameSession from '../components/game/GameSession'
 
@@ -51,73 +51,76 @@ export default function GamePage() {
   }
 
   return (
-    <AppBackground variant="game">
-      <header className="border-b border-medieval-gold/20 bg-background-card/50 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="dnd-title text-2xl sm:text-3xl lg:text-4xl text-medieval-gold leading-tight">
-                QUEST FORGE
-              </h1>
-              {profile && (
-                <span className="text-gray-300 font-pixel-body text-xs uppercase tracking-wide">
-                  WELCOME, {profile.username.toUpperCase()}
-                </span>
-              )}
-            </div>
-            
-            <div className="flex items-center gap-4">
-              {currentSession && (
+    <div className="min-h-screen flex flex-col">
+      <AppBackground variant="game" className="flex-1">
+        <header className="border-b border-medieval-gold/20 bg-background-card/50 backdrop-blur-sm">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <h1 className="dnd-title text-2xl sm:text-3xl lg:text-4xl text-medieval-gold leading-tight">
+                  QUEST FORGE
+                </h1>
+                {profile && (
+                  <span className="text-gray-300 font-pixel-body text-xs uppercase tracking-wide">
+                    WELCOME, {profile.username.toUpperCase()}
+                  </span>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-4">
+                {currentSession && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShowCreateCharacter(true)}
+                  >
+                    New Character
+                  </Button>
+                )}
                 <Button
-                  variant="secondary"
+                  variant="danger"
                   size="sm"
-                  onClick={() => setShowCreateCharacter(true)}
+                  onClick={handleSignOut}
                 >
-                  New Character
+                  Sign Out
                 </Button>
-              )}
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={handleSignOut}
-              >
-                Sign Out
-              </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {currentSession ? (
-          <GameSession />
-        ) : (
-          <div className="text-center py-16">
-            <Card className="max-w-md mx-auto">
-              <h2 className="text-lg sm:text-xl text-medieval-gold mb-4 leading-tight">
-                START YOUR ADVENTURE
-              </h2>
-              <p className="text-gray-300 mb-6 font-pixel-body text-sm leading-relaxed uppercase tracking-wide">
-                CREATE A CHARACTER TO BEGIN YOUR JOURNEY IN THE WORLD OF QUEST FORGE.
-              </p>
-              <Button onClick={() => setShowCreateCharacter(true)}>
-                Create Character
-              </Button>
-            </Card>
-          </div>
-        )}
-      </main>
+        <main className="max-w-6xl mx-auto px-4 py-8">
+          {currentSession ? (
+            <GameSession />
+          ) : (
+            <div className="text-center py-16">
+              <Card className="max-w-md mx-auto">
+                <h2 className="text-lg sm:text-xl text-medieval-gold mb-4 leading-tight">
+                  START YOUR ADVENTURE
+                </h2>
+                <p className="text-gray-300 mb-6 font-pixel-body text-sm leading-relaxed uppercase tracking-wide">
+                  CREATE A CHARACTER TO BEGIN YOUR JOURNEY IN THE WORLD OF QUEST FORGE.
+                </p>
+                <Button onClick={() => setShowCreateCharacter(true)}>
+                  Create Character
+                </Button>
+              </Card>
+            </div>
+          )}
+        </main>
 
-      <Modal
-        isOpen={showCreateCharacter}
-        onClose={() => !currentSession ? undefined : setShowCreateCharacter(false)}
-        title="Create Your Character"
-        maxWidth="lg"
-      >
-        <CreateCharacterModal
-          onClose={() => setShowCreateCharacter(false)}
-        />
-      </Modal>
-    </AppBackground>
+        <Modal
+          isOpen={showCreateCharacter}
+          onClose={() => !currentSession ? undefined : setShowCreateCharacter(false)}
+          title="Create Your Character"
+          maxWidth="lg"
+        >
+          <CreateCharacterModal
+            onClose={() => setShowCreateCharacter(false)}
+          />
+        </Modal>
+      </AppBackground>
+      <Footer />
+    </div>
   )
 }

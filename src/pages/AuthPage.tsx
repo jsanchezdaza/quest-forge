@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AppBackground } from '../components/ui'
+import { AppBackground, Footer } from '../components/ui'
 import AuthForm from '../components/auth/AuthForm'
 
 export default function AuthPage() {
@@ -10,8 +10,11 @@ export default function AuthPage() {
   }
 
   return (
-    <AppBackground variant="auth">
-      <AuthForm mode={mode} onToggleMode={toggleMode} />
-    </AppBackground>
+    <div className="min-h-screen flex flex-col">
+      <AppBackground variant="auth" className="flex-1">
+        <AuthForm mode={mode} onToggleMode={toggleMode} />
+      </AppBackground>
+      <Footer />
+    </div>
   )
 }
