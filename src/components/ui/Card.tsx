@@ -26,10 +26,13 @@ export default function Card({
     ? 'hover:shadow-xl hover:shadow-medieval-gold/10 hover:border-medieval-gold/40 transition-all duration-300 cursor-pointer' 
     : ''
 
-  const cardClass = variant === 'game' ? 'card-game' : 'card'
+  const variantClasses = {
+    default: 'relative border-2 border-medieval-gold/40 rounded-xl bg-white/10 backdrop-blur-sm shadow-2xl shadow-black/50',
+    game: 'relative border-2 border-medieval-gold/60 rounded-xl bg-black/70 backdrop-blur-sm shadow-2xl shadow-black/60'
+  }
   
   return (
-    <div className={`${cardClass} ${paddingClasses[padding]} ${hoverClasses} ${className}`}>
+    <div className={`${variantClasses[variant]} ${paddingClasses[padding]} ${hoverClasses} ${className}`}>
       {children}
     </div>
   )

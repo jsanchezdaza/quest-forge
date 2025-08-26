@@ -48,12 +48,12 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="card">
+      <div className="relative border-2 border-medieval-gold/40 rounded-xl bg-white/10 backdrop-blur-sm shadow-2xl shadow-black/50 p-6">
         <div className="text-center mb-8">
           <h1 className="dnd-title text-4xl sm:text-5xl lg:text-7xl xl:text-8xl mb-8 leading-tight">
             QUEST FORGE
           </h1>
-          <p className="text-pixel-body-sm text-gray-400 uppercase tracking-wide">
+          <p className="font-pixel-body text-sm text-gray-400 uppercase tracking-wide">
             {mode === 'signin' ? AUTH_MESSAGES.WELCOME_MESSAGES.RETURNING_USER : AUTH_MESSAGES.WELCOME_MESSAGES.NEW_USER}
           </p>
         </div>
@@ -107,7 +107,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
           <button
             type="button"
             onClick={onToggleMode}
-            className="text-medieval-gold hover:text-medieval-darkgold transition-colors text-pixel-label"
+            className="text-medieval-gold hover:text-medieval-darkgold transition-colors font-pixel-body text-xs uppercase tracking-wide"
           >
             {mode === 'signin' 
               ? AUTH_MESSAGES.TOGGLE_MESSAGES.TO_SIGNUP 

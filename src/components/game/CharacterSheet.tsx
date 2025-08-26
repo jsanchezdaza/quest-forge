@@ -16,10 +16,10 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
     <div className="space-y-4">
       <Card variant="game">
         <div className="text-center mb-4">
-          <h2 className="text-xl font-medieval text-medieval-gold">
+          <h2 className="font-fantasy-epic font-black text-2xl text-medieval-gold drop-shadow-lg">
             {character_name}
           </h2>
-          <p className="text-gray-100 capitalize text-sm font-medium">
+          <p className="font-fantasy-elegant font-medium text-base text-gray-200 capitalize">
             Level {level} {character_class}
           </p>
         </div>
@@ -45,7 +45,7 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
       </Card>
 
       <Card variant="game">
-        <h3 className="text-lg font-medieval text-medieval-gold mb-4">
+        <h3 className="font-fantasy-classic font-semibold text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-4">
           Inventory
         </h3>
         {inventory.length > 0 ? (

@@ -54,7 +54,7 @@ const CHARACTER_CLASSES: CharacterClassOption[] = [
 export default function CharacterClassSelector({ selectedClass, onClassSelect }: CharacterClassSelectorProps) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-300 mb-3">
+      <label className="font-fantasy-classic font-semibold text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg block mb-3">
         Choose Your Class
       </label>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -75,7 +75,7 @@ export default function CharacterClassSelector({ selectedClass, onClassSelect }:
               className="sr-only"
             />
             <div>
-              <h3 className="font-medieval text-lg text-medieval-gold mb-1">
+              <h3 className="font-fantasy-elegant font-medium text-lg text-gray-200 mb-1">
                 {charClass.name}
               </h3>
               <p className="text-gray-300 text-sm mb-2">

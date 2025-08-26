@@ -48,20 +48,20 @@ export default function GameSession() {
         {/* Scene History */}
         {scenes.length > 1 && (
           <Card variant="game">
-            <h3 className="text-lg font-medieval text-medieval-gold mb-4">
+            <h3 className="font-fantasy-classic font-semibold text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-4">
               Adventure Log
             </h3>
             <div className="space-y-4 max-h-64 overflow-y-auto">
               {scenes.slice(0, -1).reverse().map((scene) => (
                 <div key={scene.id} className="border-l-2 border-medieval-gold/30 pl-4">
-                  <p className="text-gray-300 text-sm mb-2">
+                  <p className="text-gray-300 text-sm mb-2 font-fantasy-elegant">
                     {scene.narrative.length > 150 
                       ? `${scene.narrative.substring(0, 150)}...`
                       : scene.narrative
                     }
                   </p>
                   {scene.player_choice && (
-                    <p className="text-medieval-gold text-sm">
+                    <p className="text-medieval-gold text-sm font-fantasy-elegant">
                       ➤ {scene.player_choice}
                     </p>
                   )}

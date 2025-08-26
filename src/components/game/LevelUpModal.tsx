@@ -76,7 +76,7 @@ export default function LevelUpModal({
     >
       <div role="dialog" className="space-y-6">
         <div className="text-center">
-          <h2 className="text-2xl font-medieval text-medieval-gold mb-2">
+          <h2 className="font-fantasy-epic font-bold text-2xl text-medieval-gold drop-shadow-lg mb-2">
             Congratulations! You have reached level {newLevel}
           </h2>
           <p className="text-gray-300 font-pixel-body text-sm">

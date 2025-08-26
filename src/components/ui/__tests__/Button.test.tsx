@@ -24,7 +24,7 @@ describe('Button Component', () => {
   test('applies variant classes correctly', () => {
     render(<Button variant="secondary">Secondary Button</Button>)
     const button = screen.getByRole('button')
-    expect(button).toHaveClass('btn-secondary')
+    expect(button).toHaveClass('bg-background-card')
   })
 
   test('is disabled when disabled prop is true', () => {

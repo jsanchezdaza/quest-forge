@@ -29,7 +29,7 @@ export default function FormField({
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="input-field"
+        className="w-full px-4 py-3 bg-background-darker border border-medieval-gold/30 focus:border-medieval-gold text-gray-100 rounded-lg transition-colors placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-medieval-gold/20 font-pixel-body text-sm"
         required={required}
         placeholder={placeholder.toUpperCase()}
         minLength={minLength}

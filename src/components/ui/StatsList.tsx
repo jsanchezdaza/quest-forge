@@ -6,7 +6,7 @@ interface StatsListProps {
 export default function StatsList({ stats, title = 'Attributes' }: StatsListProps) {
   return (
     <div>
-      <h3 className="text-lg font-medieval text-medieval-gold mb-4">
+      <h3 className="font-fantasy-classic font-semibold text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-4">
         {title}
       </h3>
       <div className="space-y-3">

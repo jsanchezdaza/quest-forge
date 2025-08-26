@@ -53,7 +53,7 @@ export default function Modal({
         <div className="bg-background-modal border border-medieval-gold/30 rounded-lg shadow-2xl">
           {title && (
             <div className="px-6 py-4 border-b border-medieval-gold/20">
-              <h2 className="text-xl font-medieval text-medieval-gold">
+              <h2 className="font-fantasy-epic font-bold text-xl text-medieval-gold drop-shadow-lg">
                 {title}
               </h2>
             </div>

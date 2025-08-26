@@ -53,11 +53,14 @@ export default {
       fontFamily: {
         'pixel': ['Press Start 2P', 'monospace'],
         'pixel-alt': ['Silkscreen', 'monospace'],
-        'pixel-body': ['Pixelify Sans', 'monospace'],
-        'dnd': ['Orbitron', 'Exo 2', 'Press Start 2P', 'monospace'], // Minecraft Dungeons style
-        'medieval': ['Press Start 2P', 'monospace'], 
-        'fantasy': ['Press Start 2P', 'monospace'],
-        'sans': ['Pixelify Sans', 'monospace'],
+        'pixel-body': ['JetBrains Mono', 'Space Mono', 'monospace'],
+        'dnd': ['Orbitron', 'Press Start 2P', 'monospace'], // D&D style main titles
+        'fantasy-epic': ['Cinzel', 'Spectral', 'serif'], // Epic fantasy titles
+        'fantasy-elegant': ['EB Garamond', 'Crimson Text', 'serif'], // Elegant fantasy text
+        'fantasy-classic': ['Spectral', 'Crimson Text', 'serif'], // Classic medieval
+        'medieval': ['Orbitron', 'JetBrains Mono', 'monospace'], 
+        'fantasy': ['Space Mono', 'JetBrains Mono', 'monospace'],
+        'sans': ['JetBrains Mono', 'monospace'],
       },
       backgroundImage: {
         'parchment': "url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxwYXR0ZXJuIGlkPSJwYXJjaG1lbnQiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CiAgICAgIDxyZWN0IHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iI2Y0ZTRiYyIvPgogICAgICA8Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiIGZpbGw9IiNlZGQ0YTAiLz4KICAgIDwvcGF0dGVybj4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXJjaG1lbnQpIi8+Cjwvc3ZnPgo=')",

@@ -18,9 +18,9 @@ export default function Button({
   const baseClasses = 'font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
   
   const variantClasses = {
-    primary: 'btn-primary',
-    secondary: 'btn-secondary',
-    danger: 'px-6 py-3 bg-red-600 hover:bg-red-700 text-white border border-red-600 hover:border-red-700'
+    primary: 'bg-medieval-gold hover:bg-medieval-darkgold text-medieval-inkblack font-pixel-body font-medium uppercase tracking-wide shadow-lg hover:shadow-medieval-gold/25',
+    secondary: 'bg-background-card hover:bg-background-modal text-gray-100 border border-medieval-gold/30 hover:border-medieval-gold font-pixel-body font-medium uppercase tracking-wide',
+    danger: 'bg-red-600 hover:bg-red-700 text-white border border-red-600 hover:border-red-700 font-pixel-body font-medium uppercase tracking-wide'
   }
   
   const sizeClasses = {

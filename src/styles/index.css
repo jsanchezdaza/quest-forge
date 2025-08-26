@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Pixelify+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Orbitron:wght@400;500;600;700;800;900&family=Cinzel:wght@400;500;600;700;800;900&family=Spectral:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,21 +14,19 @@
   
   body {
     @apply bg-background-dark text-gray-100 font-pixel-body;
-    /* Aggressive pixel font rendering */
-    -webkit-font-smoothing: none;
-    -moz-osx-font-smoothing: unset;
-    font-smooth: never;
-    text-rendering: geometricPrecision;
+    /* Improved font rendering for readability */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-dnd uppercase;
-    /* Ultra-sharp pixel rendering */
-    -webkit-font-smoothing: none;
-    -moz-osx-font-smoothing: unset;
-    font-smooth: never;
-    text-rendering: geometricPrecision;
-    letter-spacing: 0.1em;
+    @apply font-fantasy-epic;
+    /* Improved readability for fantasy titles */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    letter-spacing: 0.05em;
   }
 
   /* D&D style title sizes - larger and more dramatic */
@@ -138,12 +136,11 @@
     }
   }
 
-  /* All text should be ultra-pixelated */
+  /* Improved text rendering for better readability */
   * {
-    -webkit-font-smoothing: none;
-    -moz-osx-font-smoothing: unset;
-    font-smooth: never;
-    text-rendering: geometricPrecision;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   /* Pixelated rendering for SVGs and images */
@@ -167,87 +164,7 @@
 }
 
 @layer components {
-  /* Pixel text utility classes */
-  .text-pixel-label {
-    @apply font-pixel-body text-xs text-gray-300 uppercase tracking-wide;
-  }
-  
-  .text-pixel-body-sm {
-    @apply font-pixel-body text-sm leading-relaxed;
-  }
-  
-  .text-pixel-heading {
-    @apply font-pixel text-xs text-gray-100 leading-relaxed uppercase tracking-wide;
-  }
-
-  .btn-primary {
-    @apply px-6 py-3 bg-medieval-gold hover:bg-medieval-darkgold text-medieval-inkblack font-pixel uppercase text-xs sm:text-sm rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-medieval-gold/25 transform hover:scale-105;
-    /* Ultra-pixel button styling */
-    -webkit-font-smoothing: none;
-    -moz-osx-font-smoothing: unset;
-    font-smooth: never;
-    text-rendering: geometricPrecision;
-    image-rendering: pixelated;
-    letter-spacing: 0.05em;
-  }
-  
-  .btn-secondary {
-    @apply px-6 py-3 bg-background-card hover:bg-background-modal text-gray-100 border border-medieval-gold/30 hover:border-medieval-gold font-pixel uppercase text-xs sm:text-sm rounded-lg transition-all duration-200;
-    /* Ultra-pixel button styling */
-    -webkit-font-smoothing: none;
-    -moz-osx-font-smoothing: unset;
-    font-smooth: never;
-    text-rendering: geometricPrecision;
-    letter-spacing: 0.05em;
-  }
-  
-  .card {
-    position: relative;
-    border: 2px solid rgba(212, 175, 55, 0.4);
-    border-radius: 12px;
-    padding: 24px;
-    /* Simple transparent background */
-    background: rgba(255, 255, 255, 0.1) !important;
-    /* Light blur effect */
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-    /* Enhanced shadows for depth */
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.5),
-      0 0 0 1px rgba(255, 255, 255, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    z-index: 10;
-  }
-
-  /* More opaque cards for game pages */
-  .card-game {
-    position: relative;
-    border: 2px solid rgba(212, 175, 55, 0.6);
-    border-radius: 12px;
-    padding: 24px;
-    /* More opaque background */
-    background: rgba(0, 0, 0, 0.7) !important;
-    /* Light blur effect */
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-    /* Enhanced shadows for depth */
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.6),
-      0 0 0 1px rgba(212, 175, 55, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    z-index: 10;
-  }
-  
-  .input-field {
-    @apply w-full px-4 py-3 bg-background-darker border border-medieval-gold/30 focus:border-medieval-gold text-gray-100 rounded-lg transition-colors placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-medieval-gold/20 font-pixel-body text-sm;
-    /* Ultra-pixel input styling */
-    -webkit-font-smoothing: none;
-    -moz-osx-font-smoothing: unset;
-    font-smooth: never;
-    text-rendering: geometricPrecision;
-  }
-
-  /* Toast animations */
+  /* Toast animations - keeping only essential animations */
   .animate-in {
     animation-fill-mode: both;
   }
