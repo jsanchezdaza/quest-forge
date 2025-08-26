@@ -45,7 +45,7 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
       </Card>
 
       <Card variant="game">
-        <h3 className="font-fantasy-classic font-semibold text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-4">
+        <h3 className="font-medieval-decorative font-semibold text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-4">
           Inventory
         </h3>
         {inventory.length > 0 ? (
@@ -53,14 +53,14 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
             {inventory.map((item, index) => (
               <div
                 key={index}
-                className="text-gray-100 text-sm bg-background-darker rounded p-2 font-medium"
+                className="text-gray-100 text-sm bg-background-darker rounded p-2 font-medieval-narrative font-medium"
               >
                 {item}
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-gray-400 text-sm italic">
+          <p className="text-gray-400 text-sm italic font-medieval-narrative">
             Your inventory is empty
           </p>
         )}

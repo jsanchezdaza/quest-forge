@@ -54,14 +54,14 @@ export default function GameSession() {
             <div className="space-y-4 max-h-64 overflow-y-auto">
               {scenes.slice(0, -1).reverse().map((scene) => (
                 <div key={scene.id} className="border-l-2 border-medieval-gold/30 pl-4">
-                  <p className="text-gray-300 text-sm mb-2 font-fantasy-elegant">
+                  <p className="text-gray-300 text-base mb-2 font-medieval-narrative">
                     {scene.narrative.length > 150 
                       ? `${scene.narrative.substring(0, 150)}...`
                       : scene.narrative
                     }
                   </p>
                   {scene.player_choice && (
-                    <p className="text-medieval-gold text-sm font-fantasy-elegant">
+                    <p className="text-medieval-gold text-base font-medieval-options uppercase">
                       ➤ {scene.player_choice}
                     </p>
                   )}

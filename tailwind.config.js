@@ -8,7 +8,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Medieval dark theme colors
         primary: {
           50: '#f0f0f0',
           100: '#e0e0e0',
@@ -58,6 +57,9 @@ export default {
         'fantasy-epic': ['Cinzel', 'Spectral', 'serif'], // Epic fantasy titles
         'fantasy-elegant': ['EB Garamond', 'Crimson Text', 'serif'], // Elegant fantasy text
         'fantasy-classic': ['Spectral', 'Crimson Text', 'serif'], // Classic medieval
+        'medieval-narrative': ['Uncial Antiqua', 'MedievalSharp', 'serif'], // Medieval narrative text
+        'medieval-options': ['MedievalSharp', 'Caesar Dressing', 'serif'], // Medieval choice options
+        'medieval-decorative': ['Cinzel Decorative', 'Uncial Antiqua', 'serif'], // Decorative medieval
         'medieval': ['Orbitron', 'JetBrains Mono', 'monospace'], 
         'fantasy': ['Space Mono', 'JetBrains Mono', 'monospace'],
         'sans': ['JetBrains Mono', 'monospace'],

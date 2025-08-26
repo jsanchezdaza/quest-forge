@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Orbitron:wght@400;500;600;700;800;900&family=Cinzel:wght@400;500;600;700;800;900&family=Spectral:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Orbitron:wght@400;500;600;700;800;900&family=Cinzel:wght@400;500;600;700;800;900&family=Spectral:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Uncial+Antiqua&family=MedievalSharp&family=Cinzel+Decorative:wght@400;700;900&family=Caesar+Dressing&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,7 +6,6 @@
 @layer base {
   html, html.dark {
     @apply bg-background-dark text-gray-100;
-    /* Improve pixel font rendering */
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
@@ -14,7 +13,6 @@
   
   body {
     @apply bg-background-dark text-gray-100 font-pixel-body;
-    /* Improved font rendering for readability */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -22,14 +20,12 @@
   
   h1, h2, h3, h4, h5, h6 {
     @apply font-fantasy-epic;
-    /* Improved readability for fantasy titles */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     letter-spacing: 0.05em;
   }
 
-  /* D&D style title sizes - larger and more dramatic */
   h1 { @apply text-xl sm:text-2xl lg:text-4xl; }
   h2 { @apply text-lg sm:text-xl lg:text-2xl; }
   h3 { @apply text-base sm:text-lg lg:text-xl; }
@@ -136,14 +132,12 @@
     }
   }
 
-  /* Improved text rendering for better readability */
   * {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
 
-  /* Pixelated rendering for SVGs and images */
   .pixelated {
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
@@ -164,7 +158,6 @@
 }
 
 @layer components {
-  /* Toast animations - keeping only essential animations */
   .animate-in {
     animation-fill-mode: both;
   }
