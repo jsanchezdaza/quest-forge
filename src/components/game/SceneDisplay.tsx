@@ -12,7 +12,7 @@ export default function SceneDisplay({ scene, onChoice, loading }: SceneDisplayP
     <Card variant="game">
       <div className="prose prose-invert max-w-none">
         <div className="bg-background-darker rounded-lg p-4 sm:p-6 mb-4 sm:mb-6 border border-medieval-gold/20 h-48 sm:h-64 overflow-y-auto">
-          <p className="text-gray-100 text-base sm:text-lg leading-relaxed whitespace-pre-line font-medieval-narrative">
+          <p className="text-gray-100 text-base sm:text-lg leading-loose whitespace-pre-line font-medieval-narrative">
             {scene.narrative}
           </p>
         </div>

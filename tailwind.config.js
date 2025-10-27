@@ -63,7 +63,7 @@ export default {
         'fantasy-epic': ['Cinzel', 'Spectral', 'serif'], // Epic fantasy titles
         'fantasy-elegant': ['EB Garamond', 'Crimson Text', 'serif'], // Elegant fantasy text
         'fantasy-classic': ['Spectral', 'Crimson Text', 'serif'], // Classic medieval
-        'medieval-narrative': ['Uncial Antiqua', 'MedievalSharp', 'serif'], // Medieval narrative text
+        'medieval-narrative': ['EB Garamond', 'Georgia', 'Crimson Text', 'serif'], // Medieval narrative text - optimized for readability
         'medieval-options': ['MedievalSharp', 'Caesar Dressing', 'serif'], // Medieval choice options
         'medieval-decorative': ['Cinzel Decorative', 'Uncial Antiqua', 'serif'], // Decorative medieval
         'medieval': ['Orbitron', 'JetBrains Mono', 'monospace'], 
