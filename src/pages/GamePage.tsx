@@ -54,33 +54,36 @@ export default function GamePage() {
     <div className="min-h-screen flex flex-col">
       <AppBackground variant="game" className="flex-1">
         <header className="border-b border-medieval-gold/20 bg-background-card/50 backdrop-blur-sm">
-          <div className="max-w-6xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <h1 className="dnd-title text-2xl sm:text-3xl lg:text-4xl text-medieval-gold leading-tight">
+          <div className="max-w-6xl mx-auto px-4 py-3 sm:py-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                <h1 className="dnd-title text-xl sm:text-2xl md:text-3xl text-medieval-gold leading-tight">
                   QUEST FORGE
                 </h1>
                 {profile && (
-                  <span className="text-gray-300 font-pixel-body text-xs uppercase tracking-wide">
+                  <span className="text-gray-300 font-pixel-body text-xs sm:text-sm uppercase tracking-wide">
                     WELCOME, {profile.username.toUpperCase()}
                   </span>
                 )}
               </div>
-              
-              <div className="flex items-center gap-4">
+
+              <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 {currentSession && (
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={() => setShowCreateCharacter(true)}
+                    className="flex-1 sm:flex-none min-h-[44px]"
                   >
-                    New Character
+                    <span className="hidden sm:inline">New Character</span>
+                    <span className="sm:hidden">New</span>
                   </Button>
                 )}
                 <Button
                   variant="danger"
                   size="sm"
                   onClick={handleSignOut}
+                  className="flex-1 sm:flex-none min-h-[44px]"
                 >
                   Sign Out
                 </Button>

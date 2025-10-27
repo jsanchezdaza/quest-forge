@@ -47,18 +47,18 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="relative border-2 border-medieval-gold/40 rounded-xl bg-white/10 backdrop-blur-sm shadow-2xl shadow-black/50 p-6">
-        <div className="text-center mb-8">
-          <h1 className="dnd-title text-4xl sm:text-5xl lg:text-7xl xl:text-8xl mb-8 leading-tight">
+    <div className="w-full max-w-md mx-auto px-4">
+      <div className="relative border-2 border-medieval-gold/40 rounded-xl bg-white/10 backdrop-blur-sm shadow-2xl shadow-black/50 p-4 sm:p-6">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="dnd-title text-3xl sm:text-4xl md:text-5xl mb-6 sm:mb-8 leading-tight">
             QUEST FORGE
           </h1>
-          <p className="font-pixel-body text-sm text-gray-400 uppercase tracking-wide">
+          <p className="font-pixel-body text-xs sm:text-sm text-gray-400 uppercase tracking-wide">
             {mode === 'signin' ? AUTH_MESSAGES.WELCOME_MESSAGES.RETURNING_USER : AUTH_MESSAGES.WELCOME_MESSAGES.NEW_USER}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <FormField
             id="email"
             type="email"
@@ -103,14 +103,14 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
           </Button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-4 sm:mt-6 text-center">
           <button
             type="button"
             onClick={onToggleMode}
-            className="text-medieval-gold hover:text-medieval-darkgold transition-colors font-pixel-body text-xs uppercase tracking-wide"
+            className="text-medieval-gold hover:text-medieval-darkgold transition-colors font-pixel-body text-xs uppercase tracking-wide min-h-[44px] py-2"
           >
-            {mode === 'signin' 
-              ? AUTH_MESSAGES.TOGGLE_MESSAGES.TO_SIGNUP 
+            {mode === 'signin'
+              ? AUTH_MESSAGES.TOGGLE_MESSAGES.TO_SIGNUP
               : AUTH_MESSAGES.TOGGLE_MESSAGES.TO_SIGNIN
             }
           </button>

@@ -6,6 +6,12 @@ export default {
   ],
   darkMode: 'class',
   theme: {
+    screens: {
+      'sm': '768px',   // tablet
+      'md': '1024px',  // desktop
+      'lg': '1280px',  // large desktop
+      'xl': '1536px',  // extra large
+    },
     extend: {
       colors: {
         primary: {
