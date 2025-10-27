@@ -28,14 +28,14 @@ export default function GameSession() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
       {/* Character Sheet - Left Sidebar */}
-      <div className="lg:col-span-1">
+      <div className="md:col-span-1">
         <CharacterSheet session={currentSession} />
       </div>
 
       {/* Main Game Area */}
-      <div className="lg:col-span-3 space-y-6">
+      <div className="md:col-span-3 space-y-4 sm:space-y-6">
         {/* Current Scene */}
         {currentScene && (
           <SceneDisplay
@@ -48,20 +48,20 @@ export default function GameSession() {
         {/* Scene History */}
         {scenes.length > 1 && (
           <Card variant="game">
-            <h3 className="font-fantasy-classic font-semibold text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-4">
+            <h3 className="font-fantasy-classic font-semibold text-base sm:text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-3 sm:mb-4">
               Adventure Log
             </h3>
-            <div className="space-y-4 max-h-64 overflow-y-auto">
+            <div className="space-y-3 sm:space-y-4 max-h-48 sm:max-h-64 overflow-y-auto">
               {scenes.slice(0, -1).reverse().map((scene) => (
-                <div key={scene.id} className="border-l-2 border-medieval-gold/30 pl-4">
-                  <p className="text-gray-300 text-base mb-2 font-medieval-narrative">
-                    {scene.narrative.length > 150 
+                <div key={scene.id} className="border-l-2 border-medieval-gold/30 pl-3 sm:pl-4">
+                  <p className="text-gray-300 text-sm sm:text-base mb-2 font-medieval-narrative leading-relaxed">
+                    {scene.narrative.length > 150
                       ? `${scene.narrative.substring(0, 150)}...`
                       : scene.narrative
                     }
                   </p>
                   {scene.player_choice && (
-                    <p className="text-medieval-gold text-base font-medieval-options uppercase">
+                    <p className="text-medieval-gold text-sm sm:text-base font-medieval-options uppercase">
                       ➤ {scene.player_choice}
                     </p>
                   )}
