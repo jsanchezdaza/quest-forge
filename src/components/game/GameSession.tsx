@@ -54,7 +54,7 @@ export default function GameSession() {
             <div className="space-y-3 sm:space-y-4 max-h-48 sm:max-h-64 overflow-y-auto">
               {scenes.slice(0, -1).reverse().map((scene) => (
                 <div key={scene.id} className="border-l-2 border-medieval-gold/30 pl-3 sm:pl-4">
-                  <p className="text-gray-300 text-sm sm:text-base mb-2 font-medieval-narrative leading-relaxed">
+                  <p className="text-gray-300 text-sm sm:text-base mb-2 font-medieval-narrative leading-loose">
                     {scene.narrative.length > 150
                       ? `${scene.narrative.substring(0, 150)}...`
                       : scene.narrative
