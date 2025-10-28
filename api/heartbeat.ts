@@ -1,13 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // Get Supabase credentials from environment variables
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      return res.status(500).json({
+      return res.status(503).json({
         error: 'Missing Supabase credentials',
         timestamp: new Date().toISOString()
       });
@@ -17,10 +18,10 @@ export default async function handler(req: any, res: any) {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Perform a simple query to keep the connection alive
-    // Using a lightweight query on user_profiles table
+    // Using a lightweight query on user_profiles table with estimated count
     const { count, error } = await supabase
       .from('user_profiles')
-      .select('*', { count: 'exact', head: true });
+      .select('*', { count: 'estimated', head: true });
 
     if (error) {
       console.error('Heartbeat query error:', error);
