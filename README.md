@@ -73,6 +73,23 @@ The application uses three main tables:
 
 All tables have Row Level Security (RLS) enabled to ensure users can only access their own data.
 
+## Supabase Heartbeat Cron
+
+The application includes a heartbeat cron job that keeps the Supabase instance active. This is particularly useful for free-tier Supabase projects that may pause after periods of inactivity.
+
+**How it works:**
+- A serverless function runs every 5 minutes (`/api/heartbeat`)
+- Performs a lightweight query to the database
+- Configured in `vercel.json` using Vercel Cron Jobs
+
+**Setup for Vercel deployment:**
+1. Add environment variables in your Vercel project settings:
+   - `SUPABASE_URL` - Your Supabase project URL
+   - `SUPABASE_ANON_KEY` - Your Supabase anonymous key
+
+**Local testing:**
+You can test the heartbeat endpoint locally by running the function directly or deploying to Vercel.
+
 ## Character Classes
 
 - **Warrior**: High Strength & Constitution
