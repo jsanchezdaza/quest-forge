@@ -78,9 +78,9 @@ All tables have Row Level Security (RLS) enabled to ensure users can only access
 The application includes a heartbeat cron job that keeps the Supabase instance active. This is particularly useful for free-tier Supabase projects that may pause after periods of inactivity.
 
 **How it works:**
-- A serverless function runs every 5 minutes (`/api/heartbeat`)
+- A serverless function runs once daily at midnight UTC (`/api/heartbeat`)
 - Performs a lightweight query to the database
-- Configured in `vercel.json` using Vercel Cron Jobs
+- Configured in `vercel.json` using Vercel Cron Jobs (free tier allows 1 execution per day)
 
 **Setup for Vercel deployment:**
 1. Add environment variables in your Vercel project settings:
