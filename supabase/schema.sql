@@ -27,6 +27,7 @@ create table if not exists public.game_sessions (
   user_id uuid references auth.users(id) on delete cascade not null,
   character_name text not null,
   character_class text not null check (character_class in ('warrior', 'mage', 'rogue', 'cleric', 'ranger', 'paladin')),
+  backstory text,
   game_state jsonb not null default '{
     "level": 1,
     "health": 100,

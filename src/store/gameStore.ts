@@ -1,12 +1,17 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
-import { 
+import {
   generateInitialNarrative,
   getInitialChoices,
   generateNarrative,
   generateChoices,
   updateGameStateForChoice
 } from '../lib/narrative'
+import {
+  generateSceneNarrativeWithAI,
+  generatePlayerChoicesWithAI,
+  isOpenRouterConfigured
+} from '../lib/openrouter'
 import { GAME_CONSTANTS } from '../constants/game'
 import type { GameStore, CharacterClass, GameState } from '../types'
 
@@ -31,6 +36,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   currentSession: null,
   scenes: [],
   loading: false,
+  isGenerating: false,
+  streamingNarrative: '',
 
   clearPreviousExperience: async () => {
     const { currentSession } = get()
@@ -154,9 +161,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     })
   },
 
-  createSession: async (characterName: string, characterClass: CharacterClass) => {
+  createSession: async (characterName: string, characterClass: CharacterClass, backstory?: string) => {
     set({ loading: true })
-    
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('No user logged in')
 
@@ -168,6 +175,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         user_id: user.id,
         character_name: characterName,
         character_class: characterClass,
+        backstory: backstory || null,
         game_state: gameState,
       })
       .select()
@@ -252,23 +260,80 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!currentSession) throw new Error('No active session')
 
     const currentScene = scenes[scenes.length - 1]
-    
-    const [updateResult, newSceneResult] = await Promise.all([
-      supabase.from('scenes').update({ player_choice: choice }).eq('id', currentScene.id),
-      supabase.from('scenes').insert({
+
+    const { error: updateError } = await supabase
+      .from('scenes')
+      .update({ player_choice: choice })
+      .eq('id', currentScene.id)
+
+    if (updateError) throw updateError
+
+    set({
+      scenes: scenes.map(s =>
+        s.id === currentScene.id ? { ...s, player_choice: choice } : s
+      ),
+    })
+
+    let narrative = ''
+    let choices: string[] = []
+    let usedAI = false
+
+    if (isOpenRouterConfigured()) {
+      try {
+        set({ isGenerating: true, streamingNarrative: '' })
+
+        await new Promise<void>((resolve, reject) => {
+          generateSceneNarrativeWithAI(
+            currentSession,
+            choice,
+            scenes,
+            (chunk: string) => {
+              narrative += chunk
+              set({ streamingNarrative: narrative })
+            },
+            resolve,
+            reject
+          )
+        })
+
+        await new Promise<void>((resolve, reject) => {
+          generatePlayerChoicesWithAI(
+            currentSession,
+            narrative,
+            scenes,
+            (generatedChoices: string[]) => {
+              choices = generatedChoices
+              resolve()
+            },
+            reject
+          )
+        })
+
+        usedAI = true
+      } catch (error) {
+        console.warn('AI generation failed, falling back to static narratives:', error)
+        usedAI = false
+      } finally {
+        set({ isGenerating: false, streamingNarrative: '' })
+      }
+    }
+
+    if (!usedAI) {
+      narrative = generateNarrative(choice, currentSession)
+      choices = generateChoices(choice)
+    }
+
+    const { data: newScene, error: sceneError } = await supabase
+      .from('scenes')
+      .insert({
         session_id: currentSession.id,
-        narrative: generateNarrative(choice, currentSession),
-        choices: generateChoices(choice),
-      }).select().single()
-    ])
+        narrative,
+        choices,
+      })
+      .select()
+      .single()
 
-    if (updateResult.error) {
-      throw updateResult.error
-    }
-
-    if (newSceneResult.error) {
-      throw newSceneResult.error
-    }
+    if (sceneError) throw sceneError
 
     const updatedGameState = updateGameStateForChoice(currentSession.game_state)
     const updatedSession = { ...currentSession, game_state: updatedGameState }
@@ -281,18 +346,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       })
       .eq('id', currentSession.id)
 
-    if (sessionError) {
-      throw sessionError
-    }
+    if (sessionError) throw sessionError
 
     set({
       currentSession: updatedSession,
-      scenes: [
-        ...scenes.map(s => 
-          s.id === currentScene.id ? { ...s, player_choice: choice } : s
-        ),
-        newSceneResult.data
-      ],
+      scenes: [...scenes, newScene],
     })
   },
 }))

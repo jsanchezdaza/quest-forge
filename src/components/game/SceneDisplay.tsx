@@ -1,4 +1,5 @@
-import { Button, Card } from '../ui'
+import { Button, Card, LoadingSpinner } from '../ui'
+import { useGameStore } from '../../store/gameStore'
 import type { Scene } from '../../types'
 
 interface SceneDisplayProps {
@@ -8,13 +9,35 @@ interface SceneDisplayProps {
 }
 
 export default function SceneDisplay({ scene, onChoice, loading }: SceneDisplayProps) {
+  const { isGenerating, streamingNarrative } = useGameStore()
+
   return (
     <Card variant="game">
       <div className="prose prose-invert max-w-none">
         <div className="bg-background-darker rounded-lg p-4 sm:p-6 mb-4 sm:mb-6 border border-medieval-gold/20 h-48 sm:h-64 overflow-y-auto">
-          <p className="text-gray-100 text-base sm:text-lg leading-loose whitespace-pre-line font-medieval-narrative">
-            {scene.narrative}
-          </p>
+          {isGenerating ? (
+            <>
+              {streamingNarrative ? (
+                <p className="text-gray-100 text-base sm:text-lg leading-loose whitespace-pre-line font-medieval-narrative">
+                  {streamingNarrative}
+                  <span className="inline-block w-2 h-5 bg-medieval-gold ml-1 animate-pulse"></span>
+                </p>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <LoadingSpinner />
+                    <p className="text-gray-400 mt-4 font-medieval-narrative text-sm sm:text-base">
+                      AI is crafting your story...
+                    </p>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-gray-100 text-base sm:text-lg leading-loose whitespace-pre-line font-medieval-narrative">
+              {scene.narrative}
+            </p>
+          )}
         </div>
 
         {scene.choices.length > 0 && !scene.player_choice && (

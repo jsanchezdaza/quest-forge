@@ -15,6 +15,7 @@ export interface GameSession {
   user_id: string
   character_name: string
   character_class: CharacterClass
+  backstory?: string
   game_state: GameState
   created_at: string
   updated_at: string
@@ -70,8 +71,10 @@ export interface GameStore {
   currentSession: GameSession | null
   scenes: Scene[]
   loading: boolean
+  isGenerating: boolean
+  streamingNarrative: string
   loadLatestSession: () => Promise<void>
-  createSession: (characterName: string, characterClass: CharacterClass) => Promise<void>
+  createSession: (characterName: string, characterClass: CharacterClass, backstory?: string) => Promise<void>
   loadSession: (sessionId: string) => Promise<void>
   saveProgress: () => Promise<void>
   makeChoice: (choice: string) => Promise<void>
