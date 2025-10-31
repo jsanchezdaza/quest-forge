@@ -76,8 +76,9 @@ export async function streamFromOpenRouter(
 
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
+      let isReading = true
 
-      while (true) {
+      while (isReading) {
         const { done, value } = await reader.read()
 
         if (done) {
@@ -94,7 +95,8 @@ export async function streamFromOpenRouter(
 
             if (data === '[DONE]') {
               onComplete()
-              return
+              isReading = false
+              break
             }
 
             try {
