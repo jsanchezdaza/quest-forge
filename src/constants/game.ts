@@ -12,4 +12,7 @@ export const GAME_CONSTANTS = {
   // Starting values
   STARTING_HEALTH: 100,
   STARTING_LEVEL: 1,
+
+  // UI constants
+  MAX_NARRATIVE_PREVIEW_LENGTH: 150,
 } as const
