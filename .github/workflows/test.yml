@@ -2,6 +2,13 @@ name: Tests
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - feat/**
+  push:
+    branches:
+      - main
   schedule:
     # Run tests daily at 2 AM UTC
     - cron: '0 2 * * *'
