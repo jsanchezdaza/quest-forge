@@ -36,7 +36,7 @@ export default function GameSession() {
       </div>
 
       {/* Main Game Area - Uses contents on mobile for order to work, block on desktop for grid */}
-      <div className="contents md:block md:col-span-3 md:space-y-4 md:space-y-6">
+      <div className="contents md:block md:col-span-3 md:space-y-6">
         {/* Current Scene - Order 2 on mobile (after player data) */}
         {currentScene && (
           <div className="order-2 md:order-none">
