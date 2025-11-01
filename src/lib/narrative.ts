@@ -1,6 +1,12 @@
 import type { CharacterClass, GameSession, GameState } from '../types'
 import { generateExperienceGain, updateGameStateWithLevelUp } from '../utils/levelSystem'
 
+/**
+ * Static narrative generation functions (fallback when AI is unavailable)
+ * These functions provide pre-written narrative content for the game.
+ * When OpenRouter is configured, the game will use AI-generated narratives instead.
+ */
+
 const CHARACTER_DESCRIPTIONS = {
   warrior: 'a mighty warrior with sword and shield',
   mage: 'a wise mage wielding arcane powers',
