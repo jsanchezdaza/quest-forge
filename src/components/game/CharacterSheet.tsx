@@ -13,8 +13,9 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
   const experienceNeeded = getExperienceForNextLevel(level)
 
   return (
-    <div className="space-y-4">
-      <Card variant="game">
+    <>
+      {/* Player Data - Order 1 on mobile */}
+      <Card variant="game" className="order-1 md:order-none mb-4">
         <div className="text-center mb-4">
           <h2 className="font-fantasy-epic font-black text-2xl text-medieval-gold drop-shadow-lg">
             {character_name}
@@ -40,11 +41,13 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
         />
       </Card>
 
-      <Card variant="game">
+      {/* Stats/Attributes - Order 3 on mobile (after narrative) */}
+      <Card variant="game" className="order-3 md:order-none mb-4">
         <StatsList stats={stats} />
       </Card>
 
-      <Card variant="game">
+      {/* Inventory - Order 4 on mobile */}
+      <Card variant="game" className="order-4 md:order-none">
         <h3 className="font-medieval-decorative font-semibold text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-4">
           Inventory
         </h3>
@@ -65,6 +68,6 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
           </p>
         )}
       </Card>
-    </div>
+    </>
   )
 }
