@@ -181,6 +181,11 @@ Keep it concise but vivid. Include sensory details and consequences of the playe
   await streamFromOpenRouter(messages, onChunk, onComplete, onError)
 }
 
+function capitalizeFirstLetter(text: string): string {
+  if (!text || text.length === 0) return text
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
 export async function generatePlayerChoicesWithAI(
   session: GameSession,
   currentNarrative: string,
@@ -197,6 +202,7 @@ export async function generatePlayerChoicesWithAI(
       content: `You are a creative fantasy game narrator for Quest Forge.
 Generate exactly 3-4 contextual player choices based on the current narrative.
 Each choice should be a short action statement (5-10 words).
+Each choice must start with a capital letter.
 Format: Return ONLY the choices, one per line, no numbers or bullet points.
 Make choices diverse: combat, exploration, social, or clever solutions.`
     },
@@ -214,6 +220,7 @@ Make choices diverse: combat, exploration, social, or clever solutions.`
         .split('\n')
         .map(line => line.trim())
         .filter(line => line.length > 0 && line.length < 100)
+        .map(line => capitalizeFirstLetter(line))
         .slice(0, 4)
 
       choices.length >= 3
