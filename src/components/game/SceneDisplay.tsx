@@ -14,11 +14,11 @@ export default function SceneDisplay({ scene, onChoice, loading }: SceneDisplayP
   return (
     <Card variant="game">
       <div className="prose prose-invert max-w-none">
-        <div className="bg-background-darker rounded-lg p-4 sm:p-6 mb-4 sm:mb-6 border border-medieval-gold/20 h-48 sm:h-64 overflow-y-auto">
+        <div className="bg-background-darker rounded-lg p-4 sm:p-6 mb-4 sm:mb-6 border border-medieval-gold/20 h-80 sm:h-96 overflow-y-auto">
           {isGenerating ? (
             <>
               {streamingNarrative ? (
-                <p className="text-gray-100 text-base sm:text-lg leading-loose whitespace-pre-line font-medieval-narrative">
+                <p className="text-gray-100 text-lg sm:text-xl leading-loose whitespace-pre-line font-medieval-narrative">
                   {streamingNarrative}
                   <span className="inline-block w-2 h-5 bg-medieval-gold ml-1 animate-pulse"></span>
                 </p>
@@ -34,15 +34,15 @@ export default function SceneDisplay({ scene, onChoice, loading }: SceneDisplayP
               )}
             </>
           ) : (
-            <p className="text-gray-100 text-base sm:text-lg leading-loose whitespace-pre-line font-medieval-narrative">
+            <p className="text-gray-100 text-lg sm:text-xl leading-loose whitespace-pre-line font-medieval-narrative">
               {scene.narrative}
             </p>
           )}
         </div>
 
         {scene.choices.length > 0 && !scene.player_choice && (
-          <div className="space-y-2 sm:space-y-3">
-            <h3 className="font-fantasy-classic font-semibold text-base sm:text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-3 sm:mb-4">
+          <div className="space-y-2">
+            <h3 className="font-fantasy-classic font-semibold text-sm sm:text-base text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-2 sm:mb-3">
               What do you choose?
             </h3>
             {scene.choices.map((choice, index) => (
@@ -51,7 +51,7 @@ export default function SceneDisplay({ scene, onChoice, loading }: SceneDisplayP
                 variant="secondary"
                 onClick={() => onChoice(choice)}
                 disabled={loading}
-                className="w-full text-left justify-start p-3 sm:p-4 h-auto min-h-[44px] font-medieval-options font-normal text-base sm:text-lg uppercase tracking-wide"
+                className="w-full text-left justify-start p-2 sm:p-3 h-auto min-h-[44px] font-medieval-options font-normal text-xs sm:text-sm uppercase tracking-wide"
               >
                 <span className="text-medieval-gold mr-2 font-fantasy-classic font-semibold">
                   {index + 1}.
