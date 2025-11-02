@@ -97,9 +97,9 @@
 
   /* Responsive background images - balanced overlay */
   .app-background {
-    background-image: 
+    background-image:
       url('/images/backgrounds/desktop-bg.webp'),
-      linear-gradient(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.08));
+      linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65));
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -126,9 +126,9 @@
   /* Mobile background */
   @media (max-width: 768px) {
     .app-background {
-      background-image: 
+      background-image:
         url('/images/backgrounds/mobile-bg.webp'),
-        linear-gradient(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.08));
+        linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65));
     }
   }
 
