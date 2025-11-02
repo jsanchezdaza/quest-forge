@@ -26,7 +26,10 @@
 - **YAGNI (You Aren't Gonna Need It)** - Don't add features not explicitly requested
 - **Small iterations** - Implement minimal viable version first
 - **Refactor continuously** - Clean code as you go
-- **Test-driven when critical** - At least error handling tests
+- **Test-Driven Development (TDD)** - ALWAYS write tests first, then implementation
+  - Red: Write a failing test
+  - Green: Write minimal code to pass
+  - Refactor: Clean up while keeping tests green
 - **User stories first** - Always think "As a player, I want to..."
 
 ## Pre-Commit Refactor Check (MANDATORY)

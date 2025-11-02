@@ -23,7 +23,7 @@ export default function AppBackground({
           <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-medieval-copper rounded-full blur-2xl" />
         </div>
       )}
-      
+
       <div className={variant === 'auth' ? 'relative z-10' : ''}>
         {children}
       </div>
