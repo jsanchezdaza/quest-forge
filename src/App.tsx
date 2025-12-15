@@ -16,12 +16,7 @@ function App() {
   }
 
   return (
-    <Router
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true,
-      }}
-    >
+    <Router>
       <div className="min-h-screen">
         <Routes>
           <Route 
