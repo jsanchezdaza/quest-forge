@@ -1,3 +1,61 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Commands
+
+Use `pnpm` for everything (see Package Manager below).
+
+- `pnpm dev` — Vite dev server at http://localhost:5173
+- `pnpm build` — `tsc && vite build` (type-checks, then builds)
+- `pnpm lint` — `eslint "src/**/*.{ts,tsx}" --max-warnings 0` (zero-warning policy; CI fails on any warning)
+- `pnpm test:e2e` — Playwright end-to-end tests (the only test layer; there are no unit tests by design — YAGNI)
+
+Running a subset of e2e tests:
+- Single file: `pnpm exec playwright test tests/e2e/auth.spec.ts`
+- By test name: `pnpm exec playwright test -g "should display auth form"`
+- Single browser: `pnpm exec playwright test --project=chromium tests/e2e/auth.spec.ts`
+
+Playwright config lives in `playwright.config.ts`; specs in `tests/e2e/`. Supabase is mocked in
+`tests/e2e/setup.ts`, so e2e runs without real credentials. CI (`.github/workflows/ci.yml`) currently
+runs **only** `auth.spec.ts` on chromium with a 10-minute timeout — broader specs exist but are not yet in CI.
+
+## Architecture
+
+Quest Forge is a narrative D&D game: a player creates a character (one of 6 classes with distinct
+starting stats), progresses through choice-driven story scenes, and gains XP to level up and allocate
+attribute points.
+
+**Stack**: React 19 + TypeScript + Vite, React Router v7 (`/auth`, `/game`, `/`), Tailwind CSS
+(custom medieval theme), Supabase (auth + Postgres), OpenRouter (optional AI narrative).
+
+**State — Zustand, not Redux.** (Note: the global `~/.claude` instructions reference RTK/Redux Toolkit;
+this project does **not** use it.) Three stores in `src/store/`, subscribed to directly by components
+(no prop drilling):
+- `authStore.ts` — logged-in user + profile; wired to Supabase's `onAuthStateChange` listener.
+- `gameStore.ts` — current session, scenes array, and all game mutations (`createSession`, `makeChoice`, …).
+  This is where the core game logic lives.
+- `notificationStore.ts` — toast queue.
+
+**Persistence**: game mutations write straight to Supabase. Each choice appends a new immutable row to
+the `scenes` table and updates the `game_state` JSON column on `game_sessions`. Tables: `user_profiles`,
+`game_sessions`, `scenes` (RLS enabled). Client + schema types in `src/lib/supabase.ts`.
+
+**Narrative is dual-mode**: when `VITE_OPENROUTER_API_KEY` is set, `src/lib/openrouter.ts` streams the
+scene narrative and generates choices via the AI model; otherwise it falls back to static narratives in
+`src/lib/narrative.ts`. Streaming updates `streamingNarrative` in the store via an `onChunk` callback.
+
+**Level system**: `src/utils/levelSystem.ts` plus `src/constants/game.ts` hold all tunable balance
+numbers (XP per level, attribute/health gains, starting stats). `src/hooks/useLevelUp.ts` drives the
+level-up modal where the player distributes points across the 6 attributes.
+
+**Entry & routing**: `src/main.tsx` → `src/App.tsx` (BrowserRouter + auth-guard redirect:
+unauthenticated → `/auth`, authenticated → `/game`) → `src/pages/{AuthPage,GamePage}.tsx`.
+`GamePage` loads the latest session on mount and shows the character-creation modal when none exists.
+
+**Local env**: create `.env.local` with `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and optionally
+`VITE_OPENROUTER_API_KEY` / `VITE_OPENROUTER_MODEL` / `VITE_OPENROUTER_BASE_URL` (see `.env.example`).
+
 # Development Guidelines for Quest Forge
 
 ## Package Manager
