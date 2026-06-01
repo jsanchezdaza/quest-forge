@@ -1,6 +1,7 @@
 import { Card, ProgressBar, StatsList } from '../ui'
 import type { GameSession } from '../../types'
 import { getExperienceForNextLevel } from '../../utils/levelSystem'
+import { useTranslation, type TranslationKey } from '../../i18n'
 
 interface CharacterSheetProps {
   session: GameSession
@@ -9,6 +10,7 @@ interface CharacterSheetProps {
 export default function CharacterSheet({ session }: CharacterSheetProps) {
   const { character_name, character_class, game_state } = session
   const { level, health, maxHealth, experience, stats, inventory } = game_state
+  const { t } = useTranslation()
 
   const experienceNeeded = getExperienceForNextLevel(level)
 
@@ -21,12 +23,12 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
             {character_name}
           </h2>
           <p className="font-fantasy-elegant font-medium text-base text-gray-200 capitalize">
-            Level {level} {character_class}
+            {t('game.levelAndClass', { level, class: t(`class.${character_class}.name` as TranslationKey) })}
           </p>
         </div>
 
         <ProgressBar
-          label="Health"
+          label={t('game.health')}
           current={health}
           max={maxHealth}
           color="health"
@@ -34,7 +36,7 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
         />
 
         <ProgressBar
-          label="Experience"
+          label={t('game.experience')}
           current={experience}
           max={experienceNeeded}
           color="experience"
@@ -49,7 +51,7 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
       {/* Inventory - Order 4 on mobile */}
       <Card variant="game" className="order-4 md:order-none">
         <h3 className="font-medieval-decorative font-semibold text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-4">
-          Inventory
+          {t('game.inventory')}
         </h3>
         {inventory.length > 0 ? (
           <div className="space-y-2">
@@ -64,7 +66,7 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
           </div>
         ) : (
           <p className="text-gray-400 text-sm italic font-medieval-narrative">
-            Your inventory is empty
+            {t('game.emptyInventory')}
           </p>
         )}
       </Card>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { Modal, Button } from '../ui'
+import { useTranslation, type TranslationKey } from '../../i18n'
 
 interface LevelUpModalProps {
   isOpen: boolean
@@ -16,6 +17,7 @@ export default function LevelUpModal({
   availablePoints: initialPoints 
 }: LevelUpModalProps) {
   const { currentSession, updateStats } = useGameStore()
+  const { t } = useTranslation()
   const [pointsRemaining, setPointsRemaining] = useState(initialPoints)
   const [statChanges, setStatChanges] = useState<Record<string, number>>({})
 
@@ -58,34 +60,27 @@ export default function LevelUpModal({
     onClose()
   }
 
-  const statNames = [
-    { key: 'strength', label: 'Strength' },
-    { key: 'dexterity', label: 'Dexterity' },
-    { key: 'intelligence', label: 'Intelligence' },
-    { key: 'wisdom', label: 'Wisdom' },
-    { key: 'constitution', label: 'Constitution' },
-    { key: 'charisma', label: 'Charisma' }
-  ]
+  const statKeys = ['strength', 'dexterity', 'intelligence', 'wisdom', 'constitution', 'charisma']
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Level Up!"
+      title={t('game.levelUpTitle')}
       maxWidth="md"
     >
       <div role="dialog" className="space-y-6">
         <div className="text-center">
           <h2 className="font-fantasy-epic font-bold text-2xl text-medieval-gold drop-shadow-lg mb-2">
-            Congratulations! You have reached level {newLevel}
+            {t('game.levelUpCongrats', { level: newLevel })}
           </h2>
           <p className="text-gray-300 font-pixel-body text-sm">
-            You have {pointsRemaining} attribute points to distribute
+            {t('game.pointsToDistribute', { points: pointsRemaining })}
           </p>
         </div>
 
         <div className="space-y-4">
-          {statNames.map(({ key, label }) => {
+          {statKeys.map((key) => {
             const currentValue = currentStats[key as keyof typeof currentStats]
             const increase = statChanges[key] || 0
             const newValue = currentValue + increase
@@ -94,7 +89,7 @@ export default function LevelUpModal({
               <div key={key} className="flex items-center justify-between p-3 bg-background-darker rounded-lg border border-medieval-gold/20">
                 <div className="flex items-center gap-3">
                   <span className="text-gray-100 font-pixel-body text-sm font-medium uppercase">
-                    {label}
+                    {t(`stat.${key}` as TranslationKey)}
                   </span>
                   <span className="text-gray-400 font-pixel-body text-xs">
                     {currentValue} → {newValue}
@@ -129,7 +124,7 @@ export default function LevelUpModal({
             disabled={pointsRemaining > 0}
             className="px-8"
           >
-            Confirm Changes
+            {t('ui.confirmChanges')}
           </Button>
         </div>
       </div>

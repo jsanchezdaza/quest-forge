@@ -5,11 +5,13 @@ import { useNotifications } from '../store/notificationStore'
 import { Button, Card, LoadingSpinner, Modal, AppBackground, Footer } from '../components/ui'
 import CreateCharacterModal from '../components/game/CreateCharacterModal'
 import GameSession from '../components/game/GameSession'
+import { useTranslation } from '../i18n'
 
 export default function GamePage() {
   const { profile, signOut } = useAuthStore()
   const { currentSession, loading, loadLatestSession } = useGameStore()
   const notifications = useNotifications()
+  const { t } = useTranslation()
   const [showCreateCharacter, setShowCreateCharacter] = useState(false)
   const [initialLoadDone, setInitialLoadDone] = useState(false)
 
@@ -36,16 +38,16 @@ export default function GamePage() {
   const handleSignOut = async () => {
     try {
       await signOut()
-      notifications.info('Signed Out', 'Thanks for playing! Your progress has been saved.')
+      notifications.info(t('game.signedOutTitle'), t('game.signedOutMessage'))
     } catch (error) {
-      notifications.error('Sign Out Error', 'Failed to sign out. Please try again.')
+      notifications.error(t('game.signOutErrorTitle'), t('game.signOutErrorMessage'))
     }
   }
 
   if (loading || !initialLoadDone) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" text="Loading your adventure..." showAvatar={true} />
+        <LoadingSpinner size="lg" text={t('game.loadingAdventure')} showAvatar={true} />
       </div>
     )
   }
@@ -58,11 +60,11 @@ export default function GamePage() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
                 <h1 className="dnd-title text-xl sm:text-2xl md:text-3xl text-medieval-gold leading-tight">
-                  QUEST FORGE
+                  {t('app.title')}
                 </h1>
                 {profile && (
                   <span className="text-gray-300 font-pixel-body text-xs sm:text-sm uppercase tracking-wide">
-                    WELCOME, {profile.username.toUpperCase()}
+                    {t('game.welcome', { username: profile.username.toUpperCase() })}
                   </span>
                 )}
               </div>
@@ -75,8 +77,8 @@ export default function GamePage() {
                     onClick={() => setShowCreateCharacter(true)}
                     className="flex-1 sm:flex-none min-h-[44px]"
                   >
-                    <span className="hidden sm:inline">New Character</span>
-                    <span className="sm:hidden">New</span>
+                    <span className="hidden sm:inline">{t('game.newCharacter')}</span>
+                    <span className="sm:hidden">{t('game.newCharacterShort')}</span>
                   </Button>
                 )}
                 <Button
@@ -85,7 +87,7 @@ export default function GamePage() {
                   onClick={handleSignOut}
                   className="flex-1 sm:flex-none min-h-[44px]"
                 >
-                  Sign Out
+                  {t('auth.signOut')}
                 </Button>
               </div>
             </div>
@@ -99,13 +101,13 @@ export default function GamePage() {
             <div className="text-center py-16">
               <Card variant="game" className="max-w-md mx-auto">
                 <h2 className="text-lg sm:text-xl text-medieval-gold mb-4 leading-tight">
-                  START YOUR ADVENTURE
+                  {t('game.startAdventure')}
                 </h2>
                 <p className="text-gray-300 mb-6 font-pixel-body text-sm leading-relaxed uppercase tracking-wide">
-                  CREATE A CHARACTER TO BEGIN YOUR JOURNEY IN THE WORLD OF QUEST FORGE.
+                  {t('game.createCharacterPrompt')}
                 </p>
                 <Button onClick={() => setShowCreateCharacter(true)}>
-                  Create Character
+                  {t('game.createCharacter')}
                 </Button>
               </Card>
             </div>
@@ -115,7 +117,7 @@ export default function GamePage() {
         <Modal
           isOpen={showCreateCharacter}
           onClose={() => !currentSession ? undefined : setShowCreateCharacter(false)}
-          title="Create Your Character"
+          title={t('game.createCharacterTitle')}
           maxWidth="lg"
         >
           <CreateCharacterModal

@@ -1,91 +1,79 @@
 import type { CharacterClass, GameSession, GameState } from '../types'
 import { generateExperienceGain, updateGameStateWithLevelUp } from '../utils/levelSystem'
+import { translate, type TranslationKey } from '../i18n'
 
 /**
- * Static narrative generation functions (fallback when AI is unavailable)
- * These functions provide pre-written narrative content for the game.
- * When OpenRouter is configured, the game will use AI-generated narratives instead.
+ * Static narrative generation functions (fallback when AI is unavailable).
+ * Text lives in the i18n dictionaries; these helpers resolve it for the
+ * current language. When OpenRouter is configured the game uses AI instead.
  */
 
-const CHARACTER_DESCRIPTIONS = {
-  warrior: 'a mighty warrior with sword and shield',
-  mage: 'a wise mage wielding arcane powers',
-  rogue: 'a cunning rogue skilled in stealth and daggers',
-  cleric: 'a devoted cleric blessed with divine magic',
-  ranger: 'a skilled ranger, one with nature',
-  paladin: 'a righteous paladin, champion of justice'
-} as const
+const classDescription = (characterClass: CharacterClass): string =>
+  translate(`narrative.desc.${characterClass}` as TranslationKey)
 
-const INITIAL_CHOICES = [
-  'Explore the mysterious forest path',
-  'Visit the local tavern for information',
-  'Head to the town market to gather supplies',
-]
+const className = (characterClass: CharacterClass): string =>
+  translate(`class.${characterClass}.name` as TranslationKey).toLowerCase()
 
-const SCENE_NARRATIVES = {
-  forest: (characterClass: string) => 
-    `You venture into the mysterious forest, where ancient trees whisper secrets of old. Suddenly, you hear a rustling in the bushes ahead. Your ${characterClass} instincts tell you that danger may be lurking nearby...`,
-  
-  tavern: () => 
-    `You push open the heavy wooden door of "The Prancing Pony" tavern. The warm glow of the fireplace welcomes you, and you notice several interesting characters: a hooded figure in the corner, a merchant counting coins, and the talkative bartender...`,
-  
-  market: () => 
-    `The bustling town market is filled with vendors selling their wares. You notice a peculiar merchant selling what appears to be magical items, while another vendor whispers about rare herbs found only in the haunted forest...`
-}
-
-const SCENE_CHOICES = {
-  forest: [
-    'Draw your weapon and investigate the sound',
-    'Try to sneak past quietly',
-    'Call out to see who or what is there'
-  ],
-  tavern: [
-    'Approach the hooded figure',
-    'Talk to the merchant about local news',
-    'Ask the bartender about recent strange events'
-  ],
-  market: [
-    'Examine the magical items for sale',
-    'Ask about the herbs from the haunted forest',
-    'Look for basic adventuring supplies'
-  ],
-  default: [
-    'Continue your adventure',
-    'Rest and plan your next move',
-    'Seek guidance from locals'
-  ]
-}
+const matchesKeyword = (choice: string, keyword: TranslationKey): boolean =>
+  choice.toLowerCase().includes(translate(keyword).toLowerCase())
 
 export function generateInitialNarrative(characterName: string, characterClass: CharacterClass): string {
-  return `Welcome, ${characterName}! You are ${CHARACTER_DESCRIPTIONS[characterClass]}, standing at the edge of the small village of Millhaven. Dark clouds gather on the horizon, and rumors speak of strange happenings in the nearby forest. The villagers look to you with hope in their eyes, for they know that an adventure of great importance is about to begin.
-
-What path will you choose to start your quest?`
+  return translate('narrative.initial', {
+    name: characterName,
+    desc: classDescription(characterClass),
+  })
 }
 
 export function getInitialChoices(): string[] {
-  return INITIAL_CHOICES
+  return [
+    translate('narrative.initialChoice.1'),
+    translate('narrative.initialChoice.2'),
+    translate('narrative.initialChoice.3'),
+  ]
 }
 
 export function generateNarrative(choice: string, session: GameSession): string {
-  if (choice.includes('forest')) {
-    return SCENE_NARRATIVES.forest(session.character_class)
+  if (matchesKeyword(choice, 'narrative.keyword.forest')) {
+    return translate('narrative.scene.forest', { characterClass: className(session.character_class) })
   }
-  if (choice.includes('tavern')) {
-    return SCENE_NARRATIVES.tavern()
+  if (matchesKeyword(choice, 'narrative.keyword.tavern')) {
+    return translate('narrative.scene.tavern')
   }
-  if (choice.includes('market')) {
-    return SCENE_NARRATIVES.market()
+  if (matchesKeyword(choice, 'narrative.keyword.market')) {
+    return translate('narrative.scene.market')
   }
-  
-  return 'Your choice leads you to a new adventure...'
+
+  return translate('narrative.scene.default')
 }
 
 export function generateChoices(choice: string): string[] {
-  if (choice.includes('forest')) return SCENE_CHOICES.forest
-  if (choice.includes('tavern')) return SCENE_CHOICES.tavern
-  if (choice.includes('market')) return SCENE_CHOICES.market
-  
-  return SCENE_CHOICES.default
+  if (matchesKeyword(choice, 'narrative.keyword.forest')) {
+    return [
+      translate('narrative.choices.forest.1'),
+      translate('narrative.choices.forest.2'),
+      translate('narrative.choices.forest.3'),
+    ]
+  }
+  if (matchesKeyword(choice, 'narrative.keyword.tavern')) {
+    return [
+      translate('narrative.choices.tavern.1'),
+      translate('narrative.choices.tavern.2'),
+      translate('narrative.choices.tavern.3'),
+    ]
+  }
+  if (matchesKeyword(choice, 'narrative.keyword.market')) {
+    return [
+      translate('narrative.choices.market.1'),
+      translate('narrative.choices.market.2'),
+      translate('narrative.choices.market.3'),
+    ]
+  }
+
+  return [
+    translate('narrative.choices.default.1'),
+    translate('narrative.choices.default.2'),
+    translate('narrative.choices.default.3'),
+  ]
 }
 
 export function updateGameStateForChoice(currentState: GameState): GameState {

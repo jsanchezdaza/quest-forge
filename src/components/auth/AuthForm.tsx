@@ -3,8 +3,8 @@ import { useAuthStore } from '../../store/authStore'
 import { useNotifications } from '../../store/notificationStore'
 import { FormField, Button } from '../ui'
 import { VALIDATION_RULES } from '../../constants/validation'
-import { AUTH_MESSAGES } from '../../constants/auth'
 import { parseAuthError } from '../../utils/authErrors'
+import { useTranslation } from '../../i18n'
 
 interface AuthFormProps {
   mode: 'signin' | 'signup'
@@ -18,6 +18,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   
   const { signIn, signUp, loading } = useAuthStore()
   const notifications = useNotifications()
+  const { t } = useTranslation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,24 +26,18 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
     try {
       if (mode === 'signup') {
         if (!username.trim()) {
-          notifications.error('Username Required', 'Please enter a username to continue')
+          notifications.error(t('auth.usernameRequiredTitle'), t('auth.usernameRequiredMessage'))
           return
         }
         await signUp(email, password, username)
-        notifications.success(
-          AUTH_MESSAGES.SIGNUP_SUCCESS.title, 
-          AUTH_MESSAGES.SIGNUP_SUCCESS.message
-        )
+        notifications.success(t('auth.signUpSuccessTitle'), t('auth.signUpSuccessMessage'))
       } else {
         await signIn(email, password)
-        notifications.success(
-          AUTH_MESSAGES.SIGNIN_SUCCESS.title, 
-          AUTH_MESSAGES.SIGNIN_SUCCESS.message
-        )
+        notifications.success(t('auth.signInSuccessTitle'), t('auth.signInSuccessMessage'))
       }
     } catch (error) {
-      const { title, message } = parseAuthError(error)
-      notifications.error(title, message)
+      const { titleKey, messageKey } = parseAuthError(error)
+      notifications.error(t(titleKey), t(messageKey))
     }
   }
 
@@ -51,10 +46,10 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
       <div className="relative border-2 border-medieval-gold/40 rounded-xl bg-white/10 backdrop-blur-sm shadow-2xl shadow-black/50 p-4 sm:p-6">
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="dnd-title text-3xl sm:text-4xl md:text-5xl mb-6 sm:mb-8 leading-tight">
-            QUEST FORGE
+            {t('app.title')}
           </h1>
           <p className="font-pixel-body text-xs sm:text-sm text-gray-400 uppercase tracking-wide">
-            {mode === 'signin' ? AUTH_MESSAGES.WELCOME_MESSAGES.RETURNING_USER : AUTH_MESSAGES.WELCOME_MESSAGES.NEW_USER}
+            {mode === 'signin' ? t('auth.welcomeReturning') : t('auth.welcomeNew')}
           </p>
         </div>
 
@@ -64,8 +59,8 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             type="email"
             value={email}
             onChange={setEmail}
-            label="Email"
-            placeholder="your.email@example.com"
+            label={t('form.emailLabel')}
+            placeholder={t('form.emailPlaceholder')}
             required={VALIDATION_RULES.EMAIL_REQUIRED}
           />
 
@@ -75,8 +70,8 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
               type="text"
               value={username}
               onChange={setUsername}
-              label="Username"
-              placeholder="Choose a username"
+              label={t('form.usernameLabel')}
+              placeholder={t('form.usernamePlaceholder')}
               required={VALIDATION_RULES.USERNAME_REQUIRED}
               minLength={VALIDATION_RULES.USERNAME_MIN_LENGTH}
             />
@@ -87,8 +82,8 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             type="password"
             value={password}
             onChange={setPassword}
-            label="Password"
-            placeholder="Your password"
+            label={t('form.passwordLabel')}
+            placeholder={t('form.passwordPlaceholder')}
             required={true}
             minLength={VALIDATION_RULES.PASSWORD_MIN_LENGTH}
           />
@@ -99,7 +94,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             isLoading={loading}
             className="w-full"
           >
-            {mode === 'signin' ? AUTH_MESSAGES.SIGNIN_BUTTON : AUTH_MESSAGES.SIGNUP_BUTTON}
+            {mode === 'signin' ? t('auth.signInButton') : t('auth.signUpButton')}
           </Button>
         </form>
 
@@ -110,8 +105,8 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             className="text-medieval-gold hover:text-medieval-darkgold transition-colors font-pixel-body text-xs uppercase tracking-wide min-h-[44px] py-2"
           >
             {mode === 'signin'
-              ? AUTH_MESSAGES.TOGGLE_MESSAGES.TO_SIGNUP
-              : AUTH_MESSAGES.TOGGLE_MESSAGES.TO_SIGNIN
+              ? t('auth.toggleToSignUp')
+              : t('auth.toggleToSignIn')
             }
           </button>
         </div>
