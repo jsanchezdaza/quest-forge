@@ -1,7 +1,7 @@
 import type { GameSession, Scene, CharacterClass } from '../types'
 
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || ''
-const OPENROUTER_MODEL = import.meta.env.VITE_OPENROUTER_MODEL || 'deepseek/deepseek-chat-v3.1:free'
+const OPENROUTER_MODEL = import.meta.env.VITE_OPENROUTER_MODEL || 'google/gemma-4-26b-a4b-it:free'
 const OPENROUTER_BASE_URL = import.meta.env.VITE_OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
 const DEFAULT_TIMEOUT = 10000
 const MAX_RETRIES = 3
