@@ -98,8 +98,8 @@
   /* Responsive background images - balanced overlay */
   .app-background {
     background-image:
-      url('/images/backgrounds/desktop-bg.webp'),
-      linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65));
+      url('/images/backgrounds/background-desktop.png'),
+      linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -110,7 +110,7 @@
   /* Game page background - JPEG version */
   .app-background.game-background {
     background-image: 
-      url('/images/backgrounds/desktop-bg.jpeg'),
+      url('/images/backgrounds/background-desktop.png'),
       linear-gradient(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.08));
   }
 
@@ -118,7 +118,7 @@
   @media (max-width: 768px) {
     .app-background.game-background {
       background-image: 
-        url('/images/backgrounds/mobile-bg.jpeg'),
+        url('/images/backgrounds/background-mobile.png'),
         linear-gradient(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.08));
     }
   }
@@ -127,8 +127,8 @@
   @media (max-width: 768px) {
     .app-background {
       background-image:
-        url('/images/backgrounds/mobile-bg.webp'),
-        linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65));
+        url('/images/backgrounds/background-mobile.png'),
+        linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
     }
   }
 
@@ -176,6 +176,78 @@
     to {
       transform: translateX(0);
       opacity: 1;
+    }
+  }
+
+  /* Rising embers for the auth background - GPU-friendly (transform + opacity only) */
+  .ember {
+    position: absolute;
+    bottom: -8px;
+    border-radius: 1px;
+    will-change: transform, opacity;
+    animation-name: ember-rise;
+    animation-timing-function: ease-in;
+    animation-iteration-count: infinite;
+  }
+
+  @keyframes ember-rise {
+    0% {
+      transform: translate3d(0, 0, 0);
+      opacity: 0;
+    }
+    15% {
+      opacity: 0.65;
+    }
+    50% {
+      transform: translate3d(var(--ember-drift, 0), -55vh, 0);
+    }
+    85% {
+      opacity: 0.55;
+    }
+    100% {
+      transform: translate3d(calc(var(--ember-drift, 0) * -1), -110vh, 0);
+      opacity: 0;
+    }
+  }
+
+  /* Animated video background for the auth screen (desktop) */
+  .auth-video-stage {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Anchored top-left and slightly zoomed to push the bottom-right generator
+     watermark toward the cropped edge. */
+  .auth-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 0% 0%;
+    transform: scale(1.07);
+    transform-origin: 0% 0%;
+    display: block;
+  }
+
+  /* Darkening tint to keep the form readable, matching the static-image overlay */
+  .auth-video-tint {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.22);
+  }
+
+  /* Mobile falls back to the static PNG in `.app-background` */
+  @media (max-width: 768px) {
+    .auth-video-bg {
+      display: none;
+    }
+  }
+
+  /* Respect users who prefer reduced motion: drop embers and the video (falls back
+     to the static PNG background) */
+  @media (prefers-reduced-motion: reduce) {
+    .ember-layer,
+    .auth-video-bg {
+      display: none;
     }
   }
 }

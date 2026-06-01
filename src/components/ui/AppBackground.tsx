@@ -1,3 +1,6 @@
+import AuthVideoBackground from './AuthVideoBackground'
+import EmberParticles from './EmberParticles'
+
 interface AppBackgroundProps {
   children: React.ReactNode
   variant?: 'auth' | 'game'
@@ -18,10 +21,14 @@ export default function AppBackground({
   return (
     <div className={`${baseClasses} ${variantClasses[variant]} ${className}`}>
       {variant === 'auth' && (
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-medieval-gold rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-medieval-copper rounded-full blur-2xl" />
-        </div>
+        <>
+          <AuthVideoBackground />
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-medieval-gold rounded-full blur-3xl" />
+            <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-medieval-copper rounded-full blur-2xl" />
+          </div>
+          <EmberParticles />
+        </>
       )}
 
       <div className={variant === 'auth' ? 'relative z-10' : ''}>
