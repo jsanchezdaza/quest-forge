@@ -18,17 +18,17 @@ jobs:
     - name: Setup pnpm
       uses: pnpm/action-setup@v2
       with:
-        version: latest
-        
+        version: 9
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'pnpm'
-        
+
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
-      
+
     - name: Run linter
       run: pnpm run lint
 
@@ -57,17 +57,17 @@ jobs:
     - name: Setup pnpm
       uses: pnpm/action-setup@v2
       with:
-        version: latest
-        
+        version: 9
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'pnpm'
-        
+
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
-      
+
     - name: Install Playwright Browsers
       run: pnpm exec playwright install chromium --with-deps
       
