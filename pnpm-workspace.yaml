@@ -1,0 +1,8 @@
+# pnpm 11 enforces a supply-chain minimumReleaseAge by default, rejecting
+# packages published within the last day. Disabled here so installs and CI
+# are not blocked by freshly published dependency versions.
+minimumReleaseAge: 0
+
+# esbuild (pulled in by vite) needs its install script to set up its binary.
+allowBuilds:
+  esbuild: true
