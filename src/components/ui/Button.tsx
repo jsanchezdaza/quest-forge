@@ -1,4 +1,5 @@
 import { ButtonHTMLAttributes, ReactNode } from 'react'
+import { useTranslation } from '../../i18n'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger'
@@ -12,10 +13,11 @@ export default function Button({
   size = 'md', 
   isLoading = false,
   className = '',
-  children, 
-  ...props 
+  children,
+  ...props
 }: ButtonProps) {
-  const baseClasses = 'font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
+  const { t } = useTranslation()
+  const baseClasses ='font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
   
   const variantClasses = {
     primary: 'bg-medieval-gold hover:bg-medieval-darkgold text-medieval-inkblack font-pixel-body font-medium uppercase tracking-wide shadow-lg hover:shadow-medieval-gold/25',
@@ -38,7 +40,7 @@ export default function Button({
       {isLoading ? (
         <span className="flex items-center justify-center gap-2">
           <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-          Loading...
+          {t('ui.loading')}
         </span>
       ) : (
         children

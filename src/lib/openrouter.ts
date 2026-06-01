@@ -1,4 +1,5 @@
 import type { GameSession, Scene, CharacterClass } from '../types'
+import { translate } from '../i18n'
 
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || ''
 const OPENROUTER_MODEL = import.meta.env.VITE_OPENROUTER_MODEL || 'google/gemma-4-26b-a4b-it:free'
@@ -170,7 +171,8 @@ export async function generateSceneNarrativeWithAI(
       content: `You are a creative fantasy game narrator for Quest Forge, a text-based RPG.
 Generate immersive, descriptive narrative text (2-3 paragraphs) based on the player's choice.
 Style: Medieval fantasy, descriptive, engaging, second-person perspective.
-Keep it concise but vivid. Include sensory details and consequences of the player's action.`
+Keep it concise but vivid. Include sensory details and consequences of the player's action.
+${translate('narrative.aiLanguageInstruction')}`
     },
     {
       role: 'user',
@@ -204,7 +206,8 @@ Generate exactly 3-4 contextual player choices based on the current narrative.
 Each choice should be a short action statement (5-10 words).
 Each choice must start with a capital letter.
 Format: Return ONLY the choices, one per line, no numbers or bullet points.
-Make choices diverse: combat, exploration, social, or clever solutions.`
+Make choices diverse: combat, exploration, social, or clever solutions.
+${translate('narrative.aiLanguageInstruction')}`
     },
     {
       role: 'user',
@@ -245,7 +248,8 @@ export async function generateBackstoryWithAI(
       content: `You are a creative fantasy writer for Quest Forge.
 Generate a compelling character backstory (1-2 paragraphs) for a new adventurer.
 Style: Medieval fantasy, personal, hints at motivations and past experiences.
-Keep it concise but evocative.`
+Keep it concise but evocative.
+${translate('narrative.aiLanguageInstruction')}`
     },
     {
       role: 'user',

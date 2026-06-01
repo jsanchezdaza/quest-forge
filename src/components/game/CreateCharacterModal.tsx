@@ -3,6 +3,7 @@ import { useGameStore } from '../../store/gameStore'
 import { Button, Input, Textarea } from '../ui'
 import CharacterClassSelector from './CharacterClassSelector'
 import { generateBackstoryWithAI, isOpenRouterConfigured } from '../../lib/openrouter'
+import { useTranslation } from '../../i18n'
 import type { CharacterClass } from '../../types'
 
 interface CreateCharacterModalProps {
@@ -26,11 +27,12 @@ export default function CreateCharacterModal({ onClose }: CreateCharacterModalPr
   const [error, setError] = useState('')
 
   const { createSession, loading } = useGameStore()
+  const { t } = useTranslation()
   const aiConfigured = isOpenRouterConfigured()
 
   const handleGenerateBackstory = async () => {
     if (!characterName.trim()) {
-      setError('Please enter a character name first')
+      setError(t('character.nameRequiredGenerate'))
       return
     }
 
@@ -50,7 +52,7 @@ export default function CreateCharacterModal({ onClose }: CreateCharacterModalPr
       },
       () => setIsGeneratingBackstory(false),
       (error: Error) => {
-        setError(`Failed to generate backstory: ${error.message}`)
+        setError(t('character.backstoryFailed', { error: error.message }))
         setIsGeneratingBackstory(false)
       }
     )
@@ -61,7 +63,7 @@ export default function CreateCharacterModal({ onClose }: CreateCharacterModalPr
     setError('')
 
     if (!characterName.trim()) {
-      setError('Character name is required')
+      setError(t('character.nameRequiredSubmit'))
       return
     }
 
@@ -73,17 +75,17 @@ export default function CreateCharacterModal({ onClose }: CreateCharacterModalPr
       )
       onClose()
     } catch (error) {
-      setError((error as Error).message || 'Failed to create character')
+      setError((error as Error).message || t('character.creationFailed'))
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Input
-        label="Character Name"
+        label={t('form.characterNameLabel')}
         value={characterName}
         onChange={(e) => setCharacterName(e.target.value)}
-        placeholder="Enter your character's name"
+        placeholder={t('form.characterNamePlaceholder')}
         required
       />
 
@@ -95,7 +97,7 @@ export default function CreateCharacterModal({ onClose }: CreateCharacterModalPr
       <div>
         <div className="flex items-center justify-between mb-1">
           <label className="block text-sm font-medium text-gray-300">
-            Backstory (Optional)
+            {t('form.backstoryLabel')}
           </label>
           {aiConfigured && (
             <Button
@@ -106,21 +108,21 @@ export default function CreateCharacterModal({ onClose }: CreateCharacterModalPr
               disabled={isGeneratingBackstory || loading}
               className="text-xs py-1 px-3"
             >
-              {isGeneratingBackstory ? 'Generating...' : 'Generate with AI'}
+              {isGeneratingBackstory ? t('character.generating') : t('character.generateWithAI')}
             </Button>
           )}
         </div>
         <Textarea
           value={backstory}
           onChange={(e) => setBackstory(e.target.value)}
-          placeholder="Write your character's backstory or generate one with AI..."
+          placeholder={t('form.backstoryPlaceholder')}
           disabled={isGeneratingBackstory}
           rows={4}
           className="min-h-[120px]"
         />
         {!aiConfigured && (
           <p className="mt-1 text-xs text-gray-500">
-            Configure OpenRouter API key to enable AI backstory generation
+            {t('character.configureAI')}
           </p>
         )}
       </div>
@@ -138,7 +140,7 @@ export default function CreateCharacterModal({ onClose }: CreateCharacterModalPr
           onClick={onClose}
           className="flex-1"
         >
-          Cancel
+          {t('ui.cancel')}
         </Button>
         <Button
           type="submit"
@@ -146,7 +148,7 @@ export default function CreateCharacterModal({ onClose }: CreateCharacterModalPr
           disabled={isGeneratingBackstory}
           className="flex-1"
         >
-          Create Character
+          {t('game.createCharacter')}
         </Button>
       </div>
     </form>

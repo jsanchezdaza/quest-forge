@@ -5,15 +5,17 @@ import CharacterSheet from './CharacterSheet'
 import SceneDisplay from './SceneDisplay'
 import LevelUpModal from './LevelUpModal'
 import { GAME_CONSTANTS } from '../../constants/game'
+import { useTranslation } from '../../i18n'
 
 export default function GameSession() {
   const { currentSession, scenes, makeChoice, loading } = useGameStore()
   const { isOpen, newLevel, availablePoints, onClose } = useLevelUp()
+  const { t } = useTranslation()
 
   if (!currentSession) {
     return (
       <div className="text-center py-16">
-        <p className="text-gray-400">No active game session</p>
+        <p className="text-gray-400">{t('game.noActiveSession')}</p>
       </div>
     )
   }
@@ -53,7 +55,7 @@ export default function GameSession() {
           <div className="order-5 md:order-none">
             <Card variant="game">
               <h3 className="font-fantasy-classic font-semibold text-base sm:text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-3 sm:mb-4">
-                Adventure Log
+                {t('game.adventureLog')}
               </h3>
               <div className="space-y-3 sm:space-y-4 max-h-48 sm:max-h-64 overflow-y-auto">
                 {scenes.slice(0, -1).reverse().map((scene) => (

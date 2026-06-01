@@ -1,16 +1,18 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './store/authStore'
 import { LoadingSpinner, ToastContainer } from './components/ui'
+import { useTranslation } from './i18n'
 import AuthPage from './pages/AuthPage'
 import GamePage from './pages/GamePage'
 
 function App() {
   const { user, loading } = useAuthStore()
+  const { t } = useTranslation()
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" text="Initializing Quest Forge..." />
+        <LoadingSpinner size="lg" text={t('app.initializing')} />
       </div>
     )
   }

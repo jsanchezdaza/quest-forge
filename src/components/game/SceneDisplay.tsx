@@ -1,5 +1,6 @@
 import { Button, Card, LoadingSpinner } from '../ui'
 import { useGameStore } from '../../store/gameStore'
+import { useTranslation } from '../../i18n'
 import type { Scene } from '../../types'
 
 interface SceneDisplayProps {
@@ -10,6 +11,7 @@ interface SceneDisplayProps {
 
 export default function SceneDisplay({ scene, onChoice, loading }: SceneDisplayProps) {
   const { isGenerating, streamingNarrative } = useGameStore()
+  const { t } = useTranslation()
 
   return (
     <Card variant="game">
@@ -27,7 +29,7 @@ export default function SceneDisplay({ scene, onChoice, loading }: SceneDisplayP
                   <div className="text-center">
                     <LoadingSpinner />
                     <p className="text-gray-400 mt-4 font-medieval-narrative text-sm sm:text-base">
-                      AI is crafting your story...
+                      {t('game.aiCrafting')}
                     </p>
                   </div>
                 </div>
@@ -43,7 +45,7 @@ export default function SceneDisplay({ scene, onChoice, loading }: SceneDisplayP
         {scene.choices.length > 0 && !scene.player_choice && (
           <div className="space-y-2">
             <h3 className="font-fantasy-classic font-semibold text-sm sm:text-base text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-2 sm:mb-3">
-              What do you choose?
+              {t('game.whatDoYouChoose')}
             </h3>
             {scene.choices.map((choice, index) => (
               <Button
@@ -67,7 +69,7 @@ export default function SceneDisplay({ scene, onChoice, loading }: SceneDisplayP
         {scene.player_choice && (
           <div className="bg-medieval-gold/10 border border-medieval-gold/30 rounded-lg p-3 sm:p-4">
             <p className="text-medieval-gold font-medieval-options text-base sm:text-lg">
-              <span className="font-fantasy-classic font-semibold">Your choice:</span>
+              <span className="font-fantasy-classic font-semibold">{t('game.yourChoice')}</span>
               <span className="uppercase"> {scene.player_choice}</span>
             </p>
           </div>

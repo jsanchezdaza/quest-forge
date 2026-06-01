@@ -1,46 +1,28 @@
+import type { TranslationKey } from '../i18n'
+
 interface AuthError {
   message: string
   code?: string
 }
 
-export const parseAuthError = (error: unknown): { title: string; message: string } => {
+interface AuthErrorKeys {
+  titleKey: TranslationKey
+  messageKey: TranslationKey
+}
+
+const errorMappings: Record<string, AuthErrorKeys> = {
+  invalid_credentials: { titleKey: 'error.loginFailed.title', messageKey: 'error.loginFailed.message' },
+  email_not_confirmed: { titleKey: 'error.emailNotConfirmed.title', messageKey: 'error.emailNotConfirmed.message' },
+  user_not_found: { titleKey: 'error.userNotFound.title', messageKey: 'error.userNotFound.message' },
+  weak_password: { titleKey: 'error.weakPassword.title', messageKey: 'error.weakPassword.message' },
+  email_address_invalid: { titleKey: 'error.invalidEmail.title', messageKey: 'error.invalidEmail.message' },
+  signup_disabled: { titleKey: 'error.signupDisabled.title', messageKey: 'error.signupDisabled.message' },
+  email_address_not_authorized: { titleKey: 'error.emailNotAuthorized.title', messageKey: 'error.emailNotAuthorized.message' },
+  too_many_requests: { titleKey: 'error.tooManyRequests.title', messageKey: 'error.tooManyRequests.message' },
+}
+
+export const parseAuthError = (error: unknown): AuthErrorKeys => {
   const authError = error as AuthError
-  
-  // Common Supabase auth error codes and messages
-  const errorMappings: Record<string, { title: string; message: string }> = {
-    'invalid_credentials': {
-      title: 'Login Failed',
-      message: 'Invalid email or password. Please check your credentials and try again.'
-    },
-    'email_not_confirmed': {
-      title: 'Email Not Confirmed',
-      message: 'Please check your email and click the confirmation link before signing in.'
-    },
-    'user_not_found': {
-      title: 'User Not Found',
-      message: 'No account found with this email address. Please sign up first.'
-    },
-    'weak_password': {
-      title: 'Weak Password',
-      message: 'Password should be at least 6 characters long with a mix of letters and numbers.'
-    },
-    'email_address_invalid': {
-      title: 'Invalid Email',
-      message: 'Please enter a valid email address.'
-    },
-    'signup_disabled': {
-      title: 'Sign Up Disabled',
-      message: 'New user registration is currently disabled. Please contact support.'
-    },
-    'email_address_not_authorized': {
-      title: 'Email Not Authorized',
-      message: 'This email address is not authorized to create an account.'
-    },
-    'too_many_requests': {
-      title: 'Too Many Attempts',
-      message: 'Too many failed attempts. Please wait a few minutes before trying again.'
-    }
-  }
 
   // Check for specific error codes
   if (authError?.code && errorMappings[authError.code]) {
@@ -49,48 +31,39 @@ export const parseAuthError = (error: unknown): { title: string; message: string
 
   // Check for error message patterns
   const message = authError?.message?.toLowerCase() || ''
-  
+
   if (message.includes('invalid login credentials') || message.includes('invalid credentials')) {
     return errorMappings.invalid_credentials
   }
-  
+
   if (message.includes('email not confirmed')) {
     return errorMappings.email_not_confirmed
   }
-  
+
   if (message.includes('user not found')) {
     return errorMappings.user_not_found
   }
-  
+
   if (message.includes('weak password') || message.includes('password')) {
     return errorMappings.weak_password
   }
-  
+
   if (message.includes('invalid email') || message.includes('email')) {
     return errorMappings.email_address_invalid
   }
-  
+
   if (message.includes('too many requests') || message.includes('rate limit')) {
     return errorMappings.too_many_requests
   }
-  
+
   if (message.includes('user profile not found') || message.includes('complete registration')) {
-    return {
-      title: 'Complete Registration',
-      message: 'Your account exists but your profile is incomplete. Please use the sign up form to complete registration with a username.'
-    }
+    return { titleKey: 'error.completeRegistration.title', messageKey: 'error.completeRegistration.message' }
   }
-  
+
   if (message.includes('profile fetch') || message.includes('timeout')) {
-    return {
-      title: 'Connection Issue',
-      message: 'Unable to connect to the server. Please check your internet connection and try again.'
-    }
+    return { titleKey: 'error.connectionIssue.title', messageKey: 'error.connectionIssue.message' }
   }
 
   // Fallback for unknown errors
-  return {
-    title: 'Authentication Error',
-    message: authError?.message || 'An unexpected error occurred. Please try again.'
-  }
+  return { titleKey: 'error.authError.title', messageKey: 'error.authError.message' }
 }
