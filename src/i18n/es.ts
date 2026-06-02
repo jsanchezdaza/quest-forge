@@ -14,16 +14,10 @@ export const es: typeof en = {
   // Auth
   'auth.signInButton': 'ENTRAR',
   'auth.signUpButton': 'CREAR CUENTA',
-  'auth.signInSuccessTitle': '¡Bienvenido de nuevo!',
-  'auth.signInSuccessMessage': 'Sesión iniciada correctamente. ¡Prepárate para la aventura!',
-  'auth.signUpSuccessTitle': 'Cuenta creada correctamente',
-  'auth.signUpSuccessMessage': '¡Bienvenido a Quest Forge! Ya puedes comenzar tu aventura.',
   'auth.welcomeReturning': 'BIENVENIDO DE NUEVO, AVENTURERO',
   'auth.welcomeNew': 'COMIENZA TU GESTA',
   'auth.toggleToSignUp': '¿NO TIENES CUENTA? REGÍSTRATE',
   'auth.toggleToSignIn': '¿YA TIENES CUENTA? ENTRA',
-  'auth.usernameRequiredTitle': 'Nombre de usuario obligatorio',
-  'auth.usernameRequiredMessage': 'Introduce un nombre de usuario para continuar',
   'auth.signOut': 'Cerrar sesión',
 
   // Forms
@@ -52,10 +46,6 @@ export const es: typeof en = {
   'game.createCharacterPrompt': 'CREA UN PERSONAJE PARA COMENZAR TU VIAJE EN EL MUNDO DE QUEST FORGE.',
   'game.createCharacter': 'Crear personaje',
   'game.createCharacterTitle': 'Crea tu personaje',
-  'game.signedOutTitle': 'Sesión cerrada',
-  'game.signedOutMessage': '¡Gracias por jugar! Tu progreso se ha guardado.',
-  'game.signOutErrorTitle': 'Error al cerrar sesión',
-  'game.signOutErrorMessage': 'No se pudo cerrar la sesión. Inténtalo de nuevo.',
   'game.noActiveSession': 'No hay ninguna partida activa',
   'game.adventureLog': 'Diario de aventura',
   'game.aiCrafting': 'La IA está creando tu historia...',

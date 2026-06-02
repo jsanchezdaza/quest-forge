@@ -1,9 +1,7 @@
 import { useState } from 'react'
 import { useAuthStore } from '../../store/authStore'
-import { useNotifications } from '../../store/notificationStore'
 import { FormField, Button } from '../ui'
 import { VALIDATION_RULES } from '../../constants/validation'
-import { parseAuthError } from '../../utils/authErrors'
 import { useTranslation } from '../../i18n'
 
 interface AuthFormProps {
@@ -17,27 +15,23 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   const [username, setUsername] = useState('')
   
   const { signIn, signUp, loading } = useAuthStore()
-  const notifications = useNotifications()
   const { t } = useTranslation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (mode === 'signup' && !username.trim()) {
+      return
+    }
+
     try {
       if (mode === 'signup') {
-        if (!username.trim()) {
-          notifications.error(t('auth.usernameRequiredTitle'), t('auth.usernameRequiredMessage'))
-          return
-        }
         await signUp(email, password, username)
-        notifications.success(t('auth.signUpSuccessTitle'), t('auth.signUpSuccessMessage'))
       } else {
         await signIn(email, password)
-        notifications.success(t('auth.signInSuccessTitle'), t('auth.signInSuccessMessage'))
       }
     } catch (error) {
-      const { titleKey, messageKey } = parseAuthError(error)
-      notifications.error(t(titleKey), t(messageKey))
+      console.error('Authentication failed:', error)
     }
   }
 

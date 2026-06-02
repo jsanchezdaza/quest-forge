@@ -161,19 +161,6 @@ test.describe('Navigation and Auth Flow', () => {
     await expect(page).toHaveURL(/\/auth/)
   })
 
-  test('should display toast notification after sign out', async ({ page }) => {
-    await page.addInitScript(() => {
-      const mockUser = { id: 'test-user-id', email: 'test@example.com' }
-      const mockProfile = { id: 'test-user-id', username: 'TestHero', created_at: new Date().toISOString() }
-      localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-    })
-
-    await page.goto('/game')
-    await page.click('button:has-text("Sign Out")')
-
-    await expect(page.locator('text=/Signed Out|Thanks for playing/i')).toBeVisible({ timeout: 3000 })
-  })
-
   test('should handle browser back button after authentication', async ({ page }) => {
     await page.addInitScript(() => {
       const mockUser = { id: 'test-user-id', email: 'test@example.com' }

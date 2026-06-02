@@ -12,16 +12,10 @@ export const en = {
   // Auth
   'auth.signInButton': 'SIGN IN',
   'auth.signUpButton': 'CREATE ACCOUNT',
-  'auth.signInSuccessTitle': 'Welcome Back!',
-  'auth.signInSuccessMessage': 'Successfully signed in. Prepare for adventure!',
-  'auth.signUpSuccessTitle': 'Account Created Successfully',
-  'auth.signUpSuccessMessage': 'Welcome to Quest Forge! You can now start your adventure.',
   'auth.welcomeReturning': 'WELCOME BACK, ADVENTURER',
   'auth.welcomeNew': 'BEGIN YOUR QUEST',
   'auth.toggleToSignUp': "DON'T HAVE AN ACCOUNT? SIGN UP",
   'auth.toggleToSignIn': 'ALREADY HAVE AN ACCOUNT? SIGN IN',
-  'auth.usernameRequiredTitle': 'Username Required',
-  'auth.usernameRequiredMessage': 'Please enter a username to continue',
   'auth.signOut': 'Sign Out',
 
   // Forms
@@ -50,10 +44,6 @@ export const en = {
   'game.createCharacterPrompt': 'CREATE A CHARACTER TO BEGIN YOUR JOURNEY IN THE WORLD OF QUEST FORGE.',
   'game.createCharacter': 'Create Character',
   'game.createCharacterTitle': 'Create Your Character',
-  'game.signedOutTitle': 'Signed Out',
-  'game.signedOutMessage': 'Thanks for playing! Your progress has been saved.',
-  'game.signOutErrorTitle': 'Sign Out Error',
-  'game.signOutErrorMessage': 'Failed to sign out. Please try again.',
   'game.noActiveSession': 'No active game session',
   'game.adventureLog': 'Adventure Log',
   'game.aiCrafting': 'AI is crafting your story...',

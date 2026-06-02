@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { useGameStore } from '../store/gameStore'
-import { useNotifications } from '../store/notificationStore'
 import { Button, Card, LoadingSpinner, Modal, AppBackground, Footer } from '../components/ui'
 import CreateCharacterModal from '../components/game/CreateCharacterModal'
 import GameSession from '../components/game/GameSession'
@@ -10,7 +9,6 @@ import { useTranslation } from '../i18n'
 export default function GamePage() {
   const { profile, signOut } = useAuthStore()
   const { currentSession, loading, loadLatestSession } = useGameStore()
-  const notifications = useNotifications()
   const { t } = useTranslation()
   const [showCreateCharacter, setShowCreateCharacter] = useState(false)
   const [initialLoadDone, setInitialLoadDone] = useState(false)
@@ -38,9 +36,8 @@ export default function GamePage() {
   const handleSignOut = async () => {
     try {
       await signOut()
-      notifications.info(t('game.signedOutTitle'), t('game.signedOutMessage'))
     } catch (error) {
-      notifications.error(t('game.signOutErrorTitle'), t('game.signOutErrorMessage'))
+      console.error('Sign out failed:', error)
     }
   }
 

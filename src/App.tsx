@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './store/authStore'
-import { LoadingSpinner, ToastContainer } from './components/ui'
+import { LoadingSpinner } from './components/ui'
 import { useTranslation } from './i18n'
 import AuthPage from './pages/AuthPage'
 import GamePage from './pages/GamePage'
@@ -34,7 +34,6 @@ function App() {
             element={<Navigate to={user ? "/game" : "/auth"} replace />} 
           />
         </Routes>
-        <ToastContainer />
       </div>
     </Router>
   )
