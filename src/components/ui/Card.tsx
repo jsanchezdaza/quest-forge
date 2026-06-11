@@ -6,14 +6,25 @@ interface CardProps {
   hover?: boolean
   padding?: 'none' | 'sm' | 'md' | 'lg'
   variant?: 'default' | 'game'
+  ornate?: boolean
 }
 
-export default function Card({ 
-  children, 
-  className = '', 
+// Decorative gold L-shaped brackets, one per corner.
+const cornerBaseClasses = 'pointer-events-none absolute w-4 h-4 border-medieval-gold/70'
+const cornerClasses = [
+  'top-1.5 left-1.5 border-t-2 border-l-2 rounded-tl',
+  'top-1.5 right-1.5 border-t-2 border-r-2 rounded-tr',
+  'bottom-1.5 left-1.5 border-b-2 border-l-2 rounded-bl',
+  'bottom-1.5 right-1.5 border-b-2 border-r-2 rounded-br'
+]
+
+export default function Card({
+  children,
+  className = '',
   hover = false,
   padding = 'md',
-  variant = 'default'
+  variant = 'default',
+  ornate = false
 }: CardProps) {
   const paddingClasses = {
     none: '',
@@ -33,6 +44,9 @@ export default function Card({
   
   return (
     <div className={`${variantClasses[variant]} ${paddingClasses[padding]} ${hoverClasses} ${className}`}>
+      {ornate && cornerClasses.map((corner) => (
+        <span key={corner} className={`${cornerBaseClasses} ${corner}`} aria-hidden="true" />
+      ))}
       {children}
     </div>
   )

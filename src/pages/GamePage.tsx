@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { LogOut, Save, UserPlus } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
 import { useGameStore } from '../store/gameStore'
 import { Button, Card, LoadingSpinner, Modal, AppBackground, Footer } from '../components/ui'
@@ -8,7 +9,7 @@ import { useTranslation } from '../i18n'
 
 export default function GamePage() {
   const { profile, signOut } = useAuthStore()
-  const { currentSession, loading, loadLatestSession } = useGameStore()
+  const { currentSession, loading, loadLatestSession, saveProgress } = useGameStore()
   const { t } = useTranslation()
   const [showCreateCharacter, setShowCreateCharacter] = useState(false)
   const [initialLoadDone, setInitialLoadDone] = useState(false)
@@ -27,12 +28,6 @@ export default function GamePage() {
     loadSession()
   }, [loadLatestSession])
 
-  useEffect(() => {
-    if (initialLoadDone && !currentSession && !loading) {
-      setShowCreateCharacter(true)
-    }
-  }, [currentSession, loading, initialLoadDone])
-
   const handleSignOut = async () => {
     try {
       await signOut()
@@ -41,7 +36,15 @@ export default function GamePage() {
     }
   }
 
-  if (loading || !initialLoadDone) {
+  const handleSaveGame = async () => {
+    try {
+      await saveProgress()
+    } catch (error) {
+      console.error('Save game failed:', error)
+    }
+  }
+
+  if (!initialLoadDone || (loading && !currentSession)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" text={t('game.loadingAdventure')} showAvatar={true} />
@@ -68,23 +71,36 @@ export default function GamePage() {
 
               <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 {currentSession && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setShowCreateCharacter(true)}
-                    className="flex-1 sm:flex-none min-h-[44px]"
-                  >
-                    <span className="hidden sm:inline">{t('game.newCharacter')}</span>
-                    <span className="sm:hidden">{t('game.newCharacterShort')}</span>
-                  </Button>
+                  <>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setShowCreateCharacter(true)}
+                      className="flex-1 sm:flex-none min-h-[44px] inline-flex items-center justify-center gap-2"
+                    >
+                      <UserPlus className="w-4 h-4 shrink-0" aria-hidden="true" />
+                      <span className="hidden sm:inline">{t('game.newCharacter')}</span>
+                      <span className="sm:hidden">{t('game.newCharacterShort')}</span>
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleSaveGame}
+                      className="flex-1 sm:flex-none min-h-[44px] inline-flex items-center justify-center gap-2"
+                    >
+                      <Save className="w-4 h-4 shrink-0" aria-hidden="true" />
+                      <span>{t('game.saveGame')}</span>
+                    </Button>
+                  </>
                 )}
                 <Button
                   variant="danger"
                   size="sm"
                   onClick={handleSignOut}
-                  className="flex-1 sm:flex-none min-h-[44px]"
+                  className="flex-1 sm:flex-none min-h-[44px] inline-flex items-center justify-center gap-2"
                 >
-                  {t('auth.signOut')}
+                  <LogOut className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>{t('auth.signOut')}</span>
                 </Button>
               </div>
             </div>

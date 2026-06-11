@@ -12,6 +12,12 @@ export const GAME_CONSTANTS = {
   // Starting values
   STARTING_HEALTH: 100,
   STARTING_LEVEL: 1,
+  // Cosmetic gold shown in the status bar (not yet tracked in game state).
+  STARTING_GOLD: 50,
+
+  // Status bar thresholds (current health as a percentage of max).
+  HEALTH_HEALTHY_THRESHOLD: 75,
+  HEALTH_WOUNDED_THRESHOLD: 40,
 
   // UI constants
   MAX_NARRATIVE_PREVIEW_LENGTH: 150,
