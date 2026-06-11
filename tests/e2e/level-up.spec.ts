@@ -218,8 +218,9 @@ test.describe('Character Level Up and Progression', () => {
     await page.goto('/game')
     await page.waitForSelector('text="Level Up!"', { timeout: 5000 })
 
-    const strengthRow = page.locator('text="Strength"').locator('..')
-    const plusButton = strengthRow.locator('button:has-text("+")').first()
+    // The six "+" buttons live only in the level-up modal, in stat order
+    // (strength first), so the first one is strength's.
+    const plusButton = page.locator('button:has-text("+")').first()
     await plusButton.click()
 
     await expect(page.locator('text="+1"').first()).toBeVisible()
@@ -259,8 +260,9 @@ test.describe('Character Level Up and Progression', () => {
     await page.goto('/game')
     await page.waitForSelector('text="Level Up!"', { timeout: 5000 })
 
-    const strengthRow = page.locator('text="Strength"').locator('..')
-    const plusButton = strengthRow.locator('button:has-text("+")').first()
+    // The six "+" buttons live only in the level-up modal, in stat order
+    // (strength first), so the first one is strength's.
+    const plusButton = page.locator('button:has-text("+")').first()
 
     await plusButton.click() // Point 1
     await plusButton.click() // Point 2
@@ -299,8 +301,9 @@ test.describe('Character Level Up and Progression', () => {
     await page.goto('/game')
     await page.waitForSelector('text="Level Up!"', { timeout: 5000 })
 
-    const strengthRow = page.locator('text="Strength"').locator('..')
-    const plusButton = strengthRow.locator('button:has-text("+")').first()
+    // The six "+" buttons live only in the level-up modal, in stat order
+    // (strength first), so the first one is strength's.
+    const plusButton = page.locator('button:has-text("+")').first()
 
     await plusButton.click()
     await plusButton.click()

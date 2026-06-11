@@ -158,6 +158,119 @@ test.describe('Game Page Navigation', () => {
     await expect(page.locator('text="Create Your Character"')).toBeVisible()
   })
 
+  test('should display Save Game button when session exists', async ({ page }) => {
+    await page.addInitScript(() => {
+      const mockUser = { id: 'test-user-id', email: 'test@example.com' }
+      const mockProfile = { id: 'test-user-id', username: 'TestHero', created_at: new Date().toISOString() }
+      const mockSession = {
+        id: 'session-1',
+        user_id: 'test-user-id',
+        character_name: 'Thorin',
+        character_class: 'warrior',
+        game_state: {
+          level: 1,
+          health: 100,
+          maxHealth: 100,
+          experience: 0,
+          currentScene: 0,
+          inventory: [],
+          stats: { strength: 15, dexterity: 10, intelligence: 10, wisdom: 10, constitution: 14, charisma: 10 }
+        }
+      }
+      localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
+      ;(window as any).mockGameSession = mockSession
+    })
+
+    await page.goto('/game')
+
+    await expect(page.locator('button', { hasText: 'Save Game' })).toBeVisible()
+  })
+
+  test('should display the character avatar for the chosen class', async ({ page }) => {
+    await page.addInitScript(() => {
+      const mockUser = { id: 'test-user-id', email: 'test@example.com' }
+      const mockProfile = { id: 'test-user-id', username: 'TestHero', created_at: new Date().toISOString() }
+      const mockSession = {
+        id: 'session-1',
+        user_id: 'test-user-id',
+        character_name: 'Thorin',
+        character_class: 'warrior',
+        game_state: {
+          level: 1,
+          health: 100,
+          maxHealth: 100,
+          experience: 0,
+          currentScene: 0,
+          inventory: [],
+          stats: { strength: 15, dexterity: 10, intelligence: 10, wisdom: 10, constitution: 14, charisma: 10 }
+        }
+      }
+      localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
+      ;(window as any).mockGameSession = mockSession
+    })
+
+    await page.goto('/game')
+
+    await expect(page.locator('img[src*="warrior"]')).toBeVisible()
+  })
+
+  test('should display the bottom status bar with gold and a healthy status', async ({ page }) => {
+    await page.addInitScript(() => {
+      const mockUser = { id: 'test-user-id', email: 'test@example.com' }
+      const mockProfile = { id: 'test-user-id', username: 'TestHero', created_at: new Date().toISOString() }
+      const mockSession = {
+        id: 'session-1',
+        user_id: 'test-user-id',
+        character_name: 'Thorin',
+        character_class: 'warrior',
+        game_state: {
+          level: 1,
+          health: 100,
+          maxHealth: 100,
+          experience: 0,
+          currentScene: 0,
+          inventory: [],
+          stats: { strength: 15, dexterity: 10, intelligence: 10, wisdom: 10, constitution: 14, charisma: 10 }
+        }
+      }
+      localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
+      ;(window as any).mockGameSession = mockSession
+    })
+
+    await page.goto('/game')
+
+    await expect(page.locator('text="Gold"')).toBeVisible()
+    await expect(page.locator('text="In good shape"')).toBeVisible()
+  })
+
+  test('should derive a wounded status from low health', async ({ page }) => {
+    await page.addInitScript(() => {
+      const mockUser = { id: 'test-user-id', email: 'test@example.com' }
+      const mockProfile = { id: 'test-user-id', username: 'TestHero', created_at: new Date().toISOString() }
+      const mockSession = {
+        id: 'session-1',
+        user_id: 'test-user-id',
+        character_name: 'Thorin',
+        character_class: 'warrior',
+        game_state: {
+          level: 1,
+          health: 20,
+          maxHealth: 100,
+          experience: 0,
+          currentScene: 0,
+          inventory: [],
+          stats: { strength: 15, dexterity: 10, intelligence: 10, wisdom: 10, constitution: 14, charisma: 10 }
+        }
+      }
+      localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
+      ;(window as any).mockGameSession = mockSession
+    })
+
+    await page.goto('/game')
+
+    await expect(page.locator('text="Badly wounded"')).toBeVisible()
+  })
+
   test('should have responsive header layout on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 }) // iPhone size
 

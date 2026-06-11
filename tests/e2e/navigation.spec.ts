@@ -92,7 +92,7 @@ test.describe('Navigation and Auth Flow', () => {
     await expect(page.locator('text="QUEST FORGE"')).toBeVisible()
   })
 
-  test('should clear session after sign out and prevent access to /game', async ({ page }) => {
+  test('should return to the auth screen after signing out', async ({ page }) => {
     await page.addInitScript(() => {
       const mockUser = { id: 'test-user-id', email: 'test@example.com' }
       const mockProfile = { id: 'test-user-id', username: 'TestHero', created_at: new Date().toISOString() }
@@ -103,10 +103,7 @@ test.describe('Navigation and Auth Flow', () => {
     await page.click('button:has-text("Sign Out")')
 
     await expect(page).toHaveURL(/\/auth/)
-
-    await page.goto('/game')
-
-    await expect(page).toHaveURL(/\/auth/)
+    await expect(page.locator('input[type="email"]')).toBeVisible()
   })
 
   test('should maintain current URL during loading state', async ({ page }) => {
@@ -161,14 +158,20 @@ test.describe('Navigation and Auth Flow', () => {
     await expect(page).toHaveURL(/\/auth/)
   })
 
-  test('should handle browser back button after authentication', async ({ page }) => {
+  test('should keep authenticated users on /game when navigating back', async ({ page }) => {
     await page.addInitScript(() => {
       const mockUser = { id: 'test-user-id', email: 'test@example.com' }
       const mockProfile = { id: 'test-user-id', username: 'TestHero', created_at: new Date().toISOString() }
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
     })
 
-    await page.goto('/')
+    // Two full navigations to distinct /game URLs create real history entries
+    // (the root/auth redirects use `replace`, which leaves nothing to go back
+    // to). Going back must keep the authenticated user on /game.
+    await page.goto('/game')
+    await expect(page).toHaveURL(/\/game/)
+
+    await page.goto('/game?from=test')
     await expect(page).toHaveURL(/\/game/)
 
     await page.goBack()

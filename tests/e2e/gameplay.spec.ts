@@ -53,16 +53,16 @@ test.describe('Gameplay and Scene Progression', () => {
 
   test('should display current scene narrative', async ({ page }) => {
     await page.goto('/game')
-    await page.waitForSelector('text="You stand at the entrance"', { timeout: 5000 })
+    await page.waitForSelector('text=You stand at the entrance', { timeout: 5000 })
 
-    await expect(page.locator('text="You stand at the entrance of a dark cave"')).toBeVisible()
+    await expect(page.locator('text=You stand at the entrance of a dark cave')).toBeVisible()
   })
 
   test('should display multiple player choices', async ({ page }) => {
     await page.goto('/game')
-    await page.waitForSelector('text="What do you choose?"', { timeout: 5000 })
+    await page.waitForSelector('text="Your options"', { timeout: 5000 })
 
-    await expect(page.locator('text="What do you choose?"')).toBeVisible()
+    await expect(page.locator('text="Your options"')).toBeVisible()
 
     await expect(page.locator('text="Enter the cave cautiously"')).toBeVisible()
     await expect(page.locator('text="Search the area for clues"')).toBeVisible()
@@ -72,12 +72,12 @@ test.describe('Gameplay and Scene Progression', () => {
 
   test('should display choice numbers', async ({ page }) => {
     await page.goto('/game')
-    await page.waitForSelector('text="What do you choose?"', { timeout: 5000 })
+    await page.waitForSelector('text="Your options"', { timeout: 5000 })
 
-    await expect(page.locator('text="1."')).toBeVisible()
-    await expect(page.locator('text="2."')).toBeVisible()
-    await expect(page.locator('text="3."')).toBeVisible()
-    await expect(page.locator('text="4."')).toBeVisible()
+    await expect(page.locator('button:has-text("Enter the cave cautiously")')).toContainText('1')
+    await expect(page.locator('button:has-text("Search the area for clues")')).toContainText('2')
+    await expect(page.locator('button:has-text("Call out to see if anyone is inside")')).toContainText('3')
+    await expect(page.locator('button:has-text("Turn back and seek another path")')).toContainText('4')
   })
 
   test('should allow clicking on a choice', async ({ page }) => {
@@ -142,7 +142,7 @@ test.describe('Gameplay and Scene Progression', () => {
     await page.waitForSelector('text="Your choice:"', { timeout: 5000 })
 
     await expect(page.locator('text="Your choice:"')).toBeVisible()
-    await expect(page.locator('text="ENTER THE CAVE CAUTIOUSLY"')).toBeVisible()
+    await expect(page.locator('text=Enter the cave cautiously')).toBeVisible()
   })
 
   test('should hide choice buttons after choice is made', async ({ page }) => {
@@ -176,7 +176,7 @@ test.describe('Gameplay and Scene Progression', () => {
 
     await page.goto('/game')
 
-    await expect(page.locator('text="What do you choose?"')).not.toBeVisible()
+    await expect(page.locator('text="Your options"')).not.toBeVisible()
   })
 
   test('should display adventure log when multiple scenes exist', async ({ page }) => {
@@ -223,8 +223,8 @@ test.describe('Gameplay and Scene Progression', () => {
 
     await expect(page.locator('h3:has-text("Adventure Log")')).toBeVisible()
 
-    await expect(page.locator('text="You stand at the entrance of a dark cave"')).toBeVisible()
-    await expect(page.locator('text="ENTER THE CAVE"')).toBeVisible()
+    await expect(page.locator('text=You stand at the entrance of a dark cave')).toBeVisible()
+    await expect(page.locator('text=Enter the cave').first()).toBeVisible()
   })
 
   test('should display scenes in reverse order in adventure log', async ({ page }) => {

@@ -87,13 +87,17 @@ test.describe('Character Creation', () => {
     await expect(backstoryTextarea).toBeVisible()
   })
 
-  test('should show error when submitting without character name', async ({ page }) => {
+  test('should block submitting without a character name', async ({ page }) => {
     await page.goto('/game')
     await page.click('button:has-text("Create Character")')
 
     await page.click('button[type="submit"]:has-text("Create Character")')
 
-    await expect(page.locator('text="Character name is required"')).toBeVisible()
+    // The name field is `required`, so the browser blocks submission: the modal
+    // stays open and the field reports itself invalid.
+    const nameInput = page.locator('input[placeholder*="character\'s name"]')
+    expect(await nameInput.evaluate((el: HTMLInputElement) => el.validity.valid)).toBe(false)
+    await expect(page.locator('text="Create Your Character"')).toBeVisible()
   })
 
   test('should allow entering character name', async ({ page }) => {
@@ -150,8 +154,10 @@ test.describe('Character Creation', () => {
 
     await page.click('button[type="submit"]:has-text("Create Character")')
 
-
-    await expect(nameInput).toHaveValue('  Thorin  ')
+    // Submitting trims the name: the modal closes and the created character's
+    // sheet heading reads "Thorin", not the padded input value.
+    await expect(page.locator('text="Create Your Character"')).not.toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Thorin' })).toBeVisible()
   })
 
   test('should display all class options in grid layout', async ({ page }) => {
