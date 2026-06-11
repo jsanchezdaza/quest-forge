@@ -1,3 +1,4 @@
+import { Gem } from 'lucide-react'
 import { useTranslation, type TranslationKey } from '../../i18n'
 
 interface StatsListProps {
@@ -10,7 +11,8 @@ export default function StatsList({ stats, title }: StatsListProps) {
 
   return (
     <div>
-      <h3 className="font-medieval-decorative font-semibold text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-4">
+      <h3 className="flex items-center gap-2 font-medieval-decorative font-semibold text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-4">
+        <Gem className="w-5 h-5 shrink-0" aria-hidden="true" />
         {title ?? t('game.attributes')}
       </h3>
       <div className="space-y-3">

@@ -1,4 +1,6 @@
+import { Backpack } from 'lucide-react'
 import { Card, ProgressBar, StatsList } from '../ui'
+import CharacterAvatar from './CharacterAvatar'
 import type { GameSession } from '../../types'
 import { getExperienceForNextLevel } from '../../utils/levelSystem'
 import { useTranslation, type TranslationKey } from '../../i18n'
@@ -17,14 +19,17 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
   return (
     <>
       {/* Player Data - Order 1 on mobile */}
-      <Card variant="game" className="order-1 md:order-none mb-4">
-        <div className="text-center mb-4">
-          <h2 className="font-fantasy-epic font-black text-2xl text-medieval-gold drop-shadow-lg">
-            {character_name}
-          </h2>
-          <p className="font-fantasy-elegant font-medium text-base text-gray-200 capitalize">
-            {t('game.levelAndClass', { level, class: t(`class.${character_class}.name` as TranslationKey) })}
-          </p>
+      <Card variant="game" ornate className="order-1 md:order-none mb-4">
+        <div className="flex items-center gap-4 mb-4">
+          <CharacterAvatar characterClass={character_class} characterName={character_name} />
+          <div>
+            <h2 className="font-fantasy-epic font-black text-2xl text-medieval-gold drop-shadow-lg">
+              {character_name}
+            </h2>
+            <p className="font-fantasy-elegant font-medium text-base text-gray-200 capitalize">
+              {t('game.levelAndClass', { level, class: t(`class.${character_class}.name` as TranslationKey) })}
+            </p>
+          </div>
         </div>
 
         <ProgressBar
@@ -44,13 +49,14 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
       </Card>
 
       {/* Stats/Attributes - Order 3 on mobile (after narrative) */}
-      <Card variant="game" className="order-3 md:order-none mb-4">
+      <Card variant="game" ornate className="order-3 md:order-none mb-4">
         <StatsList stats={stats} />
       </Card>
 
       {/* Inventory - Order 4 on mobile */}
-      <Card variant="game" className="order-4 md:order-none">
-        <h3 className="font-medieval-decorative font-semibold text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-4">
+      <Card variant="game" ornate className="order-4 md:order-none">
+        <h3 className="flex items-center gap-2 font-medieval-decorative font-semibold text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-4">
+          <Backpack className="w-5 h-5 shrink-0" aria-hidden="true" />
           {t('game.inventory')}
         </h3>
         {inventory.length > 0 ? (

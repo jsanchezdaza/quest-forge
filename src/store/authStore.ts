@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
+import { getMockAuth, isMockInitialLoading, isTestMode } from '../lib/testMode'
 import type { AuthState } from '../types'
 
 // Helper for auth operations with consistent error handling
@@ -54,28 +55,49 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   signOut: async () => {
+    if (isTestMode()) {
+      localStorage.removeItem('sb-mock-auth-token')
+      set({ user: null, profile: null, loading: false })
+      return
+    }
+
     return withErrorHandling(async () => {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
-      
+
       set({ user: null, profile: null })
     }, set)
   },
 }))
 
 // Simple initialization
-supabase.auth.onAuthStateChange(async (_event, session) => {
-  if (session?.user) {
-    useAuthStore.setState({
-      user: { id: session.user.id, email: session.user.email || '' },
-      profile: null,
-      loading: false
-    })
+if (isTestMode()) {
+  // The e2e harness seeds auth via localStorage; mockInitialLoading keeps the
+  // store in its loading state so the "Initializing" screen can be asserted.
+  if (isMockInitialLoading()) {
+    useAuthStore.setState({ user: null, profile: null, loading: true })
   } else {
+    const mockAuth = getMockAuth()
     useAuthStore.setState({
-      user: null,
-      profile: null,
+      user: mockAuth?.user ?? null,
+      profile: mockAuth?.profile ?? null,
       loading: false
     })
   }
-})
+} else {
+  supabase.auth.onAuthStateChange(async (_event, session) => {
+    if (session?.user) {
+      useAuthStore.setState({
+        user: { id: session.user.id, email: session.user.email || '' },
+        profile: null,
+        loading: false
+      })
+    } else {
+      useAuthStore.setState({
+        user: null,
+        profile: null,
+        loading: false
+      })
+    }
+  })
+}

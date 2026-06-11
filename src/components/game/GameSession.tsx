@@ -3,6 +3,7 @@ import { useLevelUp } from '../../hooks/useLevelUp'
 import { Card } from '../ui'
 import CharacterSheet from './CharacterSheet'
 import SceneDisplay from './SceneDisplay'
+import StatusBar from './StatusBar'
 import LevelUpModal from './LevelUpModal'
 import { GAME_CONSTANTS } from '../../constants/game'
 import { useTranslation } from '../../i18n'
@@ -31,6 +32,7 @@ export default function GameSession() {
   }
 
   return (
+    <div className="space-y-4 sm:space-y-6">
     <div className="flex flex-col gap-4 sm:gap-6 md:grid md:grid-cols-4">
       {/* Character Sheet - Uses contents on mobile for order to work, block on desktop for grid */}
       <div className="contents md:block md:col-span-1">
@@ -85,6 +87,9 @@ export default function GameSession() {
         newLevel={newLevel}
         availablePoints={availablePoints}
       />
+    </div>
+
+      <StatusBar gameState={currentSession.game_state} />
     </div>
   )
 }
