@@ -13,6 +13,14 @@ import {
   isOpenRouterConfigured
 } from '../lib/openrouter'
 import { GAME_CONSTANTS } from '../constants/game'
+import {
+  getMockGameSession,
+  getMockLoadingDelay,
+  getMockScenes,
+  isMockGenerating,
+  isMockLoading,
+  isTestMode
+} from '../lib/testMode'
 import type { GameStore, CharacterClass, GameState } from '../types'
 
 const createInitialGameState = (characterClass: CharacterClass): GameState => ({
@@ -123,7 +131,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   loadLatestSession: async () => {
     set({ loading: true })
-    
+
+    if (isTestMode()) {
+      const delay = getMockLoadingDelay()
+      if (delay) await new Promise((resolve) => setTimeout(resolve, delay))
+      set({
+        currentSession: getMockGameSession(),
+        scenes: getMockScenes(),
+        isGenerating: isMockGenerating(),
+        loading: isMockLoading(),
+      })
+      return
+    }
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       set({ loading: false })
@@ -163,6 +183,31 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   createSession: async (characterName: string, characterClass: CharacterClass, backstory?: string) => {
     set({ loading: true })
+
+    if (isTestMode()) {
+      const gameState = createInitialGameState(characterClass)
+      const now = new Date().toISOString()
+      const testSession = {
+        id: 'test-session',
+        user_id: 'test-user-id',
+        character_name: characterName,
+        character_class: characterClass,
+        backstory,
+        game_state: gameState,
+        created_at: now,
+        updated_at: now,
+      }
+      const testScene = {
+        id: 'test-scene',
+        session_id: testSession.id,
+        narrative: generateInitialNarrative(characterName, characterClass),
+        choices: getInitialChoices(),
+        player_choice: null,
+        created_at: now,
+      }
+      set({ currentSession: testSession, scenes: [testScene], loading: false })
+      return
+    }
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('No user logged in')
