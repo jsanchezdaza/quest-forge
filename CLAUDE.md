@@ -9,7 +9,7 @@ Use `pnpm` for everything (see Package Manager below).
 - `pnpm dev` — Vite dev server at http://localhost:5173
 - `pnpm build` — `tsc && vite build` (type-checks, then builds)
 - `pnpm lint` — `eslint "src/**/*.{ts,tsx}" --max-warnings 0` (zero-warning policy; CI fails on any warning)
-- `pnpm test:unit` — Node.js unit tests for serverless API handlers
+- `pnpm test:unit` — Node.js unit tests for serverless APIs and domain utilities
 - `pnpm test:e2e` — Playwright end-to-end tests
 - `pnpm check` — unit tests, API type checks, lint, and production build
 
