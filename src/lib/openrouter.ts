@@ -1,9 +1,7 @@
 import type { GameSession, Scene, CharacterClass } from '../types'
 import { translate } from '../i18n'
+import { supabase } from './supabase'
 
-const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || ''
-const OPENROUTER_MODEL = import.meta.env.VITE_OPENROUTER_MODEL || 'google/gemma-4-26b-a4b-it:free'
-const OPENROUTER_BASE_URL = import.meta.env.VITE_OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
 const DEFAULT_TIMEOUT = 10000
 const MAX_RETRIES = 3
 
@@ -13,18 +11,17 @@ export interface OpenRouterMessage {
 }
 
 async function retryWithTimeout<T>(
-  fn: () => Promise<T>,
+  fn: (signal: AbortSignal) => Promise<T>,
   retries = MAX_RETRIES,
   timeout = DEFAULT_TIMEOUT
 ): Promise<T> {
   let lastError: Error | null = null
 
   for (let i = 0; i < retries; i++) {
+    const controller = new AbortController()
+    const timeoutId = window.setTimeout(() => controller.abort(), timeout)
     try {
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), timeout)
-      )
-      return await Promise.race([fn(), timeoutPromise])
+      return await fn(controller.signal)
     } catch (error) {
       lastError = error as Error
       console.warn(`Attempt ${i + 1}/${retries} failed:`, error)
@@ -32,6 +29,8 @@ async function retryWithTimeout<T>(
       if (i < retries - 1) {
         await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000))
       }
+    } finally {
+      window.clearTimeout(timeoutId)
     }
   }
 
@@ -43,28 +42,21 @@ export async function streamFromOpenRouter(
   onComplete: () => void,
   onError: (error: Error) => void
 ): Promise<void> {
-  if (!OPENROUTER_API_KEY) {
-    onError(new Error('OpenRouter API key not configured'))
-    return
-  }
-
   try {
-    await retryWithTimeout(async () => {
-      const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) {
+      throw new Error('Authentication required for AI narrative')
+    }
+
+    await retryWithTimeout(async (signal) => {
+      const response = await fetch('/api/openrouter', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': window.location.origin,
-          'X-Title': 'Quest Forge'
         },
-        body: JSON.stringify({
-          model: OPENROUTER_MODEL,
-          messages,
-          stream: true,
-          temperature: 0.8,
-          max_tokens: 500
-        })
+        body: JSON.stringify({ messages }),
+        signal,
       })
 
       if (!response.ok) {
@@ -78,40 +70,41 @@ export async function streamFromOpenRouter(
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
       let isReading = true
+      let buffer = ''
+      let completed = false
+
+      const processLine = (line: string) => {
+        if (!line.startsWith('data: ')) return
+        const data = line.slice(6)
+        if (data === '[DONE]') {
+          if (!completed) onComplete()
+          completed = true
+          isReading = false
+          return
+        }
+
+        try {
+          const parsed = JSON.parse(data)
+          const content = parsed.choices?.[0]?.delta?.content
+          if (content) onChunk(content)
+        } catch (error) {
+          console.warn('Failed to parse SSE data:', error)
+        }
+      }
 
       while (isReading) {
         const { done, value } = await reader.read()
 
         if (done) {
-          onComplete()
+          if (buffer.trim()) processLine(buffer.trim())
+          if (!completed) onComplete()
           break
         }
 
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n').filter(line => line.trim() !== '')
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6)
-
-            if (data === '[DONE]') {
-              onComplete()
-              isReading = false
-              break
-            }
-
-            try {
-              const parsed = JSON.parse(data)
-              const content = parsed.choices?.[0]?.delta?.content
-
-              if (content) {
-                onChunk(content)
-              }
-            } catch (e) {
-              console.warn('Failed to parse SSE data:', e)
-            }
-          }
-        }
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+        lines.map(line => line.trim()).filter(Boolean).forEach(processLine)
       }
     })
   } catch (error) {
@@ -266,5 +259,5 @@ Write a brief backstory explaining who they are and why they became a ${characte
 }
 
 export function isOpenRouterConfigured(): boolean {
-  return OPENROUTER_API_KEY.length > 0
+  return import.meta.env.VITE_OPENROUTER_ENABLED !== 'false'
 }
