@@ -1,12 +1,49 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
+import { loadAndSyncUserProfile, type UserProfileRepository } from '../lib/userProfile'
 import { getMockAuth, isMockInitialLoading, isTestMode } from '../lib/testMode'
-import type { AuthState } from '../types'
+import type { AuthState, User } from '../types'
 
-// Helper for auth operations with consistent error handling
+const userProfileRepository: UserProfileRepository = {
+  findById: async (id) => {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('id, username, created_at')
+      .eq('id', id)
+      .maybeSingle()
+
+    if (error) throw error
+    return data
+  },
+  upsertUsername: async (id, username) => {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .upsert({ id, username }, { onConflict: 'id' })
+      .select('id, username, created_at')
+      .single()
+
+    if (error) throw error
+    return data
+  },
+}
+
+const appUser = (user: { id: string; email?: string }): User => ({
+  id: user.id,
+  email: user.email || '',
+})
+
+const loadProfile = async (user: Parameters<typeof loadAndSyncUserProfile>[0]) => {
+  try {
+    return await loadAndSyncUserProfile(user, userProfileRepository)
+  } catch (error) {
+    console.error('Failed to load user profile:', error)
+    return null
+  }
+}
+
 const withErrorHandling = async <T>(
   operation: () => Promise<T>,
-  setState: (state: Partial<AuthState>) => void
+  setState: (state: Partial<AuthState>) => void,
 ): Promise<T> => {
   setState({ loading: true })
   try {
@@ -22,33 +59,39 @@ const withErrorHandling = async <T>(
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   profile: null,
-  loading: false,
+  loading: !isTestMode(),
 
   signIn: async (email: string, password: string) => {
     return withErrorHandling(async () => {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-      
       if (error) throw error
 
       if (data.user) {
-        set({ 
-          user: { id: data.user.id, email: data.user.email || '' },
-          profile: null
-        })
+        const profile = await loadProfile(data.user)
+        set({ user: appUser(data.user), profile })
       }
     }, set)
   },
 
   signUp: async (email: string, password: string, username: string) => {
     return withErrorHandling(async () => {
-      const { data, error } = await supabase.auth.signUp({ email, password })
-      
+      const normalizedUsername = username.trim()
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { username: normalizedUsername } },
+      })
       if (error) throw error
 
       if (data.user) {
-        set({ 
-          user: { id: data.user.id, email: data.user.email || '' },
-          profile: { id: data.user.id, username, created_at: new Date().toISOString() }
+        const persistedProfile = data.session ? await loadProfile(data.user) : null
+        set({
+          user: appUser(data.user),
+          profile: persistedProfile ?? {
+            id: data.user.id,
+            username: normalizedUsername,
+            created_at: new Date().toISOString(),
+          },
         })
       }
     }, set)
@@ -64,16 +107,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     return withErrorHandling(async () => {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
-
       set({ user: null, profile: null })
     }, set)
   },
 }))
 
-// Simple initialization
 if (isTestMode()) {
-  // The e2e harness seeds auth via localStorage; mockInitialLoading keeps the
-  // store in its loading state so the "Initializing" screen can be asserted.
   if (isMockInitialLoading()) {
     useAuthStore.setState({ user: null, profile: null, loading: true })
   } else {
@@ -81,23 +120,31 @@ if (isTestMode()) {
     useAuthStore.setState({
       user: mockAuth?.user ?? null,
       profile: mockAuth?.profile ?? null,
-      loading: false
+      loading: false,
     })
   }
 } else {
-  supabase.auth.onAuthStateChange(async (_event, session) => {
-    if (session?.user) {
-      useAuthStore.setState({
-        user: { id: session.user.id, email: session.user.email || '' },
-        profile: null,
-        loading: false
-      })
-    } else {
+  let authSequence = 0
+  supabase.auth.onAuthStateChange((_event, session) => {
+    const sequence = ++authSequence
+    if (!session?.user) {
       useAuthStore.setState({
         user: null,
         profile: null,
-        loading: false
+        loading: false,
       })
+      return
     }
+
+    // Supabase advises deferring other client calls until its auth callback releases its lock.
+    setTimeout(async () => {
+      const profile = await loadProfile(session.user)
+      if (sequence !== authSequence) return
+      useAuthStore.setState({
+        user: appUser(session.user),
+        profile,
+        loading: false,
+      })
+    }, 0)
   })
 }

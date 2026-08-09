@@ -10,7 +10,7 @@ Quest Forge is a narrative D&D game built with React 19, TypeScript, Vite, React
 - `pnpm dev` starts the Vite development server.
 - `pnpm lint` runs ESLint with zero warnings allowed.
 - `pnpm build` type-checks and creates the production bundle.
-- `pnpm test:unit` runs the serverless API unit tests.
+- `pnpm test:unit` runs the Node.js unit tests for serverless APIs and domain utilities.
 - `pnpm test:e2e` runs the Playwright suite.
 - `pnpm exec playwright test tests/e2e/auth.spec.ts` runs one spec.
 - `pnpm check` runs unit tests, API type checks, lint, and the production build.
@@ -25,7 +25,7 @@ Application code lives in `src/`. Pages and routing begin in `src/main.tsx` and 
 
 Work in small, independently shippable steps. Follow TDD: reproduce behavior with a failing test, implement the simplest passing change, then refactor under green. Prefer established components, stores, utilities, and file structure over new abstractions. Keep TypeScript strict and do not introduce `any`, warning suppressions, unnecessary re-renders, duplicated game logic, or hard-coded balance values.
 
-Playwright specs live in `tests/e2e/`; Supabase is mocked in `tests/e2e/setup.ts`, so browser tests must not require real credentials. Serverless API unit tests live beside their handlers under `api/`. Add or update the closest behavioral test for every behavior change.
+Playwright specs live in `tests/e2e/`; Supabase is mocked in `tests/e2e/setup.ts`, so browser tests must not require real credentials. Serverless API unit tests live beside their handlers under `api/`; other Node.js unit tests live under `tests/unit/`. Add or update the closest behavioral test for every behavior change.
 
 ## Environment and Security
 

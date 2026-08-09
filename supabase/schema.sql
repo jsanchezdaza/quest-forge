@@ -124,10 +124,13 @@ create or replace function public.handle_new_user()
 returns trigger as $$
 begin
   insert into public.user_profiles (id, username)
-  values (new.id, new.email);
+  values (
+    new.id,
+    coalesce(nullif(trim(new.raw_user_meta_data ->> 'username'), ''), new.email)
+  );
   return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = '';
 
 -- Create trigger for new user signup
 create trigger on_auth_user_created
