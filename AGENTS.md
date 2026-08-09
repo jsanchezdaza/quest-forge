@@ -10,9 +10,10 @@ Quest Forge is a narrative D&D game built with React 19, TypeScript, Vite, React
 - `pnpm dev` starts the Vite development server.
 - `pnpm lint` runs ESLint with zero warnings allowed.
 - `pnpm build` type-checks and creates the production bundle.
+- `pnpm test:unit` runs the serverless API unit tests.
 - `pnpm test:e2e` runs the Playwright suite.
 - `pnpm exec playwright test tests/e2e/auth.spec.ts` runs one spec.
-- `pnpm check` runs the fast repository quality gate: lint and build.
+- `pnpm check` runs unit tests, API type checks, lint, and the production build.
 
 Run `pnpm check` before considering a change complete. Run the relevant Playwright specs for behavior changes; CI currently runs the Chromium authentication spec.
 
@@ -24,11 +25,11 @@ Application code lives in `src/`. Pages and routing begin in `src/main.tsx` and 
 
 Work in small, independently shippable steps. Follow TDD: reproduce behavior with a failing test, implement the simplest passing change, then refactor under green. Prefer established components, stores, utilities, and file structure over new abstractions. Keep TypeScript strict and do not introduce `any`, warning suppressions, unnecessary re-renders, duplicated game logic, or hard-coded balance values.
 
-Playwright is the only test layer by design. Specs live in `tests/e2e/`; Supabase is mocked in `tests/e2e/setup.ts`, so tests must not require real credentials. Add or update the closest behavioral spec for every behavior change.
+Playwright specs live in `tests/e2e/`; Supabase is mocked in `tests/e2e/setup.ts`, so browser tests must not require real credentials. Serverless API unit tests live beside their handlers under `api/`. Add or update the closest behavioral test for every behavior change.
 
 ## Environment and Security
 
-Local configuration belongs in `.env.local`. Use `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and optional OpenRouter variables documented in `.env.example`. Never commit credentials, generated `dist/`, Playwright reports, or test results.
+Local configuration belongs in `.env.local`. Browser-safe variables use the `VITE_` prefix. OpenRouter requests go through the authenticated serverless proxy; `OPENROUTER_API_KEY` is server-only and must never use the `VITE_` prefix. Never commit credentials, generated `dist/`, Playwright reports, or test results.
 
 ## Git
 

@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(_req: VercelRequest, res: VercelResponse) {
   try {
     // Get Supabase credentials from environment variables
     const supabaseUrl = process.env.SUPABASE_URL;

@@ -9,7 +9,9 @@ Use `pnpm` for everything (see Package Manager below).
 - `pnpm dev` — Vite dev server at http://localhost:5173
 - `pnpm build` — `tsc && vite build` (type-checks, then builds)
 - `pnpm lint` — `eslint "src/**/*.{ts,tsx}" --max-warnings 0` (zero-warning policy; CI fails on any warning)
-- `pnpm test:e2e` — Playwright end-to-end tests (the only test layer; there are no unit tests by design — YAGNI)
+- `pnpm test:unit` — Node.js unit tests for serverless API handlers
+- `pnpm test:e2e` — Playwright end-to-end tests
+- `pnpm check` — unit tests, API type checks, lint, and production build
 
 Running a subset of e2e tests:
 - Single file: `pnpm exec playwright test tests/e2e/auth.spec.ts`
@@ -41,9 +43,10 @@ this project does **not** use it.) Three stores in `src/store/`, subscribed to d
 the `scenes` table and updates the `game_state` JSON column on `game_sessions`. Tables: `user_profiles`,
 `game_sessions`, `scenes` (RLS enabled). Client + schema types in `src/lib/supabase.ts`.
 
-**Narrative is dual-mode**: when `VITE_OPENROUTER_API_KEY` is set, `src/lib/openrouter.ts` streams the
-scene narrative and generates choices via the AI model; otherwise it falls back to static narratives in
-`src/lib/narrative.ts`. Streaming updates `streamingNarrative` in the store via an `onChunk` callback.
+**Narrative is dual-mode**: `src/lib/openrouter.ts` sends authenticated requests to the
+`api/openrouter.ts` serverless proxy, which keeps `OPENROUTER_API_KEY` out of the browser. Set
+`VITE_OPENROUTER_ENABLED=false` to force static narratives from `src/lib/narrative.ts`. Streaming
+updates `streamingNarrative` in the store via an `onChunk` callback.
 
 **Level system**: `src/utils/levelSystem.ts` plus `src/constants/game.ts` hold all tunable balance
 numbers (XP per level, attribute/health gains, starting stats). `src/hooks/useLevelUp.ts` drives the
@@ -53,8 +56,9 @@ level-up modal where the player distributes points across the 6 attributes.
 unauthenticated → `/auth`, authenticated → `/game`) → `src/pages/{AuthPage,GamePage}.tsx`.
 `GamePage` loads the latest session on mount and shows the character-creation modal when none exists.
 
-**Local env**: create `.env.local` with `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and optionally
-`VITE_OPENROUTER_API_KEY` / `VITE_OPENROUTER_MODEL` / `VITE_OPENROUTER_BASE_URL` (see `.env.example`).
+**Local env**: create `.env.local` with browser-safe `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_ANON_KEY`. Configure `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `OPENROUTER_API_KEY`
+server-side for the proxy (see `.env.example`).
 
 # Development Guidelines for Quest Forge
 

@@ -14,19 +14,19 @@ A React-based narrative D&D game built with TypeScript, Vite, Tailwind CSS, Zust
 
 ## Tech Stack
 
-- **Frontend**: React 18, TypeScript, Vite
+- **Frontend**: React 19, TypeScript, Vite
 - **Styling**: Tailwind CSS with custom medieval theme
 - **State Management**: Zustand
 - **Backend**: Supabase (Authentication, Database, Real-time)
-- **Testing**: Jest, React Testing Library, Playwright
+- **Testing**: Node.js test runner and Playwright
 - **Package Manager**: pnpm
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
-- pnpm
+- Node.js 24 or higher
+- pnpm 11 or higher
 - Supabase account
 
 ### Installation
@@ -44,14 +44,19 @@ pnpm install
 
 3. Set up environment variables:
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 
-Update `.env` with your Supabase credentials:
+Update `.env.local` with your public Supabase credentials:
 ```
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
+
+AI narrative requests go through the authenticated `/api/openrouter` serverless function. Configure
+`SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `OPENROUTER_API_KEY` as server-side Vercel environment
+variables. The OpenRouter key must never use the `VITE_` prefix. Set
+`VITE_OPENROUTER_ENABLED=false` to force static narratives in local development.
 
 4. Set up the database:
    - Go to your Supabase dashboard
@@ -104,9 +109,10 @@ You can test the heartbeat endpoint locally by running the function directly or 
 - `pnpm run dev` - Start development server
 - `pnpm run build` - Build for production
 - `pnpm run preview` - Preview production build
-- `pnpm run test` - Run unit tests
+- `pnpm run test:unit` - Run serverless API unit tests
 - `pnpm run test:e2e` - Run end-to-end tests
 - `pnpm run lint` - Run ESLint
+- `pnpm run check` - Run unit tests, type checks, lint, and the production build
 
 ## Project Structure
 

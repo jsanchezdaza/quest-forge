@@ -14,7 +14,9 @@
     "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings 0",
     "preview": "vite preview",
     "test:e2e": "playwright test",
-    "check": "pnpm lint && pnpm build"
+    "test:unit": "node --test api/*.test.ts",
+    "type-check:api": "tsc -p tsconfig.api.json",
+    "check": "pnpm test:unit && pnpm type-check:api && pnpm lint && pnpm build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.2",
