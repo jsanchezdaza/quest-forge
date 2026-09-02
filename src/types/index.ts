@@ -61,6 +61,9 @@ export interface GameState {
 export interface AuthState {
   user: User | null
   profile: UserProfile | null
+  /** True until the first Supabase auth state is known. Gates the whole app. */
+  initializing: boolean
+  /** True while a sign in, sign up or sign out request is in flight. */
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string, username: string) => Promise<void>

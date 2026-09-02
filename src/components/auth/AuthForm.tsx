@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuthStore } from '../../store/authStore'
-import { FormField, Button } from '../ui'
+import { FormField, Button, ErrorMessage } from '../ui'
 import { VALIDATION_RULES } from '../../constants/validation'
 import { useTranslation } from '../../i18n'
 
@@ -13,14 +13,22 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
-  
+  const [error, setError] = useState('')
+
   const { signIn, signUp, loading } = useAuthStore()
   const { t } = useTranslation()
 
+  const handleToggleMode = () => {
+    setError('')
+    onToggleMode()
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
 
     if (mode === 'signup' && !username.trim()) {
+      setError(t('auth.usernameRequired'))
       return
     }
 
@@ -30,8 +38,9 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
       } else {
         await signIn(email, password)
       }
-    } catch (error) {
-      console.error('Authentication failed:', error)
+    } catch (cause) {
+      const fallback = mode === 'signup' ? t('auth.signUpFailed') : t('auth.signInFailed')
+      setError((cause as Error).message || fallback)
     }
   }
 
@@ -82,6 +91,8 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             minLength={VALIDATION_RULES.PASSWORD_MIN_LENGTH}
           />
 
+          <ErrorMessage message={error} />
+
           <Button
             type="submit"
             variant="primary"
@@ -95,8 +106,9 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
         <div className="mt-4 sm:mt-6 text-center">
           <button
             type="button"
-            onClick={onToggleMode}
-            className="text-medieval-gold hover:text-medieval-darkgold transition-colors font-pixel-body text-xs uppercase tracking-wide min-h-[44px] py-2"
+            onClick={handleToggleMode}
+            disabled={loading}
+            className="text-medieval-gold hover:text-medieval-darkgold transition-colors font-pixel-body text-xs uppercase tracking-wide min-h-[44px] py-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {mode === 'signin'
               ? t('auth.toggleToSignUp')

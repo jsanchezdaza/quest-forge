@@ -19,6 +19,9 @@ export const es: typeof en = {
   'auth.toggleToSignUp': '¿NO TIENES CUENTA? REGÍSTRATE',
   'auth.toggleToSignIn': '¿YA TIENES CUENTA? ENTRA',
   'auth.signOut': 'Cerrar sesión',
+  'auth.usernameRequired': 'Elige un nombre de usuario.',
+  'auth.signInFailed': 'No se pudo iniciar sesión. Inténtalo de nuevo.',
+  'auth.signUpFailed': 'No se pudo crear la cuenta. Inténtalo de nuevo.',
 
   // Forms
   'form.emailLabel': 'Correo',

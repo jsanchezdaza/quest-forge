@@ -17,6 +17,9 @@ export const en = {
   'auth.toggleToSignUp': "DON'T HAVE AN ACCOUNT? SIGN UP",
   'auth.toggleToSignIn': 'ALREADY HAVE AN ACCOUNT? SIGN IN',
   'auth.signOut': 'Sign Out',
+  'auth.usernameRequired': 'Please choose a username.',
+  'auth.signInFailed': 'Could not sign you in. Please try again.',
+  'auth.signUpFailed': 'Could not create your account. Please try again.',
 
   // Forms
   'form.emailLabel': 'Email',
