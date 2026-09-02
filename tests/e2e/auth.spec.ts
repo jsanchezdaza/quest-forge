@@ -90,7 +90,26 @@ test.describe('Authentication UI', () => {
     await page.fill('input[type="password"]', 'wrong-password')
     await page.click('button[type="submit"]')
 
-    await expect(page.getByRole('alert')).toContainText('Invalid login credentials')
+    await expect(page.getByRole('alert')).toContainText('Invalid email or password')
+  })
+
+  test('the reason for a failed sign in follows the selected language', async ({ page }) => {
+    await page.route('**/auth/v1/token**', (route) =>
+      route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({ error_code: 'invalid_credentials', msg: 'Invalid login credentials' }),
+      })
+    )
+
+    await page.goto('/auth')
+    await page.getByRole('button', { name: 'ES', exact: true }).click()
+
+    await page.fill('input[type="email"]', 'test@example.com')
+    await page.fill('input[type="password"]', 'wrong-password')
+    await page.click('button[type="submit"]')
+
+    await expect(page.getByRole('alert')).toContainText('Correo o contraseña incorrectos')
   })
 
   test('a failed sign up shows the reason on the auth form', async ({ page }) => {
@@ -110,7 +129,7 @@ test.describe('Authentication UI', () => {
     await page.fill('input[id="username"]', 'TestUser')
     await page.click('button[type="submit"]')
 
-    await expect(page.getByRole('alert')).toContainText('User already registered')
+    await expect(page.getByRole('alert')).toContainText('An account with this email already exists')
   })
 
   test('a sign up with a blank username shows the reason on the auth form', async ({ page }) => {
@@ -143,7 +162,7 @@ test.describe('Authentication UI', () => {
 
     await expect(page.getByRole('button', { name: "DON'T HAVE AN ACCOUNT? SIGN UP" })).toBeDisabled()
 
-    await expect(page.getByRole('alert')).toContainText('Invalid login credentials')
+    await expect(page.getByRole('alert')).toContainText('Invalid email or password')
     await expect(page.locator('button[type="submit"]')).toContainText('SIGN IN')
   })
 
