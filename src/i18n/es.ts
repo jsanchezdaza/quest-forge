@@ -20,8 +20,6 @@ export const es: typeof en = {
   'auth.toggleToSignIn': '¿YA TIENES CUENTA? ENTRA',
   'auth.signOut': 'Cerrar sesión',
   'auth.usernameRequired': 'Elige un nombre de usuario.',
-  'auth.signInFailed': 'No se pudo iniciar sesión. Inténtalo de nuevo.',
-  'auth.signUpFailed': 'No se pudo crear la cuenta. Inténtalo de nuevo.',
 
   // Forms
   'form.emailLabel': 'Correo',
@@ -119,28 +117,16 @@ export const es: typeof en = {
   'footer.copyright': '© 2025 Quest Forge. Todos los derechos reservados.',
   'footer.author': 'Autor: ',
 
-  // Auth error messages
-  'error.loginFailed.title': 'Error de acceso',
+  // Auth failure messages, keyed from Supabase error codes in lib/authErrors.ts
   'error.loginFailed.message': 'Correo o contraseña incorrectos. Revisa tus credenciales e inténtalo de nuevo.',
-  'error.emailNotConfirmed.title': 'Correo sin confirmar',
   'error.emailNotConfirmed.message': 'Revisa tu correo y haz clic en el enlace de confirmación antes de iniciar sesión.',
-  'error.userNotFound.title': 'Usuario no encontrado',
-  'error.userNotFound.message': 'No existe ninguna cuenta con este correo. Regístrate primero.',
-  'error.weakPassword.title': 'Contraseña débil',
+  'error.userAlreadyExists.message': 'Ya existe una cuenta con este correo. Inicia sesión en su lugar.',
   'error.weakPassword.message': 'La contraseña debe tener al menos 6 caracteres y combinar letras y números.',
-  'error.invalidEmail.title': 'Correo no válido',
   'error.invalidEmail.message': 'Introduce una dirección de correo válida.',
-  'error.signupDisabled.title': 'Registro deshabilitado',
   'error.signupDisabled.message': 'El registro de nuevos usuarios está deshabilitado actualmente. Contacta con soporte.',
-  'error.emailNotAuthorized.title': 'Correo no autorizado',
   'error.emailNotAuthorized.message': 'Este correo no está autorizado para crear una cuenta.',
-  'error.tooManyRequests.title': 'Demasiados intentos',
   'error.tooManyRequests.message': 'Demasiados intentos fallidos. Espera unos minutos antes de volver a intentarlo.',
-  'error.completeRegistration.title': 'Completa el registro',
-  'error.completeRegistration.message': 'Tu cuenta existe pero tu perfil está incompleto. Usa el formulario de registro para completarlo con un nombre de usuario.',
-  'error.connectionIssue.title': 'Problema de conexión',
   'error.connectionIssue.message': 'No se pudo conectar con el servidor. Comprueba tu conexión a internet e inténtalo de nuevo.',
-  'error.authError.title': 'Error de autenticación',
   'error.authError.message': 'Se produjo un error inesperado. Inténtalo de nuevo.',
 
   // Static narrative (fallback when AI is unavailable)

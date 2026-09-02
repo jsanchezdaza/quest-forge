@@ -3,6 +3,7 @@ import { useAuthStore } from '../../store/authStore'
 import { FormField, Button, ErrorMessage } from '../ui'
 import { VALIDATION_RULES } from '../../constants/validation'
 import { useTranslation } from '../../i18n'
+import { authErrorMessageKey } from '../../lib/authErrors'
 
 interface AuthFormProps {
   mode: 'signin' | 'signup'
@@ -39,8 +40,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
         await signIn(email, password)
       }
     } catch (cause) {
-      const fallback = mode === 'signup' ? t('auth.signUpFailed') : t('auth.signInFailed')
-      setError((cause as Error).message || fallback)
+      setError(t(authErrorMessageKey(cause)))
     }
   }
 
