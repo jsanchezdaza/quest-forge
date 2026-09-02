@@ -46,7 +46,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
 
   return (
     <div className="w-full max-w-md mx-auto px-4">
-      <div className="relative border-2 border-medieval-gold/40 rounded-xl bg-white/10 backdrop-blur-sm shadow-2xl shadow-black/50 p-4 sm:p-6">
+      <div className="relative border-2 border-medieval-gold/40 rounded-xl bg-white/20 backdrop-blur-sm shadow-2xl shadow-black/50 p-4 sm:p-6">
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="dnd-title text-3xl sm:text-4xl md:text-5xl mb-6 sm:mb-8 leading-tight">
             {t('app.title')}
