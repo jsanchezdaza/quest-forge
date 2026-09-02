@@ -59,7 +59,8 @@ const withErrorHandling = async <T>(
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   profile: null,
-  loading: !isTestMode(),
+  initializing: !isTestMode(),
+  loading: false,
 
   signIn: async (email: string, password: string) => {
     return withErrorHandling(async () => {
@@ -114,13 +115,13 @@ export const useAuthStore = create<AuthState>((set) => ({
 
 if (isTestMode()) {
   if (isMockInitialLoading()) {
-    useAuthStore.setState({ user: null, profile: null, loading: true })
+    useAuthStore.setState({ user: null, profile: null, initializing: true })
   } else {
     const mockAuth = getMockAuth()
     useAuthStore.setState({
       user: mockAuth?.user ?? null,
       profile: mockAuth?.profile ?? null,
-      loading: false,
+      initializing: false,
     })
   }
 } else {
@@ -131,7 +132,7 @@ if (isTestMode()) {
       useAuthStore.setState({
         user: null,
         profile: null,
-        loading: false,
+        initializing: false,
       })
       return
     }
@@ -143,7 +144,7 @@ if (isTestMode()) {
       useAuthStore.setState({
         user: appUser(session.user),
         profile,
-        loading: false,
+        initializing: false,
       })
     }, 0)
   })

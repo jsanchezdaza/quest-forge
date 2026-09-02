@@ -17,6 +17,7 @@ export const en = {
   'auth.toggleToSignUp': "DON'T HAVE AN ACCOUNT? SIGN UP",
   'auth.toggleToSignIn': 'ALREADY HAVE AN ACCOUNT? SIGN IN',
   'auth.signOut': 'Sign Out',
+  'auth.usernameRequired': 'Please choose a username.',
 
   // Forms
   'form.emailLabel': 'Email',
@@ -114,28 +115,16 @@ export const en = {
   'footer.copyright': '© 2025 Quest Forge. All rights reserved.',
   'footer.author': 'Author: ',
 
-  // Auth error messages
-  'error.loginFailed.title': 'Login Failed',
+  // Auth failure messages, keyed from Supabase error codes in lib/authErrors.ts
   'error.loginFailed.message': 'Invalid email or password. Please check your credentials and try again.',
-  'error.emailNotConfirmed.title': 'Email Not Confirmed',
   'error.emailNotConfirmed.message': 'Please check your email and click the confirmation link before signing in.',
-  'error.userNotFound.title': 'User Not Found',
-  'error.userNotFound.message': 'No account found with this email address. Please sign up first.',
-  'error.weakPassword.title': 'Weak Password',
+  'error.userAlreadyExists.message': 'An account with this email already exists. Please sign in instead.',
   'error.weakPassword.message': 'Password should be at least 6 characters long with a mix of letters and numbers.',
-  'error.invalidEmail.title': 'Invalid Email',
   'error.invalidEmail.message': 'Please enter a valid email address.',
-  'error.signupDisabled.title': 'Sign Up Disabled',
   'error.signupDisabled.message': 'New user registration is currently disabled. Please contact support.',
-  'error.emailNotAuthorized.title': 'Email Not Authorized',
   'error.emailNotAuthorized.message': 'This email address is not authorized to create an account.',
-  'error.tooManyRequests.title': 'Too Many Attempts',
   'error.tooManyRequests.message': 'Too many failed attempts. Please wait a few minutes before trying again.',
-  'error.completeRegistration.title': 'Complete Registration',
-  'error.completeRegistration.message': 'Your account exists but your profile is incomplete. Please use the sign up form to complete registration with a username.',
-  'error.connectionIssue.title': 'Connection Issue',
   'error.connectionIssue.message': 'Unable to connect to the server. Please check your internet connection and try again.',
-  'error.authError.title': 'Authentication Error',
   'error.authError.message': 'An unexpected error occurred. Please try again.',
 
   // Static narrative (fallback when AI is unavailable)

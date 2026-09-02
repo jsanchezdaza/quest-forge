@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useAuthStore } from '../../store/authStore'
-import { FormField, Button } from '../ui'
+import { FormField, Button, ErrorMessage } from '../ui'
 import { VALIDATION_RULES } from '../../constants/validation'
 import { useTranslation } from '../../i18n'
+import { authErrorMessageKey } from '../../lib/authErrors'
 
 interface AuthFormProps {
   mode: 'signin' | 'signup'
@@ -13,14 +14,22 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
-  
+  const [error, setError] = useState('')
+
   const { signIn, signUp, loading } = useAuthStore()
   const { t } = useTranslation()
 
+  const handleToggleMode = () => {
+    setError('')
+    onToggleMode()
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
 
     if (mode === 'signup' && !username.trim()) {
+      setError(t('auth.usernameRequired'))
       return
     }
 
@@ -30,14 +39,14 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
       } else {
         await signIn(email, password)
       }
-    } catch (error) {
-      console.error('Authentication failed:', error)
+    } catch (cause) {
+      setError(t(authErrorMessageKey(cause)))
     }
   }
 
   return (
     <div className="w-full max-w-md mx-auto px-4">
-      <div className="relative border-2 border-medieval-gold/40 rounded-xl bg-white/10 backdrop-blur-sm shadow-2xl shadow-black/50 p-4 sm:p-6">
+      <div className="relative border-2 border-medieval-gold/40 rounded-xl bg-white/20 backdrop-blur-sm shadow-2xl shadow-black/50 p-4 sm:p-6">
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="dnd-title text-3xl sm:text-4xl md:text-5xl mb-6 sm:mb-8 leading-tight">
             {t('app.title')}
@@ -82,6 +91,8 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             minLength={VALIDATION_RULES.PASSWORD_MIN_LENGTH}
           />
 
+          <ErrorMessage message={error} />
+
           <Button
             type="submit"
             variant="primary"
@@ -95,8 +106,9 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
         <div className="mt-4 sm:mt-6 text-center">
           <button
             type="button"
-            onClick={onToggleMode}
-            className="text-medieval-gold hover:text-medieval-darkgold transition-colors font-pixel-body text-xs uppercase tracking-wide min-h-[44px] py-2"
+            onClick={handleToggleMode}
+            disabled={loading}
+            className="text-medieval-gold hover:text-medieval-darkgold transition-colors font-pixel-body text-xs uppercase tracking-wide min-h-[44px] py-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {mode === 'signin'
               ? t('auth.toggleToSignUp')

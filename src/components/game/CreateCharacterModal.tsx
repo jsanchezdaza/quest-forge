@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
-import { Button, Input, Textarea } from '../ui'
+import { Button, Input, Textarea, ErrorMessage } from '../ui'
 import CharacterClassSelector from './CharacterClassSelector'
 import { generateBackstoryWithAI, isOpenRouterConfigured } from '../../lib/openrouter'
 import { useTranslation } from '../../i18n'
@@ -127,11 +127,7 @@ export default function CreateCharacterModal({ onClose }: CreateCharacterModalPr
         )}
       </div>
 
-      {error && (
-        <div className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg p-3">
-          {error}
-        </div>
-      )}
+      <ErrorMessage message={error} />
 
       <div className="flex gap-3 pt-4">
         <Button
