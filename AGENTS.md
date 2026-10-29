@@ -15,7 +15,7 @@ Quest Forge is a narrative D&D game built with React 19, TypeScript, Vite, React
 - `pnpm exec playwright test tests/e2e/auth.spec.ts` runs one spec.
 - `pnpm check` runs unit tests, API type checks, lint, and the production build.
 
-Run `pnpm check` before considering a change complete. Run the relevant Playwright specs for behavior changes; CI currently runs the Chromium authentication spec.
+Run `pnpm check` before considering a change complete. Run the relevant Playwright specs for behavior changes; CI runs the authentication specs on desktop Chromium and Mobile Chrome.
 
 ## Architecture
 
