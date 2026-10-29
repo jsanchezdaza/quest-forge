@@ -112,7 +112,7 @@ export const en = {
   'stat.charisma': 'Charisma',
 
   // Footer
-  'footer.copyright': '© 2025 Quest Forge. All rights reserved.',
+  'footer.copyright': '© {year} Quest Forge. All rights reserved.',
   'footer.author': 'Author: ',
 
   // Auth failure messages, keyed from Supabase error codes in lib/authErrors.ts

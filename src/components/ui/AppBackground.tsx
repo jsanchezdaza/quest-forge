@@ -12,7 +12,9 @@ export default function AppBackground({
   variant = 'auth',
   className = ''
 }: AppBackgroundProps) {
-  const baseClasses = 'min-h-screen app-background'
+  // The auth page is a min-h-screen column and gives this panel flex-1, leaving
+  // the footer on screen. `relative` anchors the video to the panel.
+  const baseClasses = variant === 'auth' ? 'relative app-background' : 'min-h-screen app-background'
   const variantClasses = {
     auth: 'flex items-center justify-center p-4',
     game: 'game-background'

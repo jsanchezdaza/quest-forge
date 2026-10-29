@@ -9,6 +9,9 @@ const createAccountButton = (page: Page) => page.getByRole('button', { name: /^c
 const switchToSignUp = (page: Page) => page.getByRole('button', { name: /sign up$/i })
 const switchToSignIn = (page: Page) => page.getByRole('button', { name: /already have an account/i })
 
+const verticalOverflow = (page: Page) =>
+  page.evaluate(() => document.documentElement.scrollHeight - document.documentElement.clientHeight)
+
 test.describe('Authentication UI', () => {
   test('should display auth form on initial load', async ({ page }) => {
     await page.goto('/')
@@ -194,5 +197,45 @@ test.describe('Authentication UI', () => {
     await switchToSignUp(page).click()
 
     await expect(page.getByRole('alert')).not.toBeVisible()
+  })
+})
+
+test.describe('screen fit and copyright', () => {
+  test('sign-in at 1280×720 shows the footer and the current year without scrolling', async ({ page }) => {
+    const year = new Date().getFullYear()
+    await page.setViewportSize({ width: 1280, height: 720 })
+    await page.goto('/auth')
+
+    await expect(page.getByRole('heading', { level: 1, name: /quest forge/i })).toBeVisible()
+    expect(await verticalOverflow(page)).toBeLessThanOrEqual(0)
+
+    const footer = page.getByRole('contentinfo')
+    await expect(footer).toBeInViewport({ ratio: 1 })
+    await expect(footer).toContainText(`© ${year} Quest Forge`)
+
+    await page.getByRole('button', { name: 'ES', exact: true }).click()
+    await expect(footer).toContainText(`© ${year} Quest Forge`)
+    await expect(footer).toContainText(/derechos reservados/i)
+    expect(await verticalOverflow(page)).toBeLessThanOrEqual(0)
+  })
+
+  test('sign-up on a short screen scrolls with the whole form reachable', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 480 })
+    await page.goto('/auth')
+    await switchToSignUp(page).click()
+
+    await expect(usernameField(page)).toBeVisible()
+    expect(await verticalOverflow(page)).toBeGreaterThan(0)
+
+    const heading = page.getByRole('heading', { level: 1, name: /quest forge/i })
+    const submit = createAccountButton(page)
+
+    for (const control of [heading, usernameField(page), passwordField(page), submit, switchToSignIn(page)]) {
+      await control.scrollIntoViewIfNeeded()
+      await expect(control).toBeInViewport({ ratio: 1 })
+    }
+
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+    await expect(page.getByRole('contentinfo')).toBeInViewport({ ratio: 1 })
   })
 })
