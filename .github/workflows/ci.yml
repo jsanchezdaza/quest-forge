@@ -68,7 +68,7 @@ jobs:
       run: pnpm exec playwright install chromium --with-deps
       
     - name: Run E2E tests
-      run: pnpm run test:e2e --project=chromium --project="Mobile Chrome" tests/e2e/auth.spec.ts tests/e2e/auth-a11y.spec.ts
+      run: pnpm run test:e2e --project=chromium --project="Mobile Chrome" tests/e2e/auth.spec.ts tests/e2e/auth-a11y.spec.ts tests/e2e/auth-keyboard.spec.ts
       
     - name: Upload E2E test results
       uses: actions/upload-artifact@v4

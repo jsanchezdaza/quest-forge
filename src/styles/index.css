@@ -250,3 +250,18 @@
     }
   }
 }
+
+/*
+  One keyboard focus ring for every control on the auth screen: fields, buttons,
+  links, the language selector, and a show-password button in a field slot.
+  Medieval gold (#d4af37) sits between two ink-black bands so the gold meets
+  3:1 against its own edges, including on the translucent card and the gold
+  button. Outside @layer so it wins over Tailwind's outline and ring.
+*/
+.focus-ring :focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 2px #1a1a1a,
+    0 0 0 5px #1a1a1a;
+}

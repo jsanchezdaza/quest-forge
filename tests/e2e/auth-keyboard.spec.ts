@@ -13,6 +13,9 @@ function hexToCssRgb(hex: string): string {
 
 /** medieval-gold from tailwind.config.js, as Chromium reports outline-color. */
 const goldenRingColor = hexToCssRgb(medievalGold)
+/** Ink bands beside the gold, so the ring stays above 3:1 on the card and the gold button. */
+const inkBlack = hexToCssRgb(tailwindConfig.theme.extend.colors.medieval.inkblack)
+const goldenRingShadow = `${inkBlack} 0px 0px 0px 2px, ${inkBlack} 0px 0px 0px 5px`
 
 const emailField = (page: Page) => page.getByLabel(/email|correo/i)
 const passwordField = (page: Page) => page.getByLabel(/password|contraseña/i)
@@ -56,6 +59,7 @@ interface FocusRingSnapshot {
   outlineWidth: string
   outlineColor: string
   outlineOffset: string
+  boxShadow: string
 }
 
 function focusRing(locator: Locator): Promise<FocusRingSnapshot> {
@@ -67,6 +71,7 @@ function focusRing(locator: Locator): Promise<FocusRingSnapshot> {
       outlineWidth: style.outlineWidth,
       outlineColor: style.outlineColor,
       outlineOffset: style.outlineOffset,
+      boxShadow: style.boxShadow,
     }
   })
 }
@@ -91,6 +96,7 @@ async function expectGoldenFocusRing(locator: Locator) {
     outlineWidth: '2px',
     outlineColor: goldenRingColor,
     outlineOffset: '2px',
+    boxShadow: goldenRingShadow,
   })
 }
 

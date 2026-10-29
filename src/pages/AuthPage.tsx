@@ -10,7 +10,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="focus-ring min-h-screen flex flex-col">
       <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
         <LanguageSelector />
       </div>
