@@ -38,7 +38,7 @@ this project does **not** use it.) Three stores in `src/store/`, subscribed to d
 - `authStore.ts` — logged-in user + profile; wired to Supabase's `onAuthStateChange` listener.
 - `gameStore.ts` — current session, scenes array, and all game mutations (`createSession`, `makeChoice`, …).
   This is where the core game logic lives.
-- `notificationStore.ts` — toast queue.
+- `languageStore.ts` — current UI language (`en` or `es`), persisted in localStorage.
 
 **Persistence**: game mutations write straight to Supabase. Each choice appends a new immutable row to
 the `scenes` table and updates the `game_state` JSON column on `game_sessions`. Tables: `user_profiles`,
