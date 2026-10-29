@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuthStore } from '../../store/authStore'
-import { FormField, Button, ErrorMessage } from '../ui'
+import { Input, Button, ErrorMessage } from '../ui'
 import { VALIDATION_RULES } from '../../constants/validation'
 import { useTranslation } from '../../i18n'
 import { authErrorMessageKey } from '../../lib/authErrors'
@@ -9,6 +9,10 @@ interface AuthFormProps {
   mode: 'signin' | 'signup'
   onToggleMode: () => void
 }
+
+// Current auth label treatment. Later stories change case and contrast.
+const authLabelClassName =
+  'block text-xs font-pixel-body text-gray-300 mb-2 uppercase tracking-wide'
 
 export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   const [email, setEmail] = useState('')
@@ -57,36 +61,39 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-          <FormField
+          <Input
             id="email"
             type="email"
             value={email}
-            onChange={setEmail}
-            label={t('form.emailLabel')}
-            placeholder={t('form.emailPlaceholder')}
+            onChange={(event) => setEmail(event.target.value)}
+            label={t('form.emailLabel').toUpperCase()}
+            placeholder={t('form.emailPlaceholder').toUpperCase()}
+            labelClassName={authLabelClassName}
             required={VALIDATION_RULES.EMAIL_REQUIRED}
           />
 
           {mode === 'signup' && (
-            <FormField
+            <Input
               id="username"
               type="text"
               value={username}
-              onChange={setUsername}
-              label={t('form.usernameLabel')}
-              placeholder={t('form.usernamePlaceholder')}
+              onChange={(event) => setUsername(event.target.value)}
+              label={t('form.usernameLabel').toUpperCase()}
+              placeholder={t('form.usernamePlaceholder').toUpperCase()}
+              labelClassName={authLabelClassName}
               required={VALIDATION_RULES.USERNAME_REQUIRED}
               minLength={VALIDATION_RULES.USERNAME_MIN_LENGTH}
             />
           )}
 
-          <FormField
+          <Input
             id="password"
             type="password"
             value={password}
-            onChange={setPassword}
-            label={t('form.passwordLabel')}
-            placeholder={t('form.passwordPlaceholder')}
+            onChange={(event) => setPassword(event.target.value)}
+            label={t('form.passwordLabel').toUpperCase()}
+            placeholder={t('form.passwordPlaceholder').toUpperCase()}
+            labelClassName={authLabelClassName}
             required={true}
             minLength={VALIDATION_RULES.PASSWORD_MIN_LENGTH}
           />

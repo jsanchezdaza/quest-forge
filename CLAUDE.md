@@ -20,7 +20,8 @@ Running a subset of e2e tests:
 
 Playwright config lives in `playwright.config.ts`; specs in `tests/e2e/`. Supabase is mocked in
 `tests/e2e/setup.ts`, so e2e runs without real credentials. CI (`.github/workflows/ci.yml`) currently
-runs **only** `auth.spec.ts` on chromium with a 10-minute timeout — broader specs exist but are not yet in CI.
+runs `auth.spec.ts` and `auth-a11y.spec.ts` on desktop Chromium and Mobile Chrome
+with a 10-minute timeout — broader specs exist but are not yet in CI.
 
 ## Architecture
 
