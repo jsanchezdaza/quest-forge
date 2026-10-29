@@ -1,36 +1,59 @@
-# Repository Guidelines
+# AGENTS.md
 
-## Project Overview
+Working agreements for every coding agent in this repo. `CLAUDE.md` is the longer architecture note. There is no `.cursorrules` file and no `.cursor/rules` directory.
 
-Quest Forge is a narrative D&D game built with React 19, TypeScript, Vite, React Router, Tailwind CSS, Zustand, Supabase, and optional OpenRouter narrative generation. Use `pnpm` exclusively. The required toolchain is Node 24 or newer and pnpm 11 or newer.
+## Principles
 
-## Commands
+Use Extreme Programming, lean software development, and a product mindset. Favor sound practices and architecture patterns when they are the simplest way to meet the acceptance criteria. Apply YAGNI: add no abstraction the issue does not need. Keep the diff minimal and scoped to that issue.
 
-- `pnpm install --frozen-lockfile` installs the locked dependencies.
-- `pnpm dev` starts the Vite development server.
-- `pnpm lint` runs ESLint with zero warnings allowed.
-- `pnpm build` type-checks and creates the production bundle.
-- `pnpm test:unit` runs the Node.js unit tests for serverless APIs and domain utilities.
-- `pnpm test:e2e` runs the Playwright suite.
-- `pnpm exec playwright test tests/e2e/auth.spec.ts` runs one spec.
-- `pnpm check` runs unit tests, API type checks, lint, and the production build.
+Reuse the components, stores, utilities, and file layout already in the tree. TypeScript is strict (`strict`, `noUnusedLocals`, and `noUnusedParameters` in `tsconfig.json`). Keep balance numbers in `src/constants/game.ts` and `src/utils/levelSystem.ts`.
 
-Run `pnpm check` before considering a change complete. Run the relevant Playwright specs for behavior changes; CI runs the authentication specs on desktop Chromium and Mobile Chrome.
+## Test-driven development
 
-## Architecture
+Write a failing test, make it pass, then refactor. Cover every acceptance criterion:
 
-Application code lives in `src/`. Pages and routing begin in `src/main.tsx` and `src/App.tsx`; route-level UI is in `src/pages/`. Shared state belongs in the Zustand stores under `src/store/`, not Redux or prop-drilling. Supabase integration and schema types live in `src/lib/supabase.ts`. Game mutations persist sessions and immutable scenes through the game store. Static fallback narrative lives in `src/lib/narrative.ts`; optional streamed AI narrative lives in `src/lib/openrouter.ts`. Keep level calculations and balance values in `src/utils/levelSystem.ts` and `src/constants/game.ts`.
+- Domain and API behavior: `pnpm test:unit` (`node --test api/*.test.ts tests/unit/*.test.ts`). Handler tests sit next to `api/`; other unit tests live in `tests/unit/`.
+- User-facing behavior: Playwright specs in `tests/e2e/`.
 
-## Engineering Practices
+Keep tests deterministic. Mock dates and clocks. Do not hard-code the current year.
 
-Work in small, independently shippable steps. Follow TDD: reproduce behavior with a failing test, implement the simplest passing change, then refactor under green. Prefer established components, stores, utilities, and file structure over new abstractions. Keep TypeScript strict and do not introduce `any`, warning suppressions, unnecessary re-renders, duplicated game logic, or hard-coded balance values.
+Playwright loads `tests/e2e/setup.ts`, which supplies mock `VITE_SUPABASE_*` values when unset and sets `window.mockSupabaseAuth`. Production code reads that flag only through `src/lib/testMode.ts` (auth init, sign-out, and game-session loads). Specs must run without real Supabase credentials. Stub a specific Auth HTTP result in the spec that needs it, as `auth-a11y.spec.ts` does.
 
-Playwright specs live in `tests/e2e/`; Supabase is mocked in `tests/e2e/setup.ts`, so browser tests must not require real credentials. Serverless API unit tests live beside their handlers under `api/`; other Node.js unit tests live under `tests/unit/`. Add or update the closest behavioral test for every behavior change.
+Query the UI with `getByRole` and `getByLabel`, as the auth specs do. `tests/e2e/auth-a11y.spec.ts` runs `@axe-core/playwright` for contrast (`wcag143`) and ARIA (`cat.aria`) and must stay green.
 
-## Environment and Security
+`playwright.config.ts` defines desktop Chromium (`chromium`, Desktop Chrome) and `Mobile Chrome` (Pixel 5), plus Firefox, WebKit, Mobile Safari, and Tablet. CI (`.github/workflows/ci.yml`, 10-minute timeout) runs `auth.spec.ts` and `auth-a11y.spec.ts` on `chromium` and `Mobile Chrome` only. Run one file with `pnpm exec playwright test tests/e2e/auth.spec.ts --project=chromium`. Run the other specs your change touches; they are not all in CI.
 
-Local configuration belongs in `.env.local`. Browser-safe variables use the `VITE_` prefix. OpenRouter requests go through the authenticated serverless proxy; `OPENROUTER_API_KEY` is server-only and must never use the `VITE_` prefix. Never commit credentials, generated `dist/`, Playwright reports, or test results.
+## Commits
 
-## Git
+Small commits, one logical change each, with a clear English message. Use Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`). No AI attribution and no `Co-authored-by` trailers. Read the diff before committing and simplify it.
 
-Use focused Conventional Commits such as `feat:`, `fix:`, `chore:`, and `docs:`. Do not add AI attribution or co-author footers. Before committing, inspect every modified file, assess whether the change can be simplified, and confirm the relevant checks have passed.
+## Language
+
+English for everything pushed: code, comments, commits, pull requests, issues, and docs. Keep UI copy in sync in `src/i18n/en.ts` and `src/i18n/es.ts`. `en` owns the keys; `es` is typed as `typeof en`, so a missing or extra key fails the typecheck. Components call `useTranslation`; other modules call `translate`. Both come from `src/i18n`.
+
+## Project conventions
+
+Use pnpm only (Node >= 24, pnpm >= 11, lockfile `pnpm-lock.yaml`). Install with `pnpm install --frozen-lockfile`.
+
+`pnpm check`, which `.agents/check` executes, runs in order:
+
+1. `pnpm test:unit`
+2. `pnpm type-check:api` (`tsc -p tsconfig.api.json`)
+3. `pnpm lint` (ESLint on `src/**/*.{ts,tsx}`, `--max-warnings 0`)
+4. `pnpm build` (`tsc && vite build`: app typecheck, then the production bundle)
+
+`pnpm test:e2e` is separate. CI lints, builds, and runs the auth end-to-end specs above. It does not run `pnpm test:unit`.
+
+Stack in this repo: React 19, TypeScript, Vite, React Router v7, Zustand, Tailwind CSS, and Supabase Auth. Stores in `src/store/`: `authStore.ts` (session and profile), `gameStore.ts` (session, scenes, mutations), `languageStore.ts` (`en` or `es`). Components subscribe to them directly. Supabase client and schema types are in `src/lib/supabase.ts`. `src/App.tsx` sends signed-out users to `/auth` and signed-in users to `/game`.
+
+Text fields use `src/components/ui/Input.tsx` (label, error, helper text, and the matching `aria-*` attributes). The auth form already uses it. Multiline text uses the existing `Textarea`.
+
+Optional narrative goes from `src/lib/openrouter.ts` through `api/openrouter.ts`. `OPENROUTER_API_KEY` is server-only and must not use the `VITE_` prefix. `VITE_OPENROUTER_ENABLED=false` forces `src/lib/narrative.ts`. Local config belongs in `.env.local` (see `.env.example`). Do not commit credentials, `dist/`, Playwright reports, or test results.
+
+## Definition of done
+
+Lint, typecheck, unit tests, and the relevant end-to-end specs pass locally (`pnpm check` and `pnpm test:e2e`, or the specs and projects you changed, including `auth-a11y.spec.ts` when the auth UI changes). Open a pull request against `main` with `Closes #N`. Leave it unmerged. The repo owner reviews and merges.
+
+## Product
+
+User stories come from the product manager. Design comes from the product designer. When an acceptance criterion is ambiguous, state the assumption in the pull request description and implement that. Stay inside the issue.
