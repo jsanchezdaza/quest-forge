@@ -114,7 +114,7 @@ export const es: typeof en = {
   'stat.charisma': 'Carisma',
 
   // Footer
-  'footer.copyright': '© 2025 Quest Forge. Todos los derechos reservados.',
+  'footer.copyright': '© {year} Quest Forge. Todos los derechos reservados.',
   'footer.author': 'Autor: ',
 
   // Auth failure messages, keyed from Supabase error codes in lib/authErrors.ts
