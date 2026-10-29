@@ -1,49 +1,57 @@
-import { test, expect } from './setup'
+import { test, expect, type Page } from './setup'
 import { VALIDATION_RULES } from '../../src/constants/validation'
+
+const emailField = (page: Page) => page.getByLabel(/email|correo/i)
+const passwordField = (page: Page) => page.getByLabel(/password|contraseña/i)
+const usernameField = (page: Page) => page.getByLabel(/username|nombre de usuario/i)
+const signInButton = (page: Page) => page.getByRole('button', { name: /^sign in$/i })
+const createAccountButton = (page: Page) => page.getByRole('button', { name: /^create account$/i })
+const switchToSignUp = (page: Page) => page.getByRole('button', { name: /sign up$/i })
+const switchToSignIn = (page: Page) => page.getByRole('button', { name: /already have an account/i })
 
 test.describe('Authentication UI', () => {
   test('should display auth form on initial load', async ({ page }) => {
     await page.goto('/')
 
     await expect(page).toHaveURL('/auth')
-    await expect(page.locator('h1')).toContainText('QUEST FORGE')
-    await expect(page.locator('input[type="email"]')).toBeVisible()
-    await expect(page.locator('input[type="password"]')).toBeVisible()
-    await expect(page.locator('button[type="submit"]')).toContainText('SIGN IN')
+    await expect(page.getByRole('heading', { level: 1, name: /quest forge/i })).toBeVisible()
+    await expect(emailField(page)).toBeVisible()
+    await expect(passwordField(page)).toBeVisible()
+    await expect(signInButton(page)).toBeVisible()
   })
 
   test('should toggle between sign in and sign up forms', async ({ page }) => {
     await page.goto('/auth')
 
-    await expect(page.locator('button[type="submit"]')).toContainText('SIGN IN')
-    await expect(page.locator('input[id="username"]')).not.toBeVisible()
+    await expect(signInButton(page)).toBeVisible()
+    await expect(usernameField(page)).not.toBeVisible()
 
-    await page.click('text="DON\'T HAVE AN ACCOUNT? SIGN UP"')
+    await switchToSignUp(page).click()
 
-    await expect(page.locator('button[type="submit"]')).toContainText('CREATE ACCOUNT')
-    await expect(page.locator('input[id="username"]')).toBeVisible()
+    await expect(createAccountButton(page)).toBeVisible()
+    await expect(usernameField(page)).toBeVisible()
 
-    await page.click('text="ALREADY HAVE AN ACCOUNT? SIGN IN"')
+    await switchToSignIn(page).click()
 
-    await expect(page.locator('button[type="submit"]')).toContainText('SIGN IN')
-    await expect(page.locator('input[id="username"]')).not.toBeVisible()
+    await expect(signInButton(page)).toBeVisible()
+    await expect(usernameField(page)).not.toBeVisible()
   })
 
   test('should show validation errors for empty fields', async ({ page }) => {
     await page.goto('/auth')
 
-    await page.click('button[type="submit"]')
+    await signInButton(page).click()
 
-    await expect(page.locator('input[type="email"]')).toBeVisible()
-    await expect(page.locator('input[type="password"]')).toBeVisible()
+    await expect(emailField(page)).toBeVisible()
+    await expect(passwordField(page)).toBeVisible()
   })
 
   test('should show username field in signup mode', async ({ page }) => {
     await page.goto('/auth')
 
-    await page.click('text="DON\'T HAVE AN ACCOUNT? SIGN UP"')
+    await switchToSignUp(page).click()
 
-    const usernameInput = page.locator('input[id="username"]')
+    const usernameInput = usernameField(page)
     await expect(usernameInput).toBeVisible()
     await expect(usernameInput).toHaveAttribute('required')
   })
@@ -51,28 +59,29 @@ test.describe('Authentication UI', () => {
   test('should validate email format', async ({ page }) => {
     await page.goto('/auth')
 
-    await page.fill('input[type="email"]', 'not-an-email')
-    await page.fill('input[type="password"]', 'password123')
+    await emailField(page).fill('not-an-email')
+    await passwordField(page).fill('password123')
 
-    await page.click('button[type="submit"]')
+    await signInButton(page).click()
 
-    const emailInput = page.locator('input[type="email"]')
-    const validationMessage = await emailInput.evaluate((el: HTMLInputElement) => el.validationMessage)
+    const validationMessage = await emailField(page).evaluate(
+      (el: HTMLInputElement) => el.validationMessage
+    )
     expect(validationMessage).toBeTruthy()
   })
 
   test('should validate password length in sign up', async ({ page }) => {
     await page.goto('/auth')
 
-    await page.click('text="DON\'T HAVE AN ACCOUNT? SIGN UP"')
+    await switchToSignUp(page).click()
 
-    await page.fill('input[type="email"]', 'test@example.com')
-    await page.fill('input[type="password"]', '12345')
-    await page.fill('input[id="username"]', 'TestUser')
+    await emailField(page).fill('test@example.com')
+    await passwordField(page).fill('12345')
+    await usernameField(page).fill('TestUser')
 
-    await page.click('button[type="submit"]')
+    await createAccountButton(page).click()
 
-    await expect(page.locator('input[type="password"]')).toBeVisible()
+    await expect(passwordField(page)).toBeVisible()
   })
 
   test('a failed sign in shows the reason on the auth form', async ({ page }) => {
@@ -86,9 +95,9 @@ test.describe('Authentication UI', () => {
 
     await page.goto('/auth')
 
-    await page.fill('input[type="email"]', 'test@example.com')
-    await page.fill('input[type="password"]', 'wrong-password')
-    await page.click('button[type="submit"]')
+    await emailField(page).fill('test@example.com')
+    await passwordField(page).fill('wrong-password')
+    await signInButton(page).click()
 
     await expect(page.getByRole('alert')).toContainText('Invalid email or password')
   })
@@ -105,9 +114,9 @@ test.describe('Authentication UI', () => {
     await page.goto('/auth')
     await page.getByRole('button', { name: 'ES', exact: true }).click()
 
-    await page.fill('input[type="email"]', 'test@example.com')
-    await page.fill('input[type="password"]', 'wrong-password')
-    await page.click('button[type="submit"]')
+    await emailField(page).fill('test@example.com')
+    await passwordField(page).fill('wrong-password')
+    await page.getByRole('button', { name: /^entrar$/i }).click()
 
     await expect(page.getByRole('alert')).toContainText('Correo o contraseña incorrectos')
   })
@@ -123,11 +132,11 @@ test.describe('Authentication UI', () => {
 
     await page.goto('/auth')
 
-    await page.click('text="DON\'T HAVE AN ACCOUNT? SIGN UP"')
-    await page.fill('input[type="email"]', 'test@example.com')
-    await page.fill('input[type="password"]', 'strong-password')
-    await page.fill('input[id="username"]', 'TestUser')
-    await page.click('button[type="submit"]')
+    await switchToSignUp(page).click()
+    await emailField(page).fill('test@example.com')
+    await passwordField(page).fill('strong-password')
+    await usernameField(page).fill('TestUser')
+    await createAccountButton(page).click()
 
     await expect(page.getByRole('alert')).toContainText('An account with this email already exists')
   })
@@ -135,11 +144,11 @@ test.describe('Authentication UI', () => {
   test('a sign up with a blank username shows the reason on the auth form', async ({ page }) => {
     await page.goto('/auth')
 
-    await page.click('text="DON\'T HAVE AN ACCOUNT? SIGN UP"')
-    await page.fill('input[type="email"]', 'test@example.com')
-    await page.fill('input[type="password"]', 'strong-password')
-    await page.fill('input[id="username"]', ' '.repeat(VALIDATION_RULES.USERNAME_MIN_LENGTH + 2))
-    await page.click('button[type="submit"]')
+    await switchToSignUp(page).click()
+    await emailField(page).fill('test@example.com')
+    await passwordField(page).fill('strong-password')
+    await usernameField(page).fill(' '.repeat(VALIDATION_RULES.USERNAME_MIN_LENGTH + 2))
+    await createAccountButton(page).click()
 
     await expect(page.getByRole('alert')).toContainText('Please choose a username')
   })
@@ -156,14 +165,14 @@ test.describe('Authentication UI', () => {
 
     await page.goto('/auth')
 
-    await page.fill('input[type="email"]', 'test@example.com')
-    await page.fill('input[type="password"]', 'wrong-password')
-    await page.click('button[type="submit"]')
+    await emailField(page).fill('test@example.com')
+    await passwordField(page).fill('wrong-password')
+    await signInButton(page).click()
 
-    await expect(page.getByRole('button', { name: "DON'T HAVE AN ACCOUNT? SIGN UP" })).toBeDisabled()
+    await expect(switchToSignUp(page)).toBeDisabled()
 
     await expect(page.getByRole('alert')).toContainText('Invalid email or password')
-    await expect(page.locator('button[type="submit"]')).toContainText('SIGN IN')
+    await expect(signInButton(page)).toBeVisible()
   })
 
   test('switching between sign in and sign up clears a previous failure', async ({ page }) => {
@@ -177,12 +186,12 @@ test.describe('Authentication UI', () => {
 
     await page.goto('/auth')
 
-    await page.fill('input[type="email"]', 'test@example.com')
-    await page.fill('input[type="password"]', 'wrong-password')
-    await page.click('button[type="submit"]')
+    await emailField(page).fill('test@example.com')
+    await passwordField(page).fill('wrong-password')
+    await signInButton(page).click()
     await expect(page.getByRole('alert')).toBeVisible()
 
-    await page.click('text="DON\'T HAVE AN ACCOUNT? SIGN UP"')
+    await switchToSignUp(page).click()
 
     await expect(page.getByRole('alert')).not.toBeVisible()
   })
