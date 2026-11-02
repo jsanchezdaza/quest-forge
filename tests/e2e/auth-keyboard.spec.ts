@@ -18,7 +18,11 @@ const inkBlack = hexToCssRgb(tailwindConfig.theme.extend.colors.medieval.inkblac
 const goldenRingShadow = `${inkBlack} 0px 0px 0px 2px, ${inkBlack} 0px 0px 0px 5px`
 
 const emailField = (page: Page) => page.getByLabel(/email|correo/i)
-const passwordField = (page: Page) => page.getByLabel(/password|contraseña/i)
+// Exact name so the "Show password" button is not treated as the field.
+const passwordField = (page: Page) =>
+  page.getByRole('textbox', { name: /^(password|contraseña)$/i })
+const showPasswordButton = (page: Page) =>
+  page.getByRole('button', { name: 'Show password', exact: true })
 const usernameField = (page: Page) => page.getByLabel(/username|nombre de usuario/i)
 const signInButton = (page: Page) => page.getByRole('button', { name: /^sign in$/i })
 const createAccountButton = (page: Page) => page.getByRole('button', { name: /^create account$/i })
@@ -34,6 +38,7 @@ function signInOrder(page: Page): Locator[] {
     spanishButton(page),
     emailField(page),
     passwordField(page),
+    showPasswordButton(page),
     signInButton(page),
     switchToSignUp(page),
     authorLink(page),
@@ -47,6 +52,7 @@ function signUpOrder(page: Page): Locator[] {
     emailField(page),
     usernameField(page),
     passwordField(page),
+    showPasswordButton(page),
     createAccountButton(page),
     switchToSignIn(page),
     authorLink(page),
