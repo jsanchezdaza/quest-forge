@@ -28,6 +28,8 @@ export const es: typeof en = {
   'form.usernamePlaceholder': 'Elige un nombre de usuario',
   'form.passwordLabel': 'Contraseña',
   'form.passwordPlaceholder': 'Tu contraseña',
+  'form.showPassword': 'Mostrar contraseña',
+  'form.hidePassword': 'Ocultar contraseña',
   'form.characterNameLabel': 'Nombre del personaje',
   'form.characterNamePlaceholder': 'Introduce el nombre de tu personaje',
   'form.backstoryLabel': 'Historia (opcional)',

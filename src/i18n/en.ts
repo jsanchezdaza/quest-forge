@@ -26,6 +26,8 @@ export const en = {
   'form.usernamePlaceholder': 'Choose a username',
   'form.passwordLabel': 'Password',
   'form.passwordPlaceholder': 'Your password',
+  'form.showPassword': 'Show password',
+  'form.hidePassword': 'Hide password',
   'form.characterNameLabel': 'Character Name',
   'form.characterNamePlaceholder': "Enter your character's name",
   'form.backstoryLabel': 'Backstory (Optional)',
