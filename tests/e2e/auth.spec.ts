@@ -2,7 +2,9 @@ import { test, expect, type Page } from './setup'
 import { VALIDATION_RULES } from '../../src/constants/validation'
 
 const emailField = (page: Page) => page.getByLabel(/email|correo/i)
-const passwordField = (page: Page) => page.getByLabel(/password|contraseña/i)
+// Exact name so the "Show password" button is not treated as the field.
+const passwordField = (page: Page) =>
+  page.getByRole('textbox', { name: /^(password|contraseña)$/i })
 const usernameField = (page: Page) => page.getByLabel(/username|nombre de usuario/i)
 const signInButton = (page: Page) => page.getByRole('button', { name: /^sign in$/i })
 const createAccountButton = (page: Page) => page.getByRole('button', { name: /^create account$/i })

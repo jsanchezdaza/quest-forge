@@ -51,7 +51,7 @@ test.describe('auth accessibility', () => {
 
     await page.goto('/auth')
     await page.getByLabel(/email/i).fill('test@example.com')
-    await page.getByLabel(/password/i).fill('wrong-password')
+    await page.getByRole('textbox', { name: /^password$/i }).fill('wrong-password')
     await page.getByRole('button', { name: /^sign in$/i }).click()
     await expect(page.getByRole('alert')).toBeVisible()
     await expectAuthAccessible(page, 'sign-in error')

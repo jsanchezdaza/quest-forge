@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuthStore } from '../../store/authStore'
-import { Input, Button, ErrorMessage } from '../ui'
+import { Input, PasswordInput, Button, ErrorMessage } from '../ui'
 import { VALIDATION_RULES } from '../../constants/validation'
 import { useTranslation } from '../../i18n'
 import { authErrorMessageKey } from '../../lib/authErrors'
@@ -86,9 +86,8 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             />
           )}
 
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             label={t('form.passwordLabel').toUpperCase()}
