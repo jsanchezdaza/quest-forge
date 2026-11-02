@@ -40,6 +40,7 @@ export default {
         },
         medieval: {
           gold: '#d4af37',
+          'gold-light': '#f0d27a',
           darkgold: '#b8941f',
           copper: '#b87333',
           iron: '#4a4a4a',

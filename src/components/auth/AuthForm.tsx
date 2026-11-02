@@ -113,7 +113,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             type="button"
             onClick={handleToggleMode}
             disabled={loading}
-            className="text-medieval-gold hover:text-medieval-darkgold transition-colors font-pixel-body text-sm min-h-[44px] py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-medieval-gold-light hover:underline focus-visible:underline font-pixel-body text-sm min-h-[44px] py-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {mode === 'signin'
               ? t('auth.toggleToSignUp')
