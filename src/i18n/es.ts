@@ -12,12 +12,12 @@ export const es: typeof en = {
   'language.es': 'ES',
 
   // Auth
-  'auth.signInButton': 'ENTRAR',
-  'auth.signUpButton': 'CREAR CUENTA',
-  'auth.welcomeReturning': 'BIENVENIDO DE NUEVO, AVENTURERO',
-  'auth.welcomeNew': 'COMIENZA TU GESTA',
-  'auth.toggleToSignUp': '¿NO TIENES CUENTA? REGÍSTRATE',
-  'auth.toggleToSignIn': '¿YA TIENES CUENTA? ENTRA',
+  'auth.signInButton': 'Entrar',
+  'auth.signUpButton': 'Crear cuenta',
+  'auth.welcomeReturning': 'Bienvenido de nuevo, aventurero',
+  'auth.welcomeNew': 'Comienza tu gesta',
+  'auth.toggleToSignUp': '¿No tienes cuenta? Regístrate',
+  'auth.toggleToSignIn': '¿Ya tienes cuenta? Entra',
   'auth.signOut': 'Cerrar sesión',
   'auth.usernameRequired': 'Elige un nombre de usuario.',
 

@@ -21,7 +21,7 @@ export default function LanguageSelector() {
             type="button"
             onClick={() => setLanguage(option)}
             aria-pressed={isActive}
-            className={`min-h-[44px] px-3 rounded-md font-pixel-body text-xs uppercase tracking-wide transition-colors ${
+            className={`min-h-[44px] px-3 rounded-md font-pixel-body text-xs tracking-wide transition-colors ${
               isActive
                 ? 'bg-medieval-gold/10 text-medieval-gold'
                 : 'text-gray-400 hover:text-medieval-gold'
