@@ -228,4 +228,65 @@ test.describe('readable auth text', () => {
     await expectReadable(alert)
     expect(await textTransform(alert)).toBe('none')
   })
+
+  test('the mode toggle is light gold and underlines on hover and keyboard focus', async ({ page }) => {
+    await page.goto('/auth')
+    const toggle = switchToSignUp(page)
+    await expect(toggle).toBeVisible()
+
+    const rest = await paint(toggle)
+    expect(rest.color).toBe(goldLight)
+    expect(rest.underline).toBe(false)
+
+    const canHover = await page.evaluate(() => matchMedia('(hover: hover)').matches)
+    if (canHover) {
+      await toggle.hover()
+      const hovered = await paint(toggle)
+      expect(hovered.color).toBe(goldLight)
+      expect(hovered.underline).toBe(true)
+      await page.mouse.move(0, 0)
+    }
+
+    await page.evaluate(() => {
+      const sentinel = document.createElement('span')
+      sentinel.tabIndex = -1
+      document.body.prepend(sentinel)
+      sentinel.focus()
+      sentinel.remove()
+    })
+    for (let step = 0; step < 12; step += 1) {
+      if (await toggle.evaluate((el) => el.matches(':focus-visible'))) break
+      await page.keyboard.press('Tab')
+    }
+    await expect(toggle).toBeFocused()
+    expect(await toggle.evaluate((el) => el.matches(':focus-visible'))).toBe(true)
+    const focused = await paint(toggle)
+    expect(focused.color).toBe(goldLight)
+    expect(focused.underline).toBe(true)
+
+    const author = await paint(page.getByRole('link', { name: 'www.javisan.dev' }))
+    expect(author.color).toBe(medievalGold)
+    const buttonFill = await signInButton(page).evaluate((el) => getComputedStyle(el).backgroundColor)
+    expect(buttonFill).toBe(medievalGold)
+  })
 })
+
+const goldLight = 'rgb(240, 210, 122)'
+const medievalGold = 'rgb(212, 175, 55)'
+
+async function paint(locator: Locator): Promise<{ color: string; underline: boolean }> {
+  return locator.evaluate((el) => {
+    const style = getComputedStyle(el)
+    const canvas = document.createElement('canvas')
+    canvas.width = canvas.height = 1
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('canvas is unavailable')
+    context.fillStyle = style.color
+    context.fillRect(0, 0, 1, 1)
+    const [red, green, blue] = context.getImageData(0, 0, 1, 1).data
+    return {
+      color: `rgb(${red}, ${green}, ${blue})`,
+      underline: style.textDecorationLine.includes('underline'),
+    }
+  })
+}
