@@ -10,12 +10,12 @@ export const en = {
   'language.es': 'ES',
 
   // Auth
-  'auth.signInButton': 'SIGN IN',
-  'auth.signUpButton': 'CREATE ACCOUNT',
-  'auth.welcomeReturning': 'WELCOME BACK, ADVENTURER',
-  'auth.welcomeNew': 'BEGIN YOUR QUEST',
-  'auth.toggleToSignUp': "DON'T HAVE AN ACCOUNT? SIGN UP",
-  'auth.toggleToSignIn': 'ALREADY HAVE AN ACCOUNT? SIGN IN',
+  'auth.signInButton': 'Sign in',
+  'auth.signUpButton': 'Create account',
+  'auth.welcomeReturning': 'Welcome back, adventurer',
+  'auth.welcomeNew': 'Begin your quest',
+  'auth.toggleToSignUp': "Don't have an account? Sign up",
+  'auth.toggleToSignIn': 'Already have an account? Sign in',
   'auth.signOut': 'Sign Out',
   'auth.usernameRequired': 'Please choose a username.',
 

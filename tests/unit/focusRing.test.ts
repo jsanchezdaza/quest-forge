@@ -42,6 +42,14 @@ test('medieval gold is the opaque focus-ring color', () => {
   assert.equal(ring, '#d4af37')
 })
 
+test('gold-light is the card text color and clears 4.5:1 on the sampled card', () => {
+  const goldLight = colors.medieval['gold-light']
+  assert.equal(goldLight, '#f0d27a')
+  // Lightest pixel sampled behind the mode toggle on the desktop card.
+  const ratio = contrast(goldLight, '#55534a')
+  assert.ok(ratio >= 4.5, `${ratio.toFixed(2)}:1`)
+})
+
 test('the golden focus ring contrasts at least 3:1 with auth surfaces', () => {
   // The ring is drawn outside the control, so a gold button is measured against
   // the surface behind it (the card), not against its own fill.

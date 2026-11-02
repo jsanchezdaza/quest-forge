@@ -10,9 +10,8 @@ interface AuthFormProps {
   onToggleMode: () => void
 }
 
-// Current auth label treatment. Later stories change case and contrast.
 const authLabelClassName =
-  'block text-xs font-pixel-body text-gray-300 mb-2 uppercase tracking-wide'
+  'block text-xs font-pixel-body text-gray-200 mb-2 uppercase tracking-wide'
 
 export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   const [email, setEmail] = useState('')
@@ -55,7 +54,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
           <h1 className="dnd-title text-3xl sm:text-4xl md:text-5xl mb-6 sm:mb-8 leading-tight">
             {t('app.title')}
           </h1>
-          <p className="font-pixel-body text-xs sm:text-sm text-gray-400 uppercase tracking-wide">
+          <p className="font-pixel-body text-sm text-gray-300">
             {mode === 'signin' ? t('auth.welcomeReturning') : t('auth.welcomeNew')}
           </p>
         </div>
@@ -66,8 +65,8 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            label={t('form.emailLabel').toUpperCase()}
-            placeholder={t('form.emailPlaceholder').toUpperCase()}
+            label={t('form.emailLabel')}
+            placeholder={t('form.emailPlaceholder')}
             labelClassName={authLabelClassName}
             required={VALIDATION_RULES.EMAIL_REQUIRED}
           />
@@ -78,8 +77,8 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
               type="text"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
-              label={t('form.usernameLabel').toUpperCase()}
-              placeholder={t('form.usernamePlaceholder').toUpperCase()}
+              label={t('form.usernameLabel')}
+              placeholder={t('form.usernamePlaceholder')}
               labelClassName={authLabelClassName}
               required={VALIDATION_RULES.USERNAME_REQUIRED}
               minLength={VALIDATION_RULES.USERNAME_MIN_LENGTH}
@@ -90,8 +89,8 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             id="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            label={t('form.passwordLabel').toUpperCase()}
-            placeholder={t('form.passwordPlaceholder').toUpperCase()}
+            label={t('form.passwordLabel')}
+            placeholder={t('form.passwordPlaceholder')}
             labelClassName={authLabelClassName}
             required={true}
             minLength={VALIDATION_RULES.PASSWORD_MIN_LENGTH}
@@ -114,7 +113,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             type="button"
             onClick={handleToggleMode}
             disabled={loading}
-            className="text-medieval-gold hover:text-medieval-darkgold transition-colors font-pixel-body text-xs uppercase tracking-wide min-h-[44px] py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-medieval-gold-light hover:underline focus-visible:underline font-pixel-body text-sm min-h-[44px] py-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {mode === 'signin'
               ? t('auth.toggleToSignUp')

@@ -1,18 +1,17 @@
 import AxeBuilder from '@axe-core/playwright'
 import { test, expect, type Page } from './setup'
-import { unexpectedViolations } from './authAxeExclusions'
 
 /**
  * Contrast and ARIA on /auth.
  *
  * `wcag143` is the WCAG AA contrast rule (`color-contrast`, 4.5:1). It does
  * not include `color-contrast-enhanced` (WCAG AAA, 7:1), which axe disables
- * by default and which #30 does not ask for. Labels already clear AA
- * (about 6.71:1 where axe could measure them).
+ * by default. Nothing is excluded: the welcome line and the footer author
+ * line have to clear 4.5:1 on mobile, where the static background can be
+ * measured.
  *
- * Nodes axe cannot measure (video frame, gradient, text-shadow) come back as
- * `incomplete`, not violations. Those stay visible in the test output and are
- * not excluded.
+ * Nodes axe cannot measure (the desktop video, a gradient, text-shadow) come
+ * back as `incomplete`, not violations. Those stay visible in the test output.
  */
 async function expectAuthAccessible(page: Page, label: string) {
   const results = await new AxeBuilder({ page }).withTags(['cat.aria', 'wcag143']).analyze()
@@ -23,7 +22,10 @@ async function expectAuthAccessible(page: Page, label: string) {
     console.log(`axe incomplete on ${label} (not a failure):\n${incomplete.join('\n')}`)
   }
 
-  expect(unexpectedViolations(results.violations)).toEqual([])
+  const failures = results.violations.flatMap((violation) =>
+    violation.nodes.map((node) => `${violation.id}: ${node.html}`)
+  )
+  expect(failures).toEqual([])
 }
 
 test.describe('auth accessibility', () => {
