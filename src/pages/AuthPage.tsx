@@ -8,7 +8,15 @@ export default function AuthPage() {
   const mode = parseAuthMode(searchParams.get('mode'))
 
   const toggleMode = () => {
-    setSearchParams(mode === 'signin' ? { mode: 'signup' } : {})
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (mode === 'signin') {
+        next.set('mode', 'signup')
+      } else {
+        next.delete('mode')
+      }
+      return next
+    })
   }
 
   return (

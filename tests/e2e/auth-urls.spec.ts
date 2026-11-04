@@ -1,6 +1,9 @@
 import { test, expect, type Page } from './setup'
+import { VALIDATION_RULES } from '../../src/constants/validation'
 
 const emailField = (page: Page) => page.getByLabel(/email|correo/i)
+const passwordField = (page: Page) =>
+  page.getByRole('textbox', { name: /^(password|contraseña)$/i })
 const usernameField = (page: Page) => page.getByLabel(/username|nombre de usuario/i)
 const signInButton = (page: Page) => page.getByRole('button', { name: /^sign in$/i })
 const createAccountButton = (page: Page) => page.getByRole('button', { name: /^create account$/i })
@@ -48,6 +51,33 @@ test.describe('linkable auth urls', () => {
     await page.goto('/auth?mode=reset')
 
     await expect(page).toHaveURL('/auth?mode=reset')
+    await expect(signInButton(page)).toBeVisible()
+    await expect(usernameField(page)).not.toBeVisible()
+  })
+
+  test('the toggle keeps unrelated query params', async ({ page }) => {
+    await page.goto('/auth?utm_source=newsletter')
+    await switchToSignUp(page).click()
+
+    await expect(page).toHaveURL('/auth?utm_source=newsletter&mode=signup')
+    await expect(createAccountButton(page)).toBeVisible()
+
+    await switchToSignIn(page).click()
+
+    await expect(page).toHaveURL('/auth?utm_source=newsletter')
+    await expect(signInButton(page)).toBeVisible()
+  })
+
+  test('the first mode value wins when mode is repeated', async ({ page }) => {
+    await page.goto('/auth?mode=signup&mode=bogus')
+
+    await expect(page).toHaveURL('/auth?mode=signup&mode=bogus')
+    await expect(createAccountButton(page)).toBeVisible()
+    await expect(usernameField(page)).toBeVisible()
+
+    await page.goto('/auth?mode=bogus&mode=signup')
+
+    await expect(page).toHaveURL('/auth?mode=bogus&mode=signup')
     await expect(signInButton(page)).toBeVisible()
     await expect(usernameField(page)).not.toBeVisible()
   })
@@ -113,5 +143,30 @@ test.describe('linkable auth urls', () => {
     await expect(page).toHaveURL('/auth?mode=signup')
     await expect(page.getByRole('button', { name: /^crear cuenta$/i })).toBeVisible()
     await expect(spanishButton(page)).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  test('a signup error stays on sign-up when going back and forward', async ({ page }) => {
+    await page.goto('/auth')
+    await switchToSignUp(page).click()
+
+    await emailField(page).fill('test@example.com')
+    await passwordField(page).fill('strong-password')
+    await usernameField(page).fill(' '.repeat(VALIDATION_RULES.USERNAME_MIN_LENGTH + 2))
+    await createAccountButton(page).click()
+
+    await expect(page.getByRole('alert')).toContainText('Please choose a username')
+
+    await page.goBack()
+
+    await expect(page).toHaveURL('/auth')
+    await expect(signInButton(page)).toBeVisible()
+    await expect(page.getByRole('alert')).not.toBeVisible()
+    await expect(emailField(page)).toHaveValue('test@example.com')
+
+    await page.goForward()
+
+    await expect(page).toHaveURL('/auth?mode=signup')
+    await expect(page.getByRole('alert')).toContainText('Please choose a username')
+    await expect(emailField(page)).toHaveValue('test@example.com')
   })
 })
