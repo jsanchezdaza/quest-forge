@@ -11,7 +11,7 @@ interface AuthFormProps {
 }
 
 const authLabelClassName =
-  'block text-xs font-pixel-body text-gray-200 mb-2 uppercase tracking-wide'
+  'block text-xs font-pixel-body text-gray-200 uppercase tracking-wide'
 
 export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   const [email, setEmail] = useState('')
@@ -48,10 +48,10 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto px-4">
-      <div className="relative border-2 border-medieval-gold/40 rounded-xl bg-white/20 backdrop-blur-sm shadow-2xl shadow-black/50 p-4 sm:p-6">
-        <div className="text-center mb-6 sm:mb-8">
-          <h1 className="dnd-title text-3xl sm:text-4xl md:text-5xl mb-6 sm:mb-8 leading-tight">
+    <div className="w-full px-4">
+      <div className="relative mx-auto w-full max-w-auth-card border-2 border-medieval-gold/40 rounded-xl bg-white/20 backdrop-blur-sm shadow-2xl shadow-black/50 p-card-pad-mobile sm:p-card-pad">
+        <div className="text-center mb-6 sm:mb-8 [@media(max-height:800px)]:mb-5">
+          <h1 className="dnd-title text-3xl sm:text-4xl md:text-5xl [@media(max-height:800px)]:md:text-4xl mb-6 sm:mb-8 [@media(max-height:800px)]:mb-4 leading-tight">
             {t('app.title')}
           </h1>
           <p className="font-pixel-body text-sm text-gray-300">
@@ -59,7 +59,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-field-gap">
           <Input
             id="email"
             type="email"
@@ -108,7 +108,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
           </Button>
         </form>
 
-        <div className="mt-4 sm:mt-6 text-center">
+        <div className="mt-4 sm:mt-6 [@media(max-height:800px)]:mt-4 text-center">
           <button
             type="button"
             onClick={handleToggleMode}

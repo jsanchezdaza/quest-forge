@@ -71,6 +71,15 @@ export default {
         'fantasy': ['Space Mono', 'JetBrains Mono', 'monospace'],
         'sans': ['JetBrains Mono', 'monospace'],
       },
+      spacing: {
+        'field-gap': '1.25rem',
+        'label-gap': '0.5rem',
+        'card-pad': '2rem',
+        'card-pad-mobile': '1.25rem',
+      },
+      maxWidth: {
+        'auth-card': '420px',
+      },
       backgroundImage: {
         'parchment': "url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxwYXR0ZXJuIGlkPSJwYXJjaG1lbnQiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CiAgICAgIDxyZWN0IHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iI2Y0ZTRiYyIvPgogICAgICA8Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiIGZpbGw9IiNlZGQ0YTAiLz4KICAgIDwvcGF0dGVybj4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXJjaG1lbnQpIi8+Cjwvc3ZnPgo=')",
       },
