@@ -13,7 +13,9 @@ export default function AppBackground({
   className = ''
 }: AppBackgroundProps) {
   // The auth page is a min-h-screen column and gives this panel flex-1, leaving
-  // the footer on screen. `relative` anchors the video to the panel.
+  // the footer on screen. `relative` anchors the video to the panel. The content
+  // slot is `w-full` so the card's max width is the cap, and the outer padding
+  // sits outside that width.
   const baseClasses = variant === 'auth' ? 'relative app-background' : 'min-h-screen app-background'
   const variantClasses = {
     auth: 'flex items-center justify-center p-4',
@@ -33,7 +35,7 @@ export default function AppBackground({
         </>
       )}
 
-      <div className={variant === 'auth' ? 'relative z-10' : ''}>
+      <div className={variant === 'auth' ? 'relative z-10 w-full' : ''}>
         {children}
       </div>
     </div>

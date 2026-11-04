@@ -50,11 +50,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   )
 
   return (
-    <div className="w-full">
+    <div className="flex w-full flex-col gap-label-gap">
       {label && (
         <label
           htmlFor={fieldId}
-          className={labelClassName ?? 'block text-sm font-medium text-gray-300 mb-1'}
+          className={labelClassName ?? 'block text-sm font-medium text-gray-300'}
         >
           {label}
         </label>
@@ -70,12 +70,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         input
       )}
       {error && (
-        <p id={errorId} className="mt-1 text-sm text-red-400">
+        <p id={errorId} className="text-sm text-red-400">
           {error}
         </p>
       )}
       {helperText && !error && (
-        <p id={helperId} className="mt-1 text-sm text-gray-500">
+        <p id={helperId} className="text-sm text-gray-500">
           {helperText}
         </p>
       )}
