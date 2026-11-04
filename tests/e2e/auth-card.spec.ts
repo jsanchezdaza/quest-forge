@@ -36,6 +36,9 @@ async function showMode(page: Page, mode: 'sign-in' | 'sign-up') {
   if (mode === 'sign-up') {
     await switchToSignUp(page).click()
     await expect(usernameField(page)).toBeVisible()
+    // The click leaves the pointer where the toggle was. Sign-up grows the form
+    // and the submit button slides under that pointer, which scales it.
+    await page.mouse.move(0, 0)
   }
 }
 
