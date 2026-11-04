@@ -240,4 +240,41 @@ test.describe('screen fit and copyright', () => {
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
     await expect(page.getByRole('contentinfo')).toBeInViewport({ ratio: 1 })
   })
+
+  test('login and sign-up fit at 720p and 1080p in English and Spanish', async ({ page }) => {
+    const viewports = [
+      { width: 1280, height: 720 },
+      { width: 1920, height: 1080 },
+    ] as const
+    const overflows: string[] = []
+
+    for (const viewport of viewports) {
+      await page.setViewportSize(viewport)
+      await page.goto('/auth')
+      await expect(page.getByRole('heading', { level: 1, name: /quest forge/i })).toBeVisible()
+
+      for (const language of ['EN', 'ES'] as const) {
+        await page.getByRole('button', { name: language, exact: true }).click()
+
+        const backToSignIn = page.getByRole('button', { name: /already have an account|ya tienes cuenta/i })
+        if (await backToSignIn.isVisible()) await backToSignIn.click()
+        await expect(usernameField(page)).not.toBeVisible()
+
+        const signInOverflow = await verticalOverflow(page)
+        if (signInOverflow > 0) {
+          overflows.push(`${language} sign-in ${viewport.width}×${viewport.height}: ${signInOverflow}px`)
+        }
+
+        await page.getByRole('button', { name: /sign up$|regístrate$/i }).click()
+        await expect(usernameField(page)).toBeVisible()
+
+        const signUpOverflow = await verticalOverflow(page)
+        if (signUpOverflow > 0) {
+          overflows.push(`${language} sign-up ${viewport.width}×${viewport.height}: ${signUpOverflow}px`)
+        }
+      }
+    }
+
+    expect(overflows, overflows.join('\n')).toEqual([])
+  })
 })
