@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { AppBackground, Footer, LanguageSelector } from '../components/ui'
 import AuthForm from '../components/auth/AuthForm'
+import { parseAuthMode } from '../lib/authMode'
 
 export default function AuthPage() {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const mode = parseAuthMode(searchParams.get('mode'))
 
   const toggleMode = () => {
-    setMode(mode === 'signin' ? 'signup' : 'signin')
+    setSearchParams(mode === 'signin' ? { mode: 'signup' } : {})
   }
 
   return (
