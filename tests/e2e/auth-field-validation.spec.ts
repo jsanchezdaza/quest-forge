@@ -1,5 +1,6 @@
 import { test, expect, type Locator, type Page } from './setup'
 import { VALIDATION_RULES } from '../../src/constants/validation'
+import { minimumContrast } from './pixelContrast'
 
 /**
  * Format errors under each auth field (#33).
@@ -41,6 +42,34 @@ async function topOf(locator: Locator): Promise<number> {
   const box = await locator.boundingBox()
   expect(box).not.toBeNull()
   return Math.round(box!.y)
+}
+
+/** Contrast of the message against the composited card behind it, not a flat color. */
+async function fieldErrorContrast(error: Locator): Promise<number> {
+  const box = await error.boundingBox()
+  expect(box).not.toBeNull()
+  const foreground = await error.evaluate((element) => {
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('canvas is unavailable')
+    context.fillStyle = getComputedStyle(element).color
+    context.fillRect(0, 0, 1, 1)
+    const [red, green, blue] = context.getImageData(0, 0, 1, 1).data
+    return [red, green, blue] as [number, number, number]
+  })
+  const textRects = await error.evaluate((element) => {
+    const host = element.getBoundingClientRect()
+    const range = document.createRange()
+    range.selectNodeContents(element)
+    return [...range.getClientRects()].map((rect) => ({
+      x: rect.x - host.x,
+      y: rect.y - host.y,
+      width: rect.width,
+      height: rect.height,
+    }))
+  })
+  const png = await error.screenshot()
+  return minimumContrast(png, box!.width, textRects, foreground)
 }
 
 test.describe('auth field validation', () => {
@@ -210,6 +239,57 @@ test.describe('auth field validation', () => {
     await createAccountButton(page).click()
     await expect(usernameField(page)).toBeFocused()
     expect(authCalls).toBe(0)
+  })
+
+  test('field error text clears 4.5:1 on the composed card', async ({ page }) => {
+    for (const viewport of [
+      { width: 320, height: 800 },
+      { width: 1280, height: 720 },
+    ]) {
+      await page.setViewportSize(viewport)
+      await page.goto('/auth')
+      const email = emailField(page)
+      await email.focus()
+      await email.blur()
+      const error = fieldError(page, 'email')
+      await expect(error).toHaveText('Enter your email.')
+      if (viewport.width >= 768) {
+        await page.locator('video').evaluate((video: HTMLVideoElement) => {
+          if (video.readyState >= 2) return
+          return new Promise((resolve) => video.addEventListener('loadeddata', () => resolve(undefined), { once: true }))
+        })
+      }
+      const ratio = await fieldErrorContrast(error)
+      expect(ratio, `${viewport.width}px ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
+    }
+  })
+
+  test('a long Spanish message wraps and is not clipped', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 900 })
+    await page.goto('/auth?mode=signup')
+    await page.getByRole('button', { name: 'ES', exact: true }).click()
+    const username = usernameField(page)
+    await username.fill('a'.repeat(VALIDATION_RULES.USERNAME_MAX_LENGTH + 1))
+    await username.blur()
+
+    const error = fieldError(page, 'username')
+    await expect(error).toHaveText('El nombre de usuario debe tener como máximo 50 caracteres.')
+    const metrics = await error.evaluate((element) => {
+      const style = getComputedStyle(element)
+      return {
+        minHeight: style.minHeight,
+        overflowY: style.overflowY,
+        whiteSpace: style.whiteSpace,
+        height: element.getBoundingClientRect().height,
+        scrollHeight: element.scrollHeight,
+        clientHeight: element.clientHeight,
+      }
+    })
+    expect(metrics.minHeight).toBe('20px')
+    expect(metrics.overflowY).toBe('visible')
+    expect(metrics.whiteSpace).not.toBe('nowrap')
+    expect(metrics.height).toBeGreaterThan(20)
+    expect(metrics.scrollHeight).toBeLessThanOrEqual(metrics.clientHeight)
   })
 
   test('switching mode clears field errors', async ({ page }) => {
