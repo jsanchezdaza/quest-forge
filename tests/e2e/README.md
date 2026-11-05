@@ -8,7 +8,11 @@ This directory contains end-to-end tests for Quest Forge using Playwright.
 ### Currently Running in CI
 - **auth.spec.ts** - Authentication UI tests, on desktop Chromium and Mobile Chrome
 - **auth-a11y.spec.ts** - Contrast and ARIA checks for /auth, on the same projects
+- **auth-keyboard.spec.ts** - Keyboard order and focus rings, on the same projects
+- **auth-password.spec.ts** - Show and hide password, on the same projects
+- **auth-readable-text.spec.ts** - Readable auth copy, on the same projects
 - **auth-urls.spec.ts** - Linkable sign-in and sign-up URLs, on the same projects
+- **auth-field-validation.spec.ts** - Format errors under each auth field, on the same projects
 
 `pnpm test:unit` runs in the `ci` job. It covers `api/*.test.ts` and `tests/unit/*.test.ts`, including auth mode parsing.
 

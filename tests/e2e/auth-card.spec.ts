@@ -7,7 +7,9 @@ import { test, expect, type Locator, type Page } from './setup'
  * the width inside the outer padding: the auth panel's 16px page padding and
  * the wrapper's 16px (`px-4`). Padding is 32px from the `sm` breakpoint up
  * and 20px below it. Fields are 20px apart, and each label sits 8px above
- * its input. The same gaps apply in sign-in and sign-up.
+ * its input. Each field keeps a one-line error slot 8px under the input, so
+ * the 20px gap is measured from that slot to the next label. The same gaps
+ * apply in sign-in and sign-up.
  */
 
 const DESKTOP_CARD_WIDTH = 420
@@ -63,17 +65,25 @@ function fieldsFor(page: Page, mode: 'sign-in' | 'sign-up'): Locator[] {
   return fields
 }
 
+async function errorFor(field: Locator): Promise<Locator> {
+  const id = await field.getAttribute('id')
+  expect(id).toBeTruthy()
+  return field.page().locator(`#${id}-error`)
+}
+
 async function expectFieldSpacing(page: Page, mode: 'sign-in' | 'sign-up') {
   const fields = fieldsFor(page, mode)
   for (const field of fields) {
+    const error = await errorFor(field)
     expect(await roundedGap(await labelFor(field), field)).toBe(LABEL_GAP)
+    expect(await roundedGap(field, error)).toBe(LABEL_GAP)
   }
   for (let index = 0; index < fields.length - 1; index += 1) {
     const nextLabel = await labelFor(fields[index + 1])
-    expect(await roundedGap(fields[index], nextLabel)).toBe(FIELD_GAP)
+    expect(await roundedGap(await errorFor(fields[index]), nextLabel)).toBe(FIELD_GAP)
   }
   const submit = mode === 'sign-in' ? signInButton(page) : createAccountButton(page)
-  expect(await roundedGap(fields[fields.length - 1], submit)).toBe(FIELD_GAP)
+  expect(await roundedGap(await errorFor(fields[fields.length - 1]), submit)).toBe(FIELD_GAP)
 }
 
 async function expectPadding(card: Locator, padding: number) {
