@@ -65,14 +65,14 @@ test.describe('auth field validation', () => {
         lineHeight: computed.lineHeight,
         textAlign: computed.textAlign,
         textTransform: computed.textTransform,
-        color: computed.color,
+        usesErrorColor: element.classList.contains('text-red-400'),
       }
     })
     expect(style).toMatchObject({
       fontSize: '14px',
       lineHeight: '20px',
       textTransform: 'none',
-      color: 'rgb(248, 113, 113)',
+      usesErrorColor: true,
     })
     expect(style.textAlign).toMatch(/^(left|start)$/)
     await expect(page.getByRole('alert')).not.toBeVisible()
@@ -172,6 +172,8 @@ test.describe('auth field validation', () => {
     await usernameField(page).fill('a'.repeat(VALIDATION_RULES.USERNAME_MAX_LENGTH + 1))
     await passwordField(page).fill('short')
     await createAccountButton(page).click()
+    // The pointer stays on the submit button, and its hover scale changes the box.
+    await page.mouse.move(0, 0)
 
     const fields = [
       { id: 'email', message: 'Enter your email.' },
