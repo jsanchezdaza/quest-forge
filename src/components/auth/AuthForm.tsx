@@ -4,9 +4,15 @@ import { Input, PasswordInput, Button, ErrorMessage } from '../ui'
 import { VALIDATION_RULES } from '../../constants/validation'
 import { useTranslation } from '../../i18n'
 import { authErrorMessageKey } from '../../lib/authErrors'
+import type { AuthMode } from '../../lib/authMode'
+
+interface AuthFailure {
+  mode: AuthMode
+  message: string
+}
 
 interface AuthFormProps {
-  mode: 'signin' | 'signup'
+  mode: AuthMode
   onToggleMode: () => void
 }
 
@@ -17,22 +23,23 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
-  const [error, setError] = useState('')
+  const [failure, setFailure] = useState<AuthFailure | null>(null)
 
   const { signIn, signUp, loading } = useAuthStore()
   const { t } = useTranslation()
+  const error = failure?.mode === mode ? failure.message : ''
 
   const handleToggleMode = () => {
-    setError('')
+    setFailure(null)
     onToggleMode()
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
+    setFailure(null)
 
     if (mode === 'signup' && !username.trim()) {
-      setError(t('auth.usernameRequired'))
+      setFailure({ mode, message: t('auth.usernameRequired') })
       return
     }
 
@@ -43,7 +50,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
         await signIn(email, password)
       }
     } catch (cause) {
-      setError(t(authErrorMessageKey(cause)))
+      setFailure({ mode, message: t(authErrorMessageKey(cause)) })
     }
   }
 
