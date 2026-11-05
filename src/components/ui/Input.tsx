@@ -27,7 +27,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const fieldId = id ?? generatedId
   const errorId = `${fieldId}-error`
   const helperId = `${fieldId}-helper`
-  const descriptionId = error ? errorId : helperText ? helperId : undefined
+  const hasError = Boolean(error)
+  const descriptionId = hasError ? errorId : helperText ? helperId : undefined
   const describedBy = [descriptionId, props['aria-describedby']].filter(Boolean).join(' ') || undefined
 
   const input = (
@@ -38,13 +39,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       className={[
         'w-full px-4 py-3 bg-background-darker border text-gray-100 rounded-lg transition-colors placeholder-gray-400 font-pixel-body text-sm',
         'focus-visible:outline-none focus-visible:ring-2',
-        error
+        hasError
           ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20'
           : 'border-medieval-gold/30 focus-visible:border-medieval-gold focus-visible:ring-medieval-gold/20',
         endAdornment ? 'pr-12' : '',
         className,
       ].filter(Boolean).join(' ')}
-      aria-invalid={error ? true : props['aria-invalid']}
+      aria-invalid={hasError ? true : props['aria-invalid']}
       aria-describedby={describedBy}
     />
   )
@@ -69,8 +70,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       ) : (
         input
       )}
-      {error && (
-        <p id={errorId} className="text-sm text-red-400">
+      {error !== undefined && (
+        <p
+          id={errorId}
+          className="min-h-5 text-left text-sm leading-5 text-red-400"
+          aria-hidden={hasError ? undefined : true}
+        >
           {error}
         </p>
       )}
