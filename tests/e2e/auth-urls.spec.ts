@@ -154,19 +154,19 @@ test.describe('linkable auth urls', () => {
     await usernameField(page).fill(' '.repeat(VALIDATION_RULES.USERNAME_MIN_LENGTH + 2))
     await createAccountButton(page).click()
 
-    await expect(page.getByRole('alert')).toContainText('Please choose a username')
+    await expect(page.locator('#username-error')).toHaveText('Please choose a username.')
 
     await page.goBack()
 
     await expect(page).toHaveURL('/auth')
     await expect(signInButton(page)).toBeVisible()
-    await expect(page.getByRole('alert')).not.toBeVisible()
+    await expect(page.locator('#username-error')).toHaveCount(0)
     await expect(emailField(page)).toHaveValue('test@example.com')
 
     await page.goForward()
 
     await expect(page).toHaveURL('/auth?mode=signup')
-    await expect(page.getByRole('alert')).toContainText('Please choose a username')
+    await expect(page.locator('#username-error')).toHaveText('Please choose a username.')
     await expect(emailField(page)).toHaveValue('test@example.com')
   })
 })

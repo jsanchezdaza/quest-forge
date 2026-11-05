@@ -69,10 +69,8 @@ test.describe('Authentication UI', () => {
 
     await signInButton(page).click()
 
-    const validationMessage = await emailField(page).evaluate(
-      (el: HTMLInputElement) => el.validationMessage
-    )
-    expect(validationMessage).toBeTruthy()
+    await expect(page.locator('#email-error')).toHaveText('Enter a valid email address.')
+    await expect(emailField(page)).toHaveAttribute('aria-invalid', 'true')
   })
 
   test('should validate password length in sign up', async ({ page }) => {
@@ -155,7 +153,8 @@ test.describe('Authentication UI', () => {
     await usernameField(page).fill(' '.repeat(VALIDATION_RULES.USERNAME_MIN_LENGTH + 2))
     await createAccountButton(page).click()
 
-    await expect(page.getByRole('alert')).toContainText('Please choose a username')
+    await expect(page.locator('#username-error')).toHaveText('Please choose a username.')
+    await expect(page.getByRole('alert')).not.toBeVisible()
   })
 
   test('a failure cannot land on the other form by switching mode mid-request', async ({ page }) => {

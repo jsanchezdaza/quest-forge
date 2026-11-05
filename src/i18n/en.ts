@@ -18,6 +18,12 @@ export const en = {
   'auth.toggleToSignIn': 'Already have an account? Sign in',
   'auth.signOut': 'Sign Out',
   'auth.usernameRequired': 'Please choose a username.',
+  'auth.emailRequired': 'Enter your email.',
+  'auth.emailInvalid': 'Enter a valid email address.',
+  'auth.usernameTooShort': 'Username must be at least {min} characters.',
+  'auth.usernameTooLong': 'Username must be at most {max} characters.',
+  'auth.passwordRequired': 'Enter your password.',
+  'auth.passwordTooShort': 'Password must be at least {min} characters.',
 
   // Forms
   'form.emailLabel': 'Email',

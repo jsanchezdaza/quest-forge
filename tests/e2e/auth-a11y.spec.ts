@@ -58,4 +58,13 @@ test.describe('auth accessibility', () => {
     await expect(page.getByRole('alert')).toBeVisible()
     await expectAuthAccessible(page, 'sign-in error')
   })
+
+  test('a field format error has no unexpected contrast or ARIA violations', async ({ page }) => {
+    await page.goto('/auth')
+    const email = page.getByLabel(/email/i)
+    await email.focus()
+    await email.blur()
+    await expect(page.locator('#email-error')).toHaveText('Enter your email.')
+    await expectAuthAccessible(page, 'field format error')
+  })
 })

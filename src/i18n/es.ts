@@ -20,6 +20,12 @@ export const es: typeof en = {
   'auth.toggleToSignIn': '¿Ya tienes cuenta? Entra',
   'auth.signOut': 'Cerrar sesión',
   'auth.usernameRequired': 'Elige un nombre de usuario.',
+  'auth.emailRequired': 'Introduce tu correo.',
+  'auth.emailInvalid': 'Introduce un correo válido.',
+  'auth.usernameTooShort': 'El nombre de usuario debe tener al menos {min} caracteres.',
+  'auth.usernameTooLong': 'El nombre de usuario debe tener como máximo {max} caracteres.',
+  'auth.passwordRequired': 'Introduce tu contraseña.',
+  'auth.passwordTooShort': 'La contraseña debe tener al menos {min} caracteres.',
 
   // Forms
   'form.emailLabel': 'Correo',
