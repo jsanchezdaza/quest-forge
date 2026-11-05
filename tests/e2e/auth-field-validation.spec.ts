@@ -94,7 +94,7 @@ test.describe('auth field validation', () => {
         lineHeight: computed.lineHeight,
         textAlign: computed.textAlign,
         textTransform: computed.textTransform,
-        usesErrorColor: element.classList.contains('text-red-400'),
+        usesErrorColor: element.classList.contains('text-red-200'),
       }
     })
     expect(style).toMatchObject({
@@ -242,26 +242,32 @@ test.describe('auth field validation', () => {
   })
 
   test('field error text clears 4.5:1 on the composed card', async ({ page }) => {
-    for (const viewport of [
-      { width: 320, height: 800 },
-      { width: 1280, height: 720 },
-    ]) {
-      await page.setViewportSize(viewport)
-      await page.goto('/auth')
-      const email = emailField(page)
-      await email.focus()
-      await email.blur()
-      const error = fieldError(page, 'email')
-      await expect(error).toHaveText('Enter your email.')
-      if (viewport.width >= 768) {
-        await page.locator('video').evaluate((video: HTMLVideoElement) => {
-          if (video.readyState >= 2) return
-          return new Promise((resolve) => video.addEventListener('loadeddata', () => resolve(undefined), { once: true }))
-        })
+    const expectContrasts = async (label: string, ids: string[]) => {
+      for (const id of ids) {
+        const ratio = await fieldErrorContrast(fieldError(page, id))
+        expect(ratio, `${label} ${id} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
       }
-      const ratio = await fieldErrorContrast(error)
-      expect(ratio, `${viewport.width}px ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
     }
+
+    // Narrow sign-up crosses the brightest part of the static card.
+    await page.setViewportSize({ width: 320, height: 900 })
+    await page.goto('/auth?mode=signup')
+    await expect(usernameField(page)).toBeVisible()
+    await createAccountButton(page).click()
+    await page.mouse.move(0, 0)
+    await expectContrasts('320px', ['email', 'username', 'password'])
+
+    // Desktop sign-up sits on the blurred video.
+    await page.setViewportSize({ width: 1280, height: 720 })
+    await page.goto('/auth?mode=signup')
+    await expect(usernameField(page)).toBeVisible()
+    await page.locator('video').evaluate((video: HTMLVideoElement) => {
+      if (video.readyState >= 2) return
+      return new Promise((resolve) => video.addEventListener('loadeddata', () => resolve(undefined), { once: true }))
+    })
+    await createAccountButton(page).click()
+    await page.mouse.move(0, 0)
+    await expectContrasts('1280px', ['email', 'username', 'password'])
   })
 
   test('a long Spanish message wraps and is not clipped', async ({ page }) => {

@@ -73,7 +73,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       {error !== undefined && (
         <p
           id={errorId}
-          className="min-h-5 text-left text-sm leading-5 text-red-400"
+          className={[
+            'min-h-5 text-left text-sm leading-5 text-red-200',
+            // A light red still misses 4.5:1 on the brightest part of the card,
+            // so the message sits on a dark wash. The empty slot stays clear.
+            hasError ? 'bg-background-darker/55' : '',
+          ].filter(Boolean).join(' ')}
           aria-hidden={hasError ? undefined : true}
         >
           {error}
