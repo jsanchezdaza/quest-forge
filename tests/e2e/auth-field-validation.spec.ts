@@ -122,11 +122,67 @@ test.describe('auth field validation', () => {
     await expect(error).toHaveText('')
 
     await email.fill('')
-    await passwordField(page).fill('x'.repeat(VALIDATION_RULES.PASSWORD_MIN_LENGTH - 1))
+    await passwordField(page).fill('')
     await signInButton(page).click()
 
     await expect(error).toHaveText('Enter your email.')
+    await expect(fieldError(page, 'password')).toHaveText('Enter your password.')
+  })
+
+  test('sign-in still submits an existing short or digit-free password', async ({ page }) => {
+    const submitted: string[] = []
+    await page.route('**/auth/v1/token**', async (route) => {
+      const body = route.request().postDataJSON() as { password?: string }
+      submitted.push(body.password ?? '')
+      await route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({ error_code: 'invalid_credentials', msg: 'Invalid login credentials' }),
+      })
+    })
+
+    await page.goto('/auth')
+    await emailField(page).fill('user@example.com')
+
+    for (const password of ['short', 'abcdef', '1234567']) {
+      await passwordField(page).fill(password)
+      await signInButton(page).click()
+      await expect(fieldError(page, 'password')).toHaveText('')
+      await expect(page.getByRole('alert')).toBeVisible()
+    }
+
+    expect(submitted).toEqual(['short', 'abcdef', '1234567'])
+  })
+
+  test('sign-up rejects a new password that misses length, a letter, or a number', async ({ page }) => {
+    let authCalls = 0
+    await page.route('**/auth/v1/**', (route) => {
+      authCalls += 1
+      return route.abort()
+    })
+
+    await page.goto('/auth?mode=signup')
+    await emailField(page).fill('user@example.com')
+    await usernameField(page).fill('hero')
+
+    await passwordField(page).fill('abc1234')
+    await createAccountButton(page).click()
+    await expect(passwordField(page)).toBeFocused()
     await expect(fieldError(page, 'password')).toHaveText(passwordTooShort)
+
+    await passwordField(page).fill('abcdefgh')
+    await createAccountButton(page).click()
+    await expect(fieldError(page, 'password')).toHaveText('Include at least one number.')
+
+    await passwordField(page).fill('12345678')
+    await createAccountButton(page).click()
+    await expect(fieldError(page, 'password')).toHaveText('Include at least one letter.')
+    expect(authCalls).toBe(0)
+
+    const signup = page.waitForRequest('**/auth/v1/signup**')
+    await passwordField(page).fill('abcd1234')
+    await createAccountButton(page).click()
+    expect((await signup).postDataJSON().password).toBe('abcd1234')
   })
 
   test('moves focus to the first invalid field on submit', async ({ page }) => {
@@ -232,7 +288,7 @@ test.describe('auth field validation', () => {
     await page.goto('/auth?mode=signup')
     await emailField(page).fill('user@example.com')
     await usernameField(page).fill('a'.repeat(VALIDATION_RULES.USERNAME_MIN_LENGTH - 1))
-    await passwordField(page).fill('x'.repeat(VALIDATION_RULES.PASSWORD_MIN_LENGTH))
+    await passwordField(page).fill(`a${'1'.repeat(VALIDATION_RULES.PASSWORD_MIN_LENGTH - 1)}`)
     await usernameField(page).blur()
 
     await expect(fieldError(page, 'username')).toHaveText(usernameTooShort)

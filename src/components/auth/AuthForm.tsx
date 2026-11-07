@@ -143,7 +143,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             labelClassName={authLabelClassName}
             error={fieldMessage('password')}
             required={true}
-            minLength={VALIDATION_RULES.PASSWORD_MIN_LENGTH}
+            minLength={mode === 'signup' ? VALIDATION_RULES.PASSWORD_MIN_LENGTH : undefined}
           />
 
           <ErrorMessage message={error} />

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { VALIDATION_RULES } from '../../src/constants/validation.ts'
+import { passwordRequirementStatus, VALIDATION_RULES } from '../../src/constants/validation.ts'
+import { en } from '../../src/i18n/en.ts'
+import { es } from '../../src/i18n/es.ts'
 import {
   authFieldError,
   firstInvalidAuthField,
@@ -35,13 +37,61 @@ test('username is not checked on sign-in', () => {
   assert.equal(authFieldError('username', 'ab', 'signin'), null)
 })
 
-test('password is required and must meet the current minimum length', () => {
+test('a new password needs 8 characters, a letter, and a number', () => {
+  assert.equal(PASSWORD_MIN_LENGTH, 8)
+  assert.deepEqual(passwordRequirementStatus(''), {
+    minLength: false,
+    letter: false,
+    number: false,
+  })
+  assert.deepEqual(passwordRequirementStatus('short'), {
+    minLength: false,
+    letter: true,
+    number: false,
+  })
+  assert.deepEqual(passwordRequirementStatus('12345678'), {
+    minLength: true,
+    letter: false,
+    number: true,
+  })
+  assert.deepEqual(passwordRequirementStatus('abcdefgh'), {
+    minLength: true,
+    letter: true,
+    number: false,
+  })
+  assert.deepEqual(passwordRequirementStatus('ABCD1234'), {
+    minLength: true,
+    letter: true,
+    number: true,
+  })
+
+  assert.equal(authFieldError('password', '', 'signup'), 'auth.passwordRequired')
+  assert.equal(authFieldError('password', 'abc1234', 'signup'), 'auth.passwordTooShort')
+  assert.equal(authFieldError('password', 'abcdefg', 'signup'), 'auth.passwordTooShort')
+  assert.equal(authFieldError('password', '1234567', 'signup'), 'auth.passwordTooShort')
+  assert.equal(authFieldError('password', 'abcdefgh', 'signup'), 'auth.passwordNeedsNumber')
+  assert.equal(authFieldError('password', '12345678', 'signup'), 'auth.passwordNeedsLetter')
+  assert.equal(authFieldError('password', 'abcd1234', 'signup'), null)
+})
+
+test('sign-in only requires a password, so an existing one still passes', () => {
   assert.equal(authFieldError('password', '', 'signin'), 'auth.passwordRequired')
-  assert.equal(authFieldError('password', 'a'.repeat(PASSWORD_MIN_LENGTH - 1), 'signup'), 'auth.passwordTooShort')
-  assert.equal(authFieldError('password', 'a'.repeat(PASSWORD_MIN_LENGTH), 'signin'), null)
-  // Letters-and-numbers is a server message today, not a client rule. US-07 owns that policy.
-  assert.equal(authFieldError('password', '1'.repeat(PASSWORD_MIN_LENGTH), 'signup'), null)
-  assert.equal(authFieldError('password', ' '.repeat(PASSWORD_MIN_LENGTH), 'signin'), null)
+  assert.equal(authFieldError('password', 'short', 'signin'), null)
+  assert.equal(authFieldError('password', 'abcdef', 'signin'), null)
+  assert.equal(authFieldError('password', '1234567', 'signin'), null)
+  assert.equal(authFieldError('password', 'password', 'signin'), null)
+})
+
+test('the weak-password message states the same rule in English and Spanish', () => {
+  const min = String(PASSWORD_MIN_LENGTH)
+  assert.equal(
+    en['error.weakPassword.message'],
+    `Password must be at least ${min} characters and include at least one letter and one number.`,
+  )
+  assert.equal(
+    es['error.weakPassword.message'],
+    `La contraseña debe tener al menos ${min} caracteres e incluir al menos una letra y un número.`,
+  )
 })
 
 test('the first invalid field follows email, username, then password', () => {
@@ -54,7 +104,7 @@ test('the first invalid field follows email, username, then password', () => {
       { email: 'user@example.com', username: '', password: 'short' },
       'signin',
     ),
-    'password',
+    null,
   )
   assert.equal(
     firstInvalidAuthField({ email: 'not-an-email', username: 'ab', password: '' }, 'signup'),
@@ -69,11 +119,14 @@ test('the first invalid field follows email, username, then password', () => {
   )
   assert.equal(
     firstInvalidAuthField(
-      {
-        email: 'user@example.com',
-        username: 'hero',
-        password: 'a'.repeat(PASSWORD_MIN_LENGTH),
-      },
+      { email: 'user@example.com', username: 'hero', password: 'abcdefgh' },
+      'signup',
+    ),
+    'password',
+  )
+  assert.equal(
+    firstInvalidAuthField(
+      { email: 'user@example.com', username: 'hero', password: 'abcd1234' },
       'signup',
     ),
     null,
