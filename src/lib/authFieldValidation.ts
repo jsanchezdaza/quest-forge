@@ -1,4 +1,4 @@
-import { VALIDATION_RULES } from '../constants/validation.ts'
+import { passwordRequirementStatus, VALIDATION_RULES } from '../constants/validation.ts'
 import type { TranslationKey } from '../i18n'
 import type { AuthMode } from './authMode'
 
@@ -45,7 +45,12 @@ export function authFieldError(
   }
 
   if (!value) return 'auth.passwordRequired'
-  if (value.length < VALIDATION_RULES.PASSWORD_MIN_LENGTH) return 'auth.passwordTooShort'
+  // Existing passwords stay valid. Length, a letter, and a number apply to new ones.
+  if (mode === 'signin') return null
+  const status = passwordRequirementStatus(value)
+  if (!status.minLength) return 'auth.passwordTooShort'
+  if (!status.letter) return 'auth.passwordNeedsLetter'
+  if (!status.number) return 'auth.passwordNeedsNumber'
   return null
 }
 

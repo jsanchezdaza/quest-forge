@@ -26,6 +26,13 @@ export const es: typeof en = {
   'auth.usernameTooLong': 'El nombre de usuario debe tener como máximo {max} caracteres.',
   'auth.passwordRequired': 'Introduce tu contraseña.',
   'auth.passwordTooShort': 'La contraseña debe tener al menos {min} caracteres.',
+  'auth.passwordNeedsLetter': 'Incluye al menos una letra.',
+  'auth.passwordNeedsNumber': 'Incluye al menos un número.',
+  'auth.passwordRule.minLength': 'Al menos {min} caracteres',
+  'auth.passwordRule.letter': 'Al menos una letra',
+  'auth.passwordRule.number': 'Al menos un número',
+  'auth.passwordRule.met': 'cumplido',
+  'auth.passwordRule.notMet': 'no cumplido',
 
   // Forms
   'form.emailLabel': 'Correo',
@@ -129,7 +136,7 @@ export const es: typeof en = {
   'error.loginFailed.message': 'Correo o contraseña incorrectos. Revisa tus credenciales e inténtalo de nuevo.',
   'error.emailNotConfirmed.message': 'Revisa tu correo y haz clic en el enlace de confirmación antes de iniciar sesión.',
   'error.userAlreadyExists.message': 'Ya existe una cuenta con este correo. Inicia sesión en su lugar.',
-  'error.weakPassword.message': 'La contraseña debe tener al menos 6 caracteres y combinar letras y números.',
+  'error.weakPassword.message': 'La contraseña debe tener al menos 8 caracteres e incluir al menos una letra y un número.',
   'error.invalidEmail.message': 'Introduce una dirección de correo válida.',
   'error.signupDisabled.message': 'El registro de nuevos usuarios está deshabilitado actualmente. Contacta con soporte.',
   'error.emailNotAuthorized.message': 'Este correo no está autorizado para crear una cuenta.',

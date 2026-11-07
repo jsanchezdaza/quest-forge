@@ -24,6 +24,13 @@ export const en = {
   'auth.usernameTooLong': 'Username must be at most {max} characters.',
   'auth.passwordRequired': 'Enter your password.',
   'auth.passwordTooShort': 'Password must be at least {min} characters.',
+  'auth.passwordNeedsLetter': 'Include at least one letter.',
+  'auth.passwordNeedsNumber': 'Include at least one number.',
+  'auth.passwordRule.minLength': 'At least {min} characters',
+  'auth.passwordRule.letter': 'At least one letter',
+  'auth.passwordRule.number': 'At least one number',
+  'auth.passwordRule.met': 'met',
+  'auth.passwordRule.notMet': 'not met',
 
   // Forms
   'form.emailLabel': 'Email',
@@ -127,7 +134,7 @@ export const en = {
   'error.loginFailed.message': 'Invalid email or password. Please check your credentials and try again.',
   'error.emailNotConfirmed.message': 'Please check your email and click the confirmation link before signing in.',
   'error.userAlreadyExists.message': 'An account with this email already exists. Please sign in instead.',
-  'error.weakPassword.message': 'Password should be at least 6 characters long with a mix of letters and numbers.',
+  'error.weakPassword.message': 'Password must be at least 8 characters and include at least one letter and one number.',
   'error.invalidEmail.message': 'Please enter a valid email address.',
   'error.signupDisabled.message': 'New user registration is currently disabled. Please contact support.',
   'error.emailNotAuthorized.message': 'This email address is not authorized to create an account.',

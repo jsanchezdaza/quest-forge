@@ -8,6 +8,12 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   labelClassName?: string
   /** Trailing control inside the field, such as a show-password button. */
   endAdornment?: ReactNode
+  /**
+   * Content under the control, such as the password checklist. The error
+   * line stays reserved above it whenever `error` is provided, including
+   * when that string is empty. A longer message grows the line.
+   */
+  details?: ReactNode
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
@@ -17,6 +23,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     helperText,
     labelClassName,
     endAdornment,
+    details,
     className = '',
     id,
     ...props
@@ -84,6 +91,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           {error}
         </p>
       )}
+      {details}
       {helperText && !error && (
         <p id={helperId} className="text-sm text-gray-500">
           {helperText}
