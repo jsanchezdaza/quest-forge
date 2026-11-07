@@ -209,7 +209,10 @@ test.describe('auth field validation', () => {
     for (const id of ['email', 'username', 'password']) {
       const field = page.locator(`#${id}`)
       await expect(field).toHaveAttribute('aria-invalid', 'true')
-      await expect(field).toHaveAttribute('aria-describedby', `${id}-error`)
+      const describedBy = id === 'password'
+        ? 'password-error password-requirements'
+        : `${id}-error`
+      await expect(field).toHaveAttribute('aria-describedby', describedBy)
       await expect(fieldError(page, id)).not.toHaveText('')
     }
 
@@ -270,10 +273,14 @@ test.describe('auth field validation', () => {
       const error = fieldError(page, fields[index].id)
       await expect(error).toHaveText(fields[index].message)
       expect(await roundedGap(field, error)).toBe(LABEL_GAP)
-      const next = index < fields.length - 1
-        ? page.locator(`label[for="${fields[index + 1].id}"]`)
-        : createAccountButton(page)
-      expect(await roundedGap(error, next)).toBe(FIELD_GAP)
+      if (fields[index].id === 'password') {
+        const list = page.locator('#password-requirements')
+        expect(await roundedGap(error, list)).toBe(LABEL_GAP)
+        expect(await roundedGap(list, createAccountButton(page))).toBe(FIELD_GAP)
+      } else {
+        const next = page.locator(`label[for="${fields[index + 1].id}"]`)
+        expect(await roundedGap(error, next)).toBe(FIELD_GAP)
+      }
     }
     await expect(page.getByRole('alert')).not.toBeVisible()
   })

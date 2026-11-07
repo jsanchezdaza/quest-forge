@@ -13,6 +13,7 @@ This directory contains end-to-end tests for Quest Forge using Playwright.
 - **auth-readable-text.spec.ts** - Readable auth copy, on the same projects
 - **auth-urls.spec.ts** - Linkable sign-in and sign-up URLs, on the same projects
 - **auth-field-validation.spec.ts** - Format errors under each auth field, on the same projects
+- **auth-password-requirements.spec.ts** - Password requirements on sign-up, on the same projects
 
 `pnpm test:unit` runs in the `ci` job. It covers `api/*.test.ts` and `tests/unit/*.test.ts`, including auth mode parsing.
 

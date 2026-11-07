@@ -8,6 +8,11 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   labelClassName?: string
   /** Trailing control inside the field, such as a show-password button. */
   endAdornment?: ReactNode
+  /**
+   * Content under the control, such as the password checklist. When set, an
+   * empty error line is not reserved, so this can sit 8px below the input.
+   */
+  details?: ReactNode
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
@@ -17,6 +22,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     helperText,
     labelClassName,
     endAdornment,
+    details,
     className = '',
     id,
     ...props
@@ -28,6 +34,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const errorId = `${fieldId}-error`
   const helperId = `${fieldId}-helper`
   const hasError = Boolean(error)
+  const reserveErrorLine = error !== undefined && details == null
   const descriptionId = hasError ? errorId : helperText ? helperId : undefined
   const describedBy = [descriptionId, props['aria-describedby']].filter(Boolean).join(' ') || undefined
 
@@ -70,7 +77,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       ) : (
         input
       )}
-      {error !== undefined && (
+      {(hasError || reserveErrorLine) && (
         <p
           id={errorId}
           className={[
@@ -84,6 +91,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           {error}
         </p>
       )}
+      {details}
       {helperText && !error && (
         <p id={helperId} className="text-sm text-gray-500">
           {helperText}

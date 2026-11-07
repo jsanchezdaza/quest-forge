@@ -26,6 +26,11 @@ export const en = {
   'auth.passwordTooShort': 'Password must be at least {min} characters.',
   'auth.passwordNeedsLetter': 'Include at least one letter.',
   'auth.passwordNeedsNumber': 'Include at least one number.',
+  'auth.passwordRule.minLength': 'At least {min} characters',
+  'auth.passwordRule.letter': 'At least one letter',
+  'auth.passwordRule.number': 'At least one number',
+  'auth.passwordRule.met': 'met',
+  'auth.passwordRule.notMet': 'not met',
 
   // Forms
   'form.emailLabel': 'Email',

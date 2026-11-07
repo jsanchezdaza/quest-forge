@@ -28,6 +28,11 @@ export const es: typeof en = {
   'auth.passwordTooShort': 'La contraseña debe tener al menos {min} caracteres.',
   'auth.passwordNeedsLetter': 'Incluye al menos una letra.',
   'auth.passwordNeedsNumber': 'Incluye al menos un número.',
+  'auth.passwordRule.minLength': 'Al menos {min} caracteres',
+  'auth.passwordRule.letter': 'Al menos una letra',
+  'auth.passwordRule.number': 'Al menos un número',
+  'auth.passwordRule.met': 'cumplido',
+  'auth.passwordRule.notMet': 'no cumplido',
 
   // Forms
   'form.emailLabel': 'Correo',

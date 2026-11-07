@@ -10,6 +10,7 @@ import {
   type AuthField,
 } from '../../lib/authFieldValidation'
 import type { AuthMode } from '../../lib/authMode'
+import PasswordRequirements from './PasswordRequirements'
 
 interface AuthFailure {
   mode: AuthMode
@@ -23,6 +24,8 @@ interface AuthFormProps {
 
 const authLabelClassName =
   'block text-xs font-pixel-body text-gray-200 uppercase tracking-wide'
+
+const PASSWORD_REQUIREMENTS_ID = 'password-requirements'
 
 export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   const [email, setEmail] = useState('')
@@ -89,13 +92,23 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   return (
     <div className="w-full px-4">
       <div className="relative mx-auto w-full max-w-auth-card border-2 border-medieval-gold/40 rounded-xl bg-white/20 backdrop-blur-sm shadow-2xl shadow-black/50 p-card-pad-mobile sm:p-card-pad">
-        {/* Short screens already tighten the title. The reserved error line needs a
-            little more of that room so sign-up still fits at 720p. */}
-        <div className="text-center mb-6 sm:mb-8 [@media(max-height:800px)]:mb-2">
-          <h1 className="dnd-title text-3xl sm:text-4xl md:text-5xl [@media(max-height:800px)]:md:text-4xl mb-6 sm:mb-8 [@media(max-height:800px)]:mb-2 leading-tight">
+        {/* The checklist needs the room the title gives up on a short sign-up screen. */}
+        <div className={[
+          'text-center mb-6 sm:mb-8',
+          mode === 'signup' ? '[@media(max-height:800px)]:mb-0' : '[@media(max-height:800px)]:mb-2',
+        ].join(' ')}>
+          <h1 className={[
+            'dnd-title text-3xl sm:text-4xl md:text-5xl mb-6 sm:mb-8 leading-tight',
+            mode === 'signup'
+              ? '[@media(max-height:800px)]:mb-0 [@media(max-height:800px)]:md:text-3xl [@media(max-height:800px)]:md:leading-none'
+              : '[@media(max-height:800px)]:mb-2 [@media(max-height:800px)]:md:text-4xl',
+          ].join(' ')}>
             {t('app.title')}
           </h1>
-          <p className="font-pixel-body text-sm text-gray-300">
+          <p className={[
+            'font-pixel-body text-sm text-gray-300',
+            mode === 'signup' ? '[@media(max-height:800px)]:leading-none' : '',
+          ].join(' ')}>
             {mode === 'signin' ? t('auth.welcomeReturning') : t('auth.welcomeNew')}
           </p>
         </div>
@@ -144,6 +157,12 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             error={fieldMessage('password')}
             required={true}
             minLength={mode === 'signup' ? VALIDATION_RULES.PASSWORD_MIN_LENGTH : undefined}
+            aria-describedby={mode === 'signup' ? PASSWORD_REQUIREMENTS_ID : undefined}
+            details={
+              mode === 'signup' ? (
+                <PasswordRequirements id={PASSWORD_REQUIREMENTS_ID} password={password} />
+              ) : undefined
+            }
           />
 
           <ErrorMessage message={error} />
@@ -153,12 +172,17 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             variant="primary"
             isLoading={loading}
             className="w-full"
+            // A password error appears on blur and would move this button before mouseup.
+            onPointerDown={(event) => event.preventDefault()}
           >
             {mode === 'signin' ? t('auth.signInButton') : t('auth.signUpButton')}
           </Button>
         </form>
 
-        <div className="mt-4 sm:mt-6 [@media(max-height:800px)]:mt-1 text-center">
+        <div className={[
+          'mt-4 text-center sm:mt-6',
+          mode === 'signup' ? '[@media(max-height:800px)]:mt-0' : '[@media(max-height:800px)]:mt-1',
+        ].join(' ')}>
           <button
             type="button"
             onClick={handleToggleMode}

@@ -137,7 +137,7 @@ test.describe('Authentication UI', () => {
 
     await switchToSignUp(page).click()
     await emailField(page).fill('test@example.com')
-    await passwordField(page).fill('strong-password')
+    await passwordField(page).fill('strong-password1')
     await usernameField(page).fill('TestUser')
     await createAccountButton(page).click()
 
@@ -149,7 +149,7 @@ test.describe('Authentication UI', () => {
 
     await switchToSignUp(page).click()
     await emailField(page).fill('test@example.com')
-    await passwordField(page).fill('strong-password')
+    await passwordField(page).fill('strong-password1')
     await usernameField(page).fill(' '.repeat(VALIDATION_RULES.USERNAME_MIN_LENGTH + 2))
     await createAccountButton(page).click()
 

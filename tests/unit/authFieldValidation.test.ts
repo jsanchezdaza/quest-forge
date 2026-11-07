@@ -94,6 +94,19 @@ test('the weak-password message states the same rule in English and Spanish', ()
   )
 })
 
+test('the checklist copy lists the same three rules in English and Spanish', () => {
+  assert.equal(en['auth.passwordRule.minLength'], 'At least {min} characters')
+  assert.equal(en['auth.passwordRule.letter'], 'At least one letter')
+  assert.equal(en['auth.passwordRule.number'], 'At least one number')
+  assert.equal(en['auth.passwordRule.met'], 'met')
+  assert.equal(en['auth.passwordRule.notMet'], 'not met')
+  assert.equal(es['auth.passwordRule.minLength'], 'Al menos {min} caracteres')
+  assert.equal(es['auth.passwordRule.letter'], 'Al menos una letra')
+  assert.equal(es['auth.passwordRule.number'], 'Al menos un número')
+  assert.equal(es['auth.passwordRule.met'], 'cumplido')
+  assert.equal(es['auth.passwordRule.notMet'], 'no cumplido')
+})
+
 test('the first invalid field follows email, username, then password', () => {
   assert.equal(
     firstInvalidAuthField({ email: '', username: '', password: '' }, 'signin'),

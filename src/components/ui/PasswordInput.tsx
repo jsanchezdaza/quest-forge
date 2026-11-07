@@ -4,6 +4,7 @@ import {
   useState,
   type FocusEventHandler,
   type InputHTMLAttributes,
+  type ReactNode,
 } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import Input from './Input'
@@ -14,10 +15,11 @@ interface PasswordInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
   error?: string
   helperText?: string
   labelClassName?: string
+  details?: ReactNode
 }
 
 const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(function PasswordInput(
-  { onBlur, ...props },
+  { onBlur, details, ...props },
   ref,
 ) {
   const { t } = useTranslation()
@@ -65,6 +67,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(function 
       autoCapitalize="none"
       autoCorrect="off"
       onBlur={handleBlur}
+      details={details}
       endAdornment={
         <button
           type="button"
