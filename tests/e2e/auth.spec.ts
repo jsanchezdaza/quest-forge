@@ -274,9 +274,76 @@ test.describe('screen fit and copyright', () => {
       }
     }
 
-    // Sign-up at 1280×720 is 27px over. That is the reserved password-error
-    // line (20px) plus the 8px gap under it. Field gaps, the error slot,
-    // checklist rows, and card padding stay as agreed.
     expect(overflows, overflows.join('\n')).toEqual([])
+  })
+
+  test('a short wide sign-up tightens only the exterior vertical padding', async ({ page }) => {
+    const sides = async (selector: string) =>
+      page.locator(selector).evaluate((element) => {
+        const style = getComputedStyle(element)
+        return {
+          top: Number.parseFloat(style.paddingTop),
+          right: Number.parseFloat(style.paddingRight),
+          bottom: Number.parseFloat(style.paddingBottom),
+          left: Number.parseFloat(style.paddingLeft),
+        }
+      })
+
+    const panelPadding = () => sides('.app-background')
+    const footerPadding = () => sides('footer > div')
+    const full = { top: 16, right: 16, bottom: 16, left: 16 }
+    const shortSignupPanel = { top: 8, right: 16, bottom: 8, left: 16 }
+    const shortSignupFooter = { top: 6, right: 16, bottom: 6, left: 16 }
+
+    const open = async (width: number, height: number, mode: 'signin' | 'signup') => {
+      await page.setViewportSize({ width, height })
+      await page.goto(mode === 'signup' ? '/auth?mode=signup' : '/auth')
+      await expect(page.getByRole('heading', { level: 1, name: /quest forge/i })).toBeVisible()
+    }
+
+    await open(1280, 720, 'signin')
+    const signInLink = await page.getByRole('link', { name: 'www.javisan.dev' }).boundingBox()
+    expect(await panelPadding()).toEqual(full)
+    expect(await footerPadding()).toEqual(full)
+
+    await open(1280, 720, 'signup')
+    expect(await panelPadding()).toEqual(shortSignupPanel)
+    expect(await footerPadding()).toEqual(shortSignupFooter)
+    expect(await verticalOverflow(page)).toBeLessThanOrEqual(0)
+
+    const link = page.getByRole('link', { name: 'www.javisan.dev' })
+    const signUpLink = await link.boundingBox()
+    expect(signUpLink).not.toBeNull()
+    expect(signInLink).not.toBeNull()
+    expect(Math.round(signUpLink!.height)).toBe(Math.round(signInLink!.height))
+    expect(Math.round(signUpLink!.width)).toBe(Math.round(signInLink!.width))
+
+    await link.focus()
+    const footerFit = await page.evaluate(() => {
+      const footer = document.querySelector('footer')!
+      const inner = footer.querySelector(':scope > div')!
+      const lines = [...inner.querySelectorAll('p')]
+      const author = inner.querySelector('a')!
+      const footerBox = footer.getBoundingClientRect()
+      const authorBox = author.getBoundingClientRect()
+      const ring = 5
+      return {
+        lineGap: Math.round(lines[1].getBoundingClientRect().top - lines[0].getBoundingClientRect().bottom),
+        ringInsideFooter:
+          authorBox.top - ring >= footerBox.top && authorBox.bottom + ring <= footerBox.bottom,
+        clearOfCopyright: authorBox.top - ring >= lines[0].getBoundingClientRect().bottom,
+      }
+    })
+    expect(footerFit.lineGap).toBe(8)
+    expect(footerFit.ringInsideFooter).toBe(true)
+    expect(footerFit.clearOfCopyright).toBe(true)
+
+    await open(1280, 900, 'signup')
+    expect(await panelPadding()).toEqual(full)
+    expect(await footerPadding()).toEqual(full)
+
+    await open(800, 720, 'signup')
+    expect(await panelPadding()).toEqual(full)
+    expect(await footerPadding()).toEqual(full)
   })
 })

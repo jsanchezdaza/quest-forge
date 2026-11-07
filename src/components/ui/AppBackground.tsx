@@ -5,12 +5,18 @@ interface AppBackgroundProps {
   children: React.ReactNode
   variant?: 'auth' | 'game'
   className?: string
+  /**
+   * Sign-up only. At 1024px wide and at most 800px tall, vertical padding
+   * is 8px. Horizontal padding stays 16px.
+   */
+  compactOnShortDesktop?: boolean
 }
 
 export default function AppBackground({ 
   children, 
   variant = 'auth',
-  className = ''
+  className = '',
+  compactOnShortDesktop = false,
 }: AppBackgroundProps) {
   // The auth page is a min-h-screen column and gives this panel flex-1, leaving
   // the footer on screen. `relative` anchors the video to the panel. The content
@@ -23,7 +29,12 @@ export default function AppBackground({
   }
   
   return (
-    <div className={`${baseClasses} ${variantClasses[variant]} ${className}`}>
+    <div className={[
+      baseClasses,
+      variantClasses[variant],
+      compactOnShortDesktop ? '[@media(min-width:1024px)_and_(max-height:800px)]:py-2' : '',
+      className,
+    ].filter(Boolean).join(' ')}>
       {variant === 'auth' && (
         <>
           <AuthVideoBackground />

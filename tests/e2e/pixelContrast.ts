@@ -23,6 +23,9 @@ export function minimumContrast(
 ): number {
   const image = decodePng(png)
   const scale = image.width / elementWidth
+  // A fractional device pixel makes the screenshot a little larger than the
+  // element, so the outer CSS pixel can be the scene beside it.
+  const elementHeight = image.height / scale
   let lowest = Number.POSITIVE_INFINITY
   let samples = 0
 
@@ -30,6 +33,7 @@ export function minimumContrast(
     for (let x = 1; x < image.width - 1; x += 1) {
       const cssX = x / scale
       const cssY = y / scale
+      if (cssX < 1 || cssY < 1 || cssX > elementWidth - 1 || cssY > elementHeight - 1) continue
       const onGlyph = textRects.some((rect) =>
         cssX >= rect.x - 3 && cssX <= rect.x + rect.width + 3
         && cssY >= rect.y - 2 && cssY <= rect.y + rect.height + 2

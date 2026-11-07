@@ -24,10 +24,10 @@ export default function AuthPage() {
       <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
         <LanguageSelector />
       </div>
-      <AppBackground variant="auth" className="flex-1">
+      <AppBackground variant="auth" className="flex-1" compactOnShortDesktop={mode === 'signup'}>
         <AuthForm mode={mode} onToggleMode={toggleMode} />
       </AppBackground>
-      <Footer />
+      <Footer compactOnShortDesktop={mode === 'signup'} />
     </div>
   )
 }
