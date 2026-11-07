@@ -74,6 +74,39 @@ test('a new password needs 8 characters, a letter, and a number', () => {
   assert.equal(authFieldError('password', 'abcd1234', 'signup'), null)
 })
 
+test('new-password length counts UTF-16 code units, and letters and digits are ASCII', () => {
+  // 😀 is one code point and two UTF-16 code units. a + 1 + three emoji = 8 code units.
+  const emojiPassword = 'a1😀😀😀'
+  assert.equal(emojiPassword.length, 8)
+  assert.equal([...emojiPassword].length, 5)
+  assert.deepEqual(passwordRequirementStatus(emojiPassword), {
+    minLength: true,
+    letter: true,
+    number: true,
+  })
+  assert.equal(authFieldError('password', emojiPassword, 'signup'), null)
+
+  // Accented letters are not ASCII A–Z.
+  assert.equal('ááááááá1'.length, 8)
+  assert.deepEqual(passwordRequirementStatus('ááááááá1'), {
+    minLength: true,
+    letter: false,
+    number: true,
+  })
+  assert.equal(authFieldError('password', 'ááááááá1', 'signup'), 'auth.passwordNeedsLetter')
+
+  // Whitespace is not trimmed. It counts toward length and is neither a letter nor a digit.
+  assert.deepEqual(passwordRequirementStatus('        '), {
+    minLength: true,
+    letter: false,
+    number: false,
+  })
+  assert.equal(authFieldError('password', '        ', 'signup'), 'auth.passwordNeedsLetter')
+  assert.equal(authFieldError('password', '   ', 'signup'), 'auth.passwordTooShort')
+  assert.equal(authFieldError('password', 'abcdef 1', 'signup'), null)
+  assert.equal(authFieldError('password', ' ', 'signin'), null)
+})
+
 test('sign-in only requires a password, so an existing one still passes', () => {
   assert.equal(authFieldError('password', '', 'signin'), 'auth.passwordRequired')
   assert.equal(authFieldError('password', 'short', 'signin'), null)

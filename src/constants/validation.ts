@@ -7,8 +7,14 @@ export const VALIDATION_RULES = {
 } as const
 
 /**
- * A–Z and 0–9, the same groups as Supabase's "Letters and digits" preset.
- * The check applies to new passwords only. Sign-in does not use it.
+ * Client checks for a new password. Sign-in does not use them.
+ *
+ * Length is `password.length`: UTF-16 code units, not Unicode code points.
+ * A letter is ASCII A–Z or a–z. A digit is ASCII 0–9. Accented letters,
+ * emoji, and whitespace are neither. Whitespace is not trimmed, so it does
+ * count toward the length.
+ *
+ * This is not a verified match for the Supabase Auth password policy.
  */
 const PASSWORD_LETTER = /[A-Za-z]/
 const PASSWORD_DIGIT = /[0-9]/
