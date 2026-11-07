@@ -274,6 +274,9 @@ test.describe('screen fit and copyright', () => {
       }
     }
 
+    // Sign-up at 1280×720 is 27px over. That is the reserved password-error
+    // line (20px) plus the 8px gap under it. Field gaps, the error slot,
+    // checklist rows, and card padding stay as agreed.
     expect(overflows, overflows.join('\n')).toEqual([])
   })
 })

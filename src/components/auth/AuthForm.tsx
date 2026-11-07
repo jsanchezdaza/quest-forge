@@ -172,8 +172,6 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             variant="primary"
             isLoading={loading}
             className="w-full"
-            // A password error appears on blur and would move this button before mouseup.
-            onPointerDown={(event) => event.preventDefault()}
           >
             {mode === 'signin' ? t('auth.signInButton') : t('auth.signUpButton')}
           </Button>

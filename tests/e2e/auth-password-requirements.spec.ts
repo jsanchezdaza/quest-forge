@@ -112,7 +112,9 @@ test.describe('password requirements', () => {
     await expect(requirement(page, 1).locator('svg')).toHaveClass(/lucide-check/)
     await expect(requirement(page, 0).locator('svg')).toHaveClass(/lucide-circle/)
     await expect(password).not.toHaveAttribute('aria-invalid', 'true')
-    await expect(page.locator('#password-error')).toHaveCount(0)
+    const reservedError = page.locator('#password-error')
+    await expect(reservedError).toHaveText('')
+    await expect(reservedError).toHaveAttribute('aria-hidden', 'true')
     expect(await password.evaluate((element) => element.className)).not.toContain('border-red-500')
     expect(await tops()).toEqual(before)
 
@@ -157,13 +159,130 @@ test.describe('password requirements', () => {
     })
     expect(style).toMatchObject({ fontSize: '14px', lineHeight: '20px' })
     expect(style.textAlign).toMatch(/^(left|start)$/)
-    expect(await roundedGap(passwordField(page), list)).toBe(LABEL_GAP)
+    const error = page.locator('#password-error')
+    await expect(error).toHaveText('')
+    expect(await roundedGap(passwordField(page), error)).toBe(LABEL_GAP)
+    expect(await roundedGap(error, list)).toBe(LABEL_GAP)
     expect(await roundedGap(requirement(page, 0), requirement(page, 1))).toBe(ROW_GAP)
     expect(await roundedGap(requirement(page, 1), requirement(page, 2))).toBe(ROW_GAP)
     expect(await roundedGap(list, createAccountButton(page))).toBe(FIELD_GAP)
     for (const index of [0, 1, 2]) {
-      expect(Math.round((await requirement(page, index).boundingBox())!.height)).toBe(20)
+      const row = requirement(page, index)
+      expect(Math.round((await row.boundingBox())!.height)).toBe(20)
+      expect(await row.evaluate((element) => getComputedStyle(element).minHeight)).toBe('20px')
     }
+  })
+
+  test('a single-line password error does not move the checklist or the button', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 })
+
+    const tops = async () => {
+      await page.mouse.move(0, 0)
+      const list = await requirements(page).boundingBox()
+      const button = await createAccountButton(page).boundingBox()
+      expect(list).not.toBeNull()
+      expect(button).not.toBeNull()
+      return { list: Math.round(list!.y), button: Math.round(button!.y) }
+    }
+
+    const fillValidNeighbors = async () => {
+      await page.getByLabel(/^email$/i).fill('user@example.com')
+      await page.getByLabel(/^username$/i).fill('hero')
+      await passwordField(page).fill('abcdefgh')
+    }
+
+    await openSignUp(page)
+    await fillValidNeighbors()
+    const beforeBlur = await tops()
+    await passwordField(page).focus()
+    await page.keyboard.press('Tab')
+    await expect(page.getByRole('button', { name: 'Show password', exact: true })).toBeFocused()
+    const error = page.locator('#password-error')
+    await expect(error).toHaveText('Include at least one number.')
+    await expect(error).not.toHaveAttribute('aria-hidden', 'true')
+    expect(await tops()).toEqual(beforeBlur)
+
+    await openSignUp(page)
+    await fillValidNeighbors()
+    const beforeClick = await tops()
+    await createAccountButton(page).click()
+    await expect(passwordField(page)).toBeFocused()
+    await expect(page.locator('#password-error')).toHaveText('Include at least one number.')
+    expect(await tops()).toEqual(beforeClick)
+
+    await openSignUp(page)
+    await fillValidNeighbors()
+    const beforeEnter = await tops()
+    await passwordField(page).focus()
+    await page.keyboard.press('Enter')
+    await expect(passwordField(page)).toBeFocused()
+    await expect(passwordField(page)).toHaveAttribute(
+      'aria-describedby',
+      'password-error password-requirements',
+    )
+    await expect(requirements(page)).toHaveAttribute('aria-live', 'off')
+    await expect(page.locator('#password-error')).toHaveText('Include at least one number.')
+    expect(await tops()).toEqual(beforeEnter)
+  })
+
+  test('the keyboard activates the mode toggle', async ({ page }) => {
+    await openSignUp(page)
+    const toggle = page.getByRole('button', { name: /already have an account/i })
+    await toggle.focus()
+    await page.keyboard.press('Enter')
+    await expect(requirements(page)).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /^sign in$/i })).toBeVisible()
+  })
+
+  test('a checklist row grows when its label wraps', async ({ page }) => {
+    await page.setViewportSize({ width: 240, height: 900 })
+    await openSignUp(page)
+    const row = requirement(page, 0)
+    const metrics = await row.evaluate((element) => {
+      const style = getComputedStyle(element)
+      return {
+        minHeight: style.minHeight,
+        overflowY: style.overflowY,
+        whiteSpace: style.whiteSpace,
+        height: element.getBoundingClientRect().height,
+        scrollHeight: element.scrollHeight,
+        clientHeight: element.clientHeight,
+      }
+    })
+    expect(metrics.minHeight).toBe('20px')
+    expect(metrics.overflowY).toBe('visible')
+    expect(metrics.whiteSpace).not.toBe('nowrap')
+    expect(metrics.height).toBeGreaterThan(20)
+    expect(metrics.scrollHeight).toBeLessThanOrEqual(metrics.clientHeight)
+  })
+
+  test('a wrapping password error grows and stays above the checklist', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 900 })
+    await openSignUp(page)
+    await page.getByRole('button', { name: 'ES', exact: true }).click()
+    const password = passwordField(page)
+    await password.fill('abc')
+    await password.blur()
+
+    const error = page.locator('#password-error')
+    await expect(error).toHaveText('La contraseña debe tener al menos 8 caracteres.')
+    const metrics = await error.evaluate((element) => {
+      const style = getComputedStyle(element)
+      return {
+        minHeight: style.minHeight,
+        overflowY: style.overflowY,
+        whiteSpace: style.whiteSpace,
+        height: element.getBoundingClientRect().height,
+        scrollHeight: element.scrollHeight,
+        clientHeight: element.clientHeight,
+      }
+    })
+    expect(metrics.minHeight).toBe('20px')
+    expect(metrics.overflowY).toBe('visible')
+    expect(metrics.whiteSpace).not.toBe('nowrap')
+    expect(metrics.height).toBeGreaterThan(20)
+    expect(metrics.scrollHeight).toBeLessThanOrEqual(metrics.clientHeight)
+    expect(await roundedGap(error, requirements(page))).toBe(LABEL_GAP)
   })
 
   test('Spanish copy follows the same three rules', async ({ page }) => {

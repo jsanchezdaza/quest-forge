@@ -9,8 +9,9 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   /** Trailing control inside the field, such as a show-password button. */
   endAdornment?: ReactNode
   /**
-   * Content under the control, such as the password checklist. When set, an
-   * empty error line is not reserved, so this can sit 8px below the input.
+   * Content under the control, such as the password checklist. The error
+   * line stays reserved above it whenever `error` is provided, including
+   * when that string is empty. A longer message grows the line.
    */
   details?: ReactNode
 }
@@ -34,7 +35,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const errorId = `${fieldId}-error`
   const helperId = `${fieldId}-helper`
   const hasError = Boolean(error)
-  const reserveErrorLine = error !== undefined && details == null
   const descriptionId = hasError ? errorId : helperText ? helperId : undefined
   const describedBy = [descriptionId, props['aria-describedby']].filter(Boolean).join(' ') || undefined
 
@@ -77,7 +77,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       ) : (
         input
       )}
-      {(hasError || reserveErrorLine) && (
+      {error !== undefined && (
         <p
           id={errorId}
           className={[

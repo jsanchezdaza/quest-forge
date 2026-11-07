@@ -10,8 +10,12 @@ interface PasswordRequirementsProps {
 const RULES = ['minLength', 'letter', 'number'] as const
 
 /**
- * Live checklist for a new password. Sign-up uses it today; the new-password
+ * Checklist for a new password. Sign-up uses it today; the new-password
  * view (#37) can place the same list under its field.
+ *
+ * aria-live is off so typing is not announced. Blur and submit report
+ * problems through the field error, which the input exposes with
+ * aria-describedby. Rows use a minimum height so a longer label can wrap.
  */
 export default function PasswordRequirements({ id, password }: PasswordRequirementsProps) {
   const { t } = useTranslation()
@@ -32,7 +36,7 @@ export default function PasswordRequirements({ id, password }: PasswordRequireme
         const met = status[rule]
         const Icon = met ? Check : Circle
         return (
-          <li key={rule} className="flex h-5 items-center gap-2">
+          <li key={rule} className="flex min-h-5 items-center gap-2">
             <Icon aria-hidden size={16} className="shrink-0" />
             <span>{label[rule]}</span>
             <span className="sr-only">{met ? t('auth.passwordRule.met') : t('auth.passwordRule.notMet')}</span>

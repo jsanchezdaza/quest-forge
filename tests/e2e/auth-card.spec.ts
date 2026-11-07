@@ -9,7 +9,8 @@ import { test, expect, type Locator, type Page } from './setup'
  * and 20px below it. Fields are 20px apart, and each label sits 8px above
  * its input. Each field keeps a one-line error slot 8px under the input, so
  * the 20px gap is measured from that slot to the next label. Sign-up's
- * password field shows the requirements list there until an error is present.
+ * password field keeps that slot, then the requirements list 8px below it.
+ * The 20px gap to the button is measured from the list.
  */
 
 const DESKTOP_CARD_WIDTH = 420
@@ -75,10 +76,12 @@ async function expectFieldSpacing(page: Page, mode: 'sign-in' | 'sign-up') {
   const fields = fieldsFor(page, mode)
   for (const field of fields) {
     expect(await roundedGap(await labelFor(field), field)).toBe(LABEL_GAP)
-    const below = mode === 'sign-up' && (await field.getAttribute('id')) === 'password'
-      ? page.locator('#password-requirements')
-      : await errorFor(field)
-    expect(await roundedGap(field, below)).toBe(LABEL_GAP)
+    expect(await roundedGap(field, await errorFor(field))).toBe(LABEL_GAP)
+  }
+  if (mode === 'sign-up') {
+    expect(
+      await roundedGap(await errorFor(passwordField(page)), page.locator('#password-requirements')),
+    ).toBe(LABEL_GAP)
   }
   for (let index = 0; index < fields.length - 1; index += 1) {
     const nextLabel = await labelFor(fields[index + 1])
