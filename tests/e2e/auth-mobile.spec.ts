@@ -134,3 +134,60 @@ test.describe('language selector on a narrow screen', () => {
     expect(Math.round(1280 - (desktop!.x + desktop!.width))).toBe(24)
   })
 })
+
+const passwordField = (page: Page) =>
+  page.getByRole('textbox', { name: /^(password|contraseña)$/i })
+const usernameField = (page: Page) => page.getByLabel(/username|nombre de usuario/i)
+
+async function fieldTypography(page: Page, field: ReturnType<typeof emailField>) {
+  return field.evaluate((element) => {
+    const style = getComputedStyle(element)
+    const placeholder = getComputedStyle(element, '::placeholder')
+    const label = (element as HTMLInputElement).labels?.[0]
+    const labelStyle = label ? getComputedStyle(label) : null
+    return {
+      fontSize: style.fontSize,
+      placeholderSize: placeholder.fontSize,
+      height: Math.round(element.getBoundingClientRect().height),
+      labelSize: labelStyle?.fontSize ?? '',
+      labelTransform: labelStyle?.textTransform ?? '',
+    }
+  })
+}
+
+test.describe('auth field text on a phone', () => {
+  test('fields are 16px on a phone and 14px on desktop, and stay 46px tall', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 })
+    await showSignIn(page)
+
+    for (const field of [emailField(page), passwordField(page)]) {
+      expect(await fieldTypography(page, field)).toMatchObject({
+        fontSize: '16px',
+        placeholderSize: '16px',
+        height: 46,
+        labelSize: '12px',
+        labelTransform: 'uppercase',
+      })
+    }
+
+    await switchToSignUp(page).click()
+    expect(await fieldTypography(page, usernameField(page))).toMatchObject({
+      fontSize: '16px',
+      placeholderSize: '16px',
+      height: 46,
+      labelSize: '12px',
+      labelTransform: 'uppercase',
+    })
+
+    await page.setViewportSize({ width: 1280, height: 720 })
+    for (const field of [emailField(page), usernameField(page), passwordField(page)]) {
+      expect(await fieldTypography(page, field)).toMatchObject({
+        fontSize: '14px',
+        placeholderSize: '14px',
+        height: 46,
+        labelSize: '12px',
+        labelTransform: 'uppercase',
+      })
+    }
+  })
+})

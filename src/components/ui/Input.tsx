@@ -44,7 +44,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       ref={ref}
       id={fieldId}
       className={[
-        'w-full px-4 py-3 bg-background-darker border text-gray-100 rounded-lg transition-colors placeholder-gray-400 font-pixel-body text-sm',
+        'w-full h-[46px] px-4 py-3 bg-background-darker border text-gray-100 rounded-lg transition-colors placeholder-gray-400 font-pixel-body text-base leading-5 sm:text-sm',
         'focus-visible:outline-none focus-visible:ring-2',
         hasError
           ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20'
