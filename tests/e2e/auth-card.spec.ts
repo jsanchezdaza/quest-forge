@@ -50,9 +50,9 @@ async function expectGap(above: Locator, below: Locator, expected: number) {
   const bottom = await below.boundingBox()
   expect(top).not.toBeNull()
   expect(bottom).not.toBeNull()
-  // Flex gaps land on a half pixel in Firefox. A one pixel miss is that rounding.
+  // Flex gaps land on a half pixel in Firefox.
   const gap = bottom!.y - (top!.y + top!.height)
-  expect(Math.abs(gap - expected)).toBeLessThanOrEqual(1)
+  expect(Math.abs(gap - expected)).toBeLessThanOrEqual(0.5)
 }
 
 async function labelFor(field: Locator): Promise<Locator> {
