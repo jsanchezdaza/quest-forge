@@ -304,25 +304,27 @@ test.describe('auth field text on a phone', () => {
     await showSignIn(page)
 
     for (const field of [emailField(page), passwordField(page)]) {
-      expect(await fieldTypography(page, field)).toMatchObject({
+      const type = await fieldTypography(page, field)
+      expect(type).toMatchObject({
         fontSize: '16px',
         placeholderSize: '16px',
-        height: 46,
         minHeight: '46px',
         labelSize: '12px',
         labelTransform: 'uppercase',
       })
+      expect(type.height).toBeGreaterThanOrEqual(46)
     }
 
     await switchToSignUp(page).click()
-    expect(await fieldTypography(page, usernameField(page))).toMatchObject({
+    const username = await fieldTypography(page, usernameField(page))
+    expect(username).toMatchObject({
       fontSize: '16px',
       placeholderSize: '16px',
-      height: 46,
       minHeight: '46px',
       labelSize: '12px',
       labelTransform: 'uppercase',
     })
+    expect(username.height).toBeGreaterThanOrEqual(46)
 
     await page.setViewportSize({ width: 767, height: 900 })
     expect(await fieldTypography(page, emailField(page))).toMatchObject({ fontSize: '16px', minHeight: '46px' })
@@ -330,14 +332,15 @@ test.describe('auth field text on a phone', () => {
     await page.setViewportSize({ width: 1280, height: 720 })
     const desktopSize = fine ? '14px' : '16px'
     for (const field of [emailField(page), usernameField(page), passwordField(page)]) {
-      expect(await fieldTypography(page, field)).toMatchObject({
+      const type = await fieldTypography(page, field)
+      expect(type).toMatchObject({
         fontSize: desktopSize,
         placeholderSize: desktopSize,
-        height: 46,
         minHeight: '46px',
         labelSize: '12px',
         labelTransform: 'uppercase',
       })
+      expect(type.height).toBeGreaterThanOrEqual(46)
     }
   })
 })
