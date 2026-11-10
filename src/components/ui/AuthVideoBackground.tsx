@@ -7,8 +7,8 @@ const VIDEO_SRC = '/images/backgrounds/background-animated-desktop.mp4'
  * Animated dungeon background for the auth screen (desktop only; hidden on mobile via CSS,
  * where the static PNG in `.app-background` is used instead). The video is anchored top-left
  * and slightly zoomed (see CSS) to push the bottom-right generator watermark toward the
- * cropped edge. Decorative: aria-hidden. Reduced motion pauses it; playback
- * speed is left alone.
+ * cropped edge. Decorative: aria-hidden and out of the tab order. Reduced
+ * motion pauses it; playback speed is left alone.
  */
 export default function AuthVideoBackground() {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -26,6 +26,7 @@ export default function AuthVideoBackground() {
         <video
           ref={videoRef}
           className="auth-video"
+          tabIndex={-1}
           autoPlay={!reduceMotion}
           muted
           loop
