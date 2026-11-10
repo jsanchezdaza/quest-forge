@@ -68,3 +68,69 @@ test.describe('mobile auth layout', () => {
     expect(overflow).toBe(0)
   })
 })
+
+/**
+ * Below 640px the language control sits in normal flow, right-aligned, with
+ * an 8px gap above the card. From 640px up it stays in the corner.
+ */
+const languageSelector = (page: Page) => page.getByRole('group', { name: 'Language' })
+
+const NARROW_VIEWPORTS = [
+  { width: 320, height: 568 },
+  { width: 360, height: 740 },
+  { width: 375, height: 667 },
+  { width: 480, height: 800 },
+  { width: 639, height: 700 },
+] as const
+
+function boxesOverlap(
+  a: { x: number; y: number; width: number; height: number },
+  b: { x: number; y: number; width: number; height: number },
+): boolean {
+  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y
+}
+
+test.describe('language selector on a narrow screen', () => {
+  for (const viewport of NARROW_VIEWPORTS) {
+    for (const mode of ['sign-in', 'sign-up'] as const) {
+      test(`stays above the ${mode} card at ${viewport.width}×${viewport.height}`, async ({ page }) => {
+        await page.setViewportSize(viewport)
+        await showSignIn(page)
+        if (mode === 'sign-up') {
+          await switchToSignUp(page).click()
+          await expect(page.getByLabel(/username|nombre de usuario/i)).toBeVisible()
+          await page.mouse.move(0, 0)
+        }
+
+        const selector = languageSelector(page)
+        const card = authCard(page)
+        const selectorBox = await selector.boundingBox()
+        const cardBox = await card.boundingBox()
+        expect(selectorBox).not.toBeNull()
+        expect(cardBox).not.toBeNull()
+        expect(boxesOverlap(selectorBox!, cardBox!)).toBe(false)
+        expect(Math.round(cardBox!.y - (selectorBox!.y + selectorBox!.height))).toBe(8)
+        expect(Math.round(selectorBox!.x + selectorBox!.width)).toBe(Math.round(cardBox!.x + cardBox!.width))
+
+        const position = await selector.evaluate((element) => getComputedStyle(element.parentElement!).position)
+        expect(position).not.toBe('fixed')
+        expect(position).not.toBe('absolute')
+      })
+    }
+  }
+
+  test('stays in the top-right corner from 640px up', async ({ page }) => {
+    await page.setViewportSize({ width: 700, height: 800 })
+    await showSignIn(page)
+    const narrow = await languageSelector(page).boundingBox()
+    expect(narrow).not.toBeNull()
+    expect(Math.round(narrow!.y)).toBe(16)
+    expect(Math.round(700 - (narrow!.x + narrow!.width))).toBe(16)
+
+    await page.setViewportSize({ width: 1280, height: 720 })
+    const desktop = await languageSelector(page).boundingBox()
+    expect(desktop).not.toBeNull()
+    expect(Math.round(desktop!.y)).toBe(24)
+    expect(Math.round(1280 - (desktop!.x + desktop!.width))).toBe(24)
+  })
+})
