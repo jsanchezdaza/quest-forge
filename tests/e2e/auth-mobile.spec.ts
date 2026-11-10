@@ -70,8 +70,11 @@ test.describe('mobile auth layout', () => {
 })
 
 /**
- * Below 640px the language control sits in normal flow, right-aligned, with
- * an 8px gap above the card. From 640px up it stays in the corner.
+ * Below sm (768px) the language control sits in normal flow, right-aligned,
+ * with an 8px gap above the card. From sm it is absolute in the top-right
+ * corner. It is never position:fixed. A short landscape phone (below sm, but
+ * at most 450px tall) is absolute too, so the control does not push the
+ * sign-in button off the screen.
  */
 const languageSelector = (page: Page) => page.getByRole('group', { name: 'Language' })
 
@@ -80,8 +83,13 @@ const NARROW_VIEWPORTS = [
   { width: 360, height: 740 },
   { width: 375, height: 667 },
   { width: 480, height: 800 },
-  { width: 639, height: 700 },
+  { width: 700, height: 800 },
+  { width: 767, height: 900 },
 ] as const
+
+async function selectorPosition(page: Page): Promise<string> {
+  return languageSelector(page).evaluate((element) => getComputedStyle(element.parentElement!).position)
+}
 
 function boxesOverlap(
   a: { x: number; y: number; width: number; height: number },
@@ -113,26 +121,37 @@ test.describe('language selector on a narrow screen', () => {
         expect(Math.abs(gap - 8)).toBeLessThanOrEqual(1)
         expect(Math.round(selectorBox!.x + selectorBox!.width)).toBe(Math.round(cardBox!.x + cardBox!.width))
 
-        const position = await selector.evaluate((element) => getComputedStyle(element.parentElement!).position)
-        expect(position).not.toBe('fixed')
-        expect(position).not.toBe('absolute')
+        expect(await selectorPosition(page)).toBe('static')
       })
     }
   }
 
-  test('stays in the top-right corner from 640px up', async ({ page }) => {
-    await page.setViewportSize({ width: 700, height: 800 })
+  test('sits in the top-right corner from the sm breakpoint', async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 900 })
     await showSignIn(page)
-    const narrow = await languageSelector(page).boundingBox()
-    expect(narrow).not.toBeNull()
-    expect(Math.round(narrow!.y)).toBe(16)
-    expect(Math.round(700 - (narrow!.x + narrow!.width))).toBe(16)
+    const tablet = await languageSelector(page).boundingBox()
+    expect(tablet).not.toBeNull()
+    expect(Math.round(tablet!.y)).toBe(24)
+    expect(Math.round(768 - (tablet!.x + tablet!.width))).toBe(24)
+    expect(await selectorPosition(page)).toBe('absolute')
 
     await page.setViewportSize({ width: 1280, height: 720 })
     const desktop = await languageSelector(page).boundingBox()
     expect(desktop).not.toBeNull()
     expect(Math.round(desktop!.y)).toBe(24)
     expect(Math.round(1280 - (desktop!.x + desktop!.width))).toBe(24)
+    expect(await selectorPosition(page)).toBe('absolute')
+  })
+
+  test('a short landscape phone keeps it out of flow without pinning it', async ({ page }) => {
+    await page.setViewportSize({ width: 740, height: 360 })
+    await showSignIn(page)
+    expect(await selectorPosition(page)).toBe('absolute')
+    const selectorBox = await languageSelector(page).boundingBox()
+    const cardBox = await authCard(page).boundingBox()
+    expect(selectorBox).not.toBeNull()
+    expect(cardBox).not.toBeNull()
+    expect(boxesOverlap(selectorBox!, cardBox!)).toBe(false)
   })
 })
 
