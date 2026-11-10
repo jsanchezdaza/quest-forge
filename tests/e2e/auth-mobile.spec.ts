@@ -136,6 +136,23 @@ test.describe('language selector on a narrow screen', () => {
   })
 })
 
+test.describe('language selector matches the document language', () => {
+  for (const locale of [
+    { button: 'EN', lang: 'en' },
+    { button: 'ES', lang: 'es' },
+  ] as const) {
+    test(`${locale.button} is pressed when the document language is ${locale.lang}`, async ({ page }) => {
+      await showSignIn(page)
+      await page.getByRole('button', { name: locale.button, exact: true }).click()
+
+      const pressed = languageSelector(page).locator('[aria-pressed="true"]')
+      await expect(pressed).toHaveCount(1)
+      await expect(pressed).toHaveText(locale.button)
+      expect(await page.evaluate(() => document.documentElement.lang)).toBe(locale.lang)
+    })
+  }
+})
+
 const passwordField = (page: Page) =>
   page.getByRole('textbox', { name: /^(password|contraseña)$/i })
 const usernameField = (page: Page) => page.getByLabel(/username|nombre de usuario/i)
