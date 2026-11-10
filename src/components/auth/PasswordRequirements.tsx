@@ -30,7 +30,7 @@ export default function PasswordRequirements({ id, password }: PasswordRequireme
     <ul
       id={id}
       aria-live="off"
-      className="flex list-none flex-col gap-1 bg-background-darker/55 text-left font-pixel-body text-sm leading-5 text-gray-100"
+      className="flex list-none flex-col gap-1 -mx-1.5 bg-background-darker/55 px-1.5 text-left font-pixel-body text-sm leading-5 text-gray-100"
     >
       {RULES.map((rule) => {
         const met = status[rule]
