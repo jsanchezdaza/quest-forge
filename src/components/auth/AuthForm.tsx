@@ -91,33 +91,38 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
 
   return (
     <div className="w-full px-4">
-      <div className="relative mx-auto w-full max-w-auth-card border-2 border-medieval-gold/40 rounded-xl bg-white/20 backdrop-blur-sm shadow-2xl shadow-black/50 p-card-pad-mobile sm:p-card-pad">
+      <div className="relative mx-auto w-full max-w-auth-card border-2 border-medieval-gold/40 rounded-xl bg-white/20 backdrop-blur-sm shadow-2xl shadow-black/50 p-card-pad-mobile sm:p-card-pad [@media(max-height:450px)]:py-card-pad-mobile [@media(max-height:450px)]:sm:py-card-pad-mobile">
         {/* The checklist needs the room the title gives up on a short sign-up screen. */}
         <div className={[
-          'text-center mb-6 sm:mb-8',
-          mode === 'signup' ? '[@media(max-height:800px)]:mb-0' : '[@media(max-height:800px)]:mb-2',
+          'text-center mb-4 sm:mb-8',
+          '[@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:mb-2',
+          '[@media(max-height:450px)]:mb-4',
         ].join(' ')}>
           <h1 className={[
-            'dnd-title text-3xl sm:text-4xl md:text-5xl mb-6 sm:mb-8 leading-tight',
+            'dnd-title text-3xl sm:text-4xl md:text-5xl mb-0 sm:mb-8 leading-tight',
             mode === 'signup'
-              ? '[@media(max-height:800px)]:mb-0 [@media(max-height:800px)]:md:text-3xl [@media(max-height:800px)]:md:leading-none'
-              : '[@media(max-height:800px)]:mb-2 [@media(max-height:800px)]:md:text-4xl',
+              ? '[@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:mb-0 [@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:md:text-3xl [@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:md:leading-none'
+              : '[@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:mb-2 [@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:md:text-4xl',
+            '[@media(max-height:450px)]:mb-3 [@media(max-height:450px)]:text-2xl [@media(max-height:450px)]:sm:text-2xl [@media(max-height:450px)]:md:text-2xl',
           ].join(' ')}>
             {t('app.title')}
           </h1>
           <p className={[
-            'font-pixel-body text-sm text-gray-300',
-            mode === 'signup' ? '[@media(max-height:800px)]:leading-none' : '',
+            'mt-1 font-pixel-body text-sm text-gray-300 sm:mt-0',
+            mode === 'signup'
+              ? '[@media(min-width:1024px)_and_(max-height:800px)]:leading-none'
+              : '[@media(max-height:450px)]:hidden',
           ].join(' ')}>
             {mode === 'signin' ? t('auth.welcomeReturning') : t('auth.welcomeNew')}
           </p>
         </div>
 
-        <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-field-gap">
+        <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-field-gap [@media(max-height:450px)]:gap-3">
           <Input
             ref={emailRef}
             id="email"
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             onBlur={() => touch('email')}
@@ -133,6 +138,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
               ref={usernameRef}
               id="username"
               type="text"
+              autoComplete="nickname"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               onBlur={() => touch('username')}
@@ -148,6 +154,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
           <PasswordInput
             ref={passwordRef}
             id="password"
+            autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             onBlur={() => touch('password')}
@@ -179,7 +186,10 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
 
         <div className={[
           'mt-4 text-center sm:mt-6',
-          mode === 'signup' ? '[@media(max-height:800px)]:mt-0' : '[@media(max-height:800px)]:mt-1',
+          mode === 'signup'
+            ? '[@media(max-height:800px)_and_(min-height:451px)]:mt-0'
+            : '[@media(max-height:800px)_and_(min-height:451px)]:mt-1',
+          '[@media(max-height:450px)]:mt-3',
         ].join(' ')}>
           <button
             type="button"

@@ -27,12 +27,14 @@ function requirement(page: Page, index: number): Locator {
   return requirements(page).locator('li').nth(index)
 }
 
-async function roundedGap(above: Locator, below: Locator): Promise<number> {
+async function expectGap(above: Locator, below: Locator, expected: number) {
   const top = await above.boundingBox()
   const bottom = await below.boundingBox()
   expect(top).not.toBeNull()
   expect(bottom).not.toBeNull()
-  return Math.round(bottom!.y - (top!.y + top!.height))
+  // A flex gap can land on a half pixel. Rounding that to the next pixel flakes.
+  const gap = bottom!.y - (top!.y + top!.height)
+  expect(Math.abs(gap - expected)).toBeLessThanOrEqual(0.5)
 }
 
 async function requirementContrast(list: Locator): Promise<number> {
@@ -101,9 +103,16 @@ test.describe('password requirements', () => {
     await openSignUp(page)
     const password = passwordField(page)
     const tops = async () =>
-      Promise.all([0, 1, 2].map(async (index) => Math.round((await requirement(page, index).boundingBox())!.y)))
+      Promise.all([0, 1, 2].map(async (index) => (await requirement(page, index).boundingBox())!.y))
 
     const before = await tops()
+    const staysPut = async () => {
+      const after = await tops()
+      for (const [index, y] of after.entries()) {
+        // Half-pixel positions round either way. A real move is a whole row.
+        expect(Math.abs(y - before[index]), `row ${index}`).toBeLessThan(1)
+      }
+    }
     await password.pressSequentially('abc')
 
     await expect(requirement(page, 0).locator('.sr-only')).toHaveText('not met')
@@ -116,7 +125,7 @@ test.describe('password requirements', () => {
     await expect(reservedError).toHaveText('')
     await expect(reservedError).toHaveAttribute('aria-hidden', 'true')
     expect(await password.evaluate((element) => element.className)).not.toContain('border-red-500')
-    expect(await tops()).toEqual(before)
+    await staysPut()
 
     await password.fill('abc12345')
     for (const index of [0, 1, 2]) {
@@ -124,7 +133,7 @@ test.describe('password requirements', () => {
       await expect(requirement(page, index).locator('svg')).toHaveClass(/lucide-check/)
     }
     await expect(requirements(page).locator('li')).toHaveCount(3)
-    expect(await tops()).toEqual(before)
+    await staysPut()
     await expect(password).not.toHaveAttribute('aria-invalid', 'true')
   })
 
@@ -139,7 +148,7 @@ test.describe('password requirements', () => {
     await expect(error).not.toContainText('At least one letter')
     await expect(password).toHaveAttribute('aria-invalid', 'true')
     await expect(password).toHaveAttribute('aria-describedby', 'password-error password-requirements')
-    expect(await roundedGap(password, error)).toBe(LABEL_GAP)
+    await expectGap(password, error, LABEL_GAP)
     expect((await error.boundingBox())!.y).toBeLessThan((await requirements(page).boundingBox())!.y)
     await expect(requirements(page).locator('li')).toHaveCount(3)
   })
@@ -161,11 +170,11 @@ test.describe('password requirements', () => {
     expect(style.textAlign).toMatch(/^(left|start)$/)
     const error = page.locator('#password-error')
     await expect(error).toHaveText('')
-    expect(await roundedGap(passwordField(page), error)).toBe(LABEL_GAP)
-    expect(await roundedGap(error, list)).toBe(LABEL_GAP)
-    expect(await roundedGap(requirement(page, 0), requirement(page, 1))).toBe(ROW_GAP)
-    expect(await roundedGap(requirement(page, 1), requirement(page, 2))).toBe(ROW_GAP)
-    expect(await roundedGap(list, createAccountButton(page))).toBe(FIELD_GAP)
+    await expectGap(passwordField(page), error, LABEL_GAP)
+    await expectGap(error, list, LABEL_GAP)
+    await expectGap(requirement(page, 0), requirement(page, 1), ROW_GAP)
+    await expectGap(requirement(page, 1), requirement(page, 2), ROW_GAP)
+    await expectGap(list, createAccountButton(page), FIELD_GAP)
     for (const index of [0, 1, 2]) {
       const row = requirement(page, index)
       expect(Math.round((await row.boundingBox())!.height)).toBe(20)
@@ -178,11 +187,25 @@ test.describe('password requirements', () => {
 
     const tops = async () => {
       await page.mouse.move(0, 0)
+      // The pointer scales the button it clicked. Wait until that scale is gone.
+      await expect.poll(async () => {
+        const box = await createAccountButton(page).boundingBox()
+        return Math.round(box!.height)
+      }).toBe(48)
       const list = await requirements(page).boundingBox()
       const button = await createAccountButton(page).boundingBox()
       expect(list).not.toBeNull()
       expect(button).not.toBeNull()
-      return { list: Math.round(list!.y), button: Math.round(button!.y) }
+      return { list: list!.y, button: button!.y }
+    }
+
+    const staysPut = (
+      later: { list: number; button: number },
+      earlier: { list: number; button: number },
+    ) => {
+      // Half-pixel positions round either way. A real move is a whole row.
+      expect(Math.abs(later.list - earlier.list)).toBeLessThan(1)
+      expect(Math.abs(later.button - earlier.button)).toBeLessThan(1)
     }
 
     const fillValidNeighbors = async () => {
@@ -200,7 +223,7 @@ test.describe('password requirements', () => {
     const error = page.locator('#password-error')
     await expect(error).toHaveText('Include at least one number.')
     await expect(error).not.toHaveAttribute('aria-hidden', 'true')
-    expect(await tops()).toEqual(beforeBlur)
+    staysPut(await tops(), beforeBlur)
 
     await openSignUp(page)
     await fillValidNeighbors()
@@ -208,7 +231,7 @@ test.describe('password requirements', () => {
     await createAccountButton(page).click()
     await expect(passwordField(page)).toBeFocused()
     await expect(page.locator('#password-error')).toHaveText('Include at least one number.')
-    expect(await tops()).toEqual(beforeClick)
+    staysPut(await tops(), beforeClick)
 
     await openSignUp(page)
     await fillValidNeighbors()
@@ -222,7 +245,7 @@ test.describe('password requirements', () => {
     )
     await expect(requirements(page)).toHaveAttribute('aria-live', 'off')
     await expect(page.locator('#password-error')).toHaveText('Include at least one number.')
-    expect(await tops()).toEqual(beforeEnter)
+    staysPut(await tops(), beforeEnter)
   })
 
   test('the keyboard activates the mode toggle', async ({ page }) => {
@@ -282,7 +305,7 @@ test.describe('password requirements', () => {
     expect(metrics.whiteSpace).not.toBe('nowrap')
     expect(metrics.height).toBeGreaterThan(20)
     expect(metrics.scrollHeight).toBeLessThanOrEqual(metrics.clientHeight)
-    expect(await roundedGap(error, requirements(page))).toBe(LABEL_GAP)
+    await expectGap(error, requirements(page), LABEL_GAP)
   })
 
   test('Spanish copy follows the same three rules', async ({ page }) => {
@@ -319,5 +342,31 @@ test.describe('password requirements', () => {
       return new Promise((resolve) => video.addEventListener('loadeddata', () => resolve(undefined), { once: true }))
     })
     await expectContrast('1280px')
+  })
+
+  test('the error text lines up with the field and the checklist wash matches it', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 900 })
+    await openSignUp(page)
+    const username = page.getByLabel(/username|nombre de usuario/i)
+    await username.fill('a')
+    await username.blur()
+
+    const inputBox = await username.boundingBox()
+    const error = page.locator('#username-error')
+    const errorBox = await error.boundingBox()
+    const listBox = await requirements(page).boundingBox()
+    expect(inputBox).not.toBeNull()
+    expect(errorBox).not.toBeNull()
+    expect(listBox).not.toBeNull()
+
+    const textLeft = await error.evaluate((element) => {
+      const range = document.createRange()
+      range.selectNodeContents(element)
+      return range.getBoundingClientRect().left
+    })
+    // The wash extends 6px past the field. The glyphs stay on the field's left edge.
+    expect(Math.abs(textLeft - inputBox!.x)).toBeLessThanOrEqual(1)
+    expect(Math.abs(errorBox!.x - listBox!.x)).toBeLessThanOrEqual(1)
+    expect(Math.abs((errorBox!.x + errorBox!.width) - (listBox!.x + listBox!.width))).toBeLessThanOrEqual(1)
   })
 })

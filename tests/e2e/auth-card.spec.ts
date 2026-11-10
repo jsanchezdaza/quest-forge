@@ -45,12 +45,14 @@ async function showMode(page: Page, mode: 'sign-in' | 'sign-up') {
   }
 }
 
-async function roundedGap(above: Locator, below: Locator): Promise<number> {
+async function expectGap(above: Locator, below: Locator, expected: number) {
   const top = await above.boundingBox()
   const bottom = await below.boundingBox()
   expect(top).not.toBeNull()
   expect(bottom).not.toBeNull()
-  return Math.round(bottom!.y - (top!.y + top!.height))
+  // Flex gaps land on a half pixel in Firefox.
+  const gap = bottom!.y - (top!.y + top!.height)
+  expect(Math.abs(gap - expected)).toBeLessThanOrEqual(0.5)
 }
 
 async function labelFor(field: Locator): Promise<Locator> {
@@ -75,23 +77,21 @@ async function errorFor(field: Locator): Promise<Locator> {
 async function expectFieldSpacing(page: Page, mode: 'sign-in' | 'sign-up') {
   const fields = fieldsFor(page, mode)
   for (const field of fields) {
-    expect(await roundedGap(await labelFor(field), field)).toBe(LABEL_GAP)
-    expect(await roundedGap(field, await errorFor(field))).toBe(LABEL_GAP)
+    await expectGap(await labelFor(field), field, LABEL_GAP)
+    await expectGap(field, await errorFor(field), LABEL_GAP)
   }
   if (mode === 'sign-up') {
-    expect(
-      await roundedGap(await errorFor(passwordField(page)), page.locator('#password-requirements')),
-    ).toBe(LABEL_GAP)
+    await expectGap(await errorFor(passwordField(page)), page.locator('#password-requirements'), LABEL_GAP)
   }
   for (let index = 0; index < fields.length - 1; index += 1) {
     const nextLabel = await labelFor(fields[index + 1])
-    expect(await roundedGap(await errorFor(fields[index]), nextLabel)).toBe(FIELD_GAP)
+    await expectGap(await errorFor(fields[index]), nextLabel, FIELD_GAP)
   }
   const submit = mode === 'sign-in' ? signInButton(page) : createAccountButton(page)
   const aboveSubmit = mode === 'sign-up'
     ? page.locator('#password-requirements')
     : await errorFor(fields[fields.length - 1])
-  expect(await roundedGap(aboveSubmit, submit)).toBe(FIELD_GAP)
+  await expectGap(aboveSubmit, submit, FIELD_GAP)
 }
 
 async function expectPadding(card: Locator, padding: number) {
@@ -126,9 +126,8 @@ for (const mode of ['sign-in', 'sign-up'] as const) {
     test('mobile card fills the width inside the outer padding, with 20px padding', async ({ page }) => {
       await page.setViewportSize({ width: 393, height: 851 })
       await showMode(page, mode)
-      const viewport = page.viewportSize()
-      expect(viewport).not.toBeNull()
-      await expectCardWidth(page, viewport!.width - MOBILE_SIDE_INSET * 2)
+      const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
+      await expectCardWidth(page, clientWidth - MOBILE_SIDE_INSET * 2)
       await expectPadding(authCard(page), MOBILE_PADDING)
       await expectFieldSpacing(page, mode)
     })

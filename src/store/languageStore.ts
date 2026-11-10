@@ -11,16 +11,27 @@ const readInitialLanguage = (): Language => {
   return navigator.language.startsWith('es') ? 'es' : 'en'
 }
 
+const writeDocumentLanguage = (language: Language) => {
+  if (typeof document === 'undefined') return
+  document.documentElement.lang = language
+}
+
 interface LanguageState {
   language: Language
   setLanguage: (language: Language) => void
 }
 
-export const useLanguageStore = create<LanguageState>((set) => ({
-  language: readInitialLanguage(),
+export const useLanguageStore = create<LanguageState>((set) => {
+  const initial = readInitialLanguage()
+  writeDocumentLanguage(initial)
 
-  setLanguage: (language) => {
-    localStorage.setItem(STORAGE_KEY, language)
-    set({ language })
-  },
-}))
+  return {
+    language: initial,
+
+    setLanguage: (language) => {
+      localStorage.setItem(STORAGE_KEY, language)
+      writeDocumentLanguage(language)
+      set({ language })
+    },
+  }
+})

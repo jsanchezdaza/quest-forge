@@ -36,9 +36,9 @@ export const es: typeof en = {
 
   // Forms
   'form.emailLabel': 'Correo',
-  'form.emailPlaceholder': 'tu.correo@ejemplo.com',
+  'form.emailPlaceholder': 'tu@ejemplo.com',
   'form.usernameLabel': 'Nombre de usuario',
-  'form.usernamePlaceholder': 'Elige un nombre de usuario',
+  'form.usernamePlaceholder': 'Elige tu usuario',
   'form.passwordLabel': 'Contraseña',
   'form.passwordPlaceholder': 'Tu contraseña',
   'form.showPassword': 'Mostrar contraseña',

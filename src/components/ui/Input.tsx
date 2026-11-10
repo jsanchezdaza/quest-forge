@@ -44,12 +44,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       ref={ref}
       id={fieldId}
       className={[
-        'w-full px-4 py-3 bg-background-darker border text-gray-100 rounded-lg transition-colors placeholder-gray-400 font-pixel-body text-sm',
+        'w-full min-h-[46px] px-4 py-3 bg-background-darker border text-gray-100 rounded-lg transition-colors placeholder-gray-400 font-pixel-body text-base leading-5 [@media(pointer:fine)_and_(min-width:768px)]:text-sm',
         'focus-visible:outline-none focus-visible:ring-2',
         hasError
           ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20'
           : 'border-medieval-gold/30 focus-visible:border-medieval-gold focus-visible:ring-medieval-gold/20',
-        endAdornment ? 'pr-12' : '',
+        endAdornment ? 'pr-14' : '',
         className,
       ].filter(Boolean).join(' ')}
       aria-invalid={hasError ? true : props['aria-invalid']}
@@ -70,7 +70,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       {endAdornment ? (
         <div className="relative">
           {input}
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+          <div className="absolute inset-y-0 right-0 flex items-center pr-1.5">
             {endAdornment}
           </div>
         </div>
@@ -81,10 +81,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         <p
           id={errorId}
           className={[
-            'min-h-5 text-left text-sm leading-5 text-red-200',
+            // 6px of wash into the card padding. A line that fills a 320px card
+            // otherwise has no background pixels beside the glyphs.
+            'min-h-5 -mx-1.5 px-1.5 text-left text-sm leading-5 text-red-200',
             // A light red still misses 4.5:1 on the brightest part of the card,
-            // so the message sits on a dark wash. The empty slot stays clear.
-            hasError ? 'bg-background-darker/55' : '',
+            // so the message sits on a dark wash. 75% keeps that ratio when a
+            // classic scrollbar narrows the card. The empty slot stays clear.
+            hasError ? 'bg-background-darker/75' : '',
           ].filter(Boolean).join(' ')}
           aria-hidden={hasError ? undefined : true}
         >

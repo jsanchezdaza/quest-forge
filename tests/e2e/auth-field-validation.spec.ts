@@ -30,18 +30,20 @@ function fieldError(page: Page, id: string): Locator {
   return page.locator(`#${id}-error`)
 }
 
-async function roundedGap(above: Locator, below: Locator): Promise<number> {
+async function expectGap(above: Locator, below: Locator, expected: number) {
   const top = await above.boundingBox()
   const bottom = await below.boundingBox()
   expect(top).not.toBeNull()
   expect(bottom).not.toBeNull()
-  return Math.round(bottom!.y - (top!.y + top!.height))
+  // A flex gap can land on a half pixel. Rounding that to the next pixel flakes.
+  const gap = bottom!.y - (top!.y + top!.height)
+  expect(Math.abs(gap - expected)).toBeLessThanOrEqual(0.5)
 }
 
 async function topOf(locator: Locator): Promise<number> {
   const box = await locator.boundingBox()
   expect(box).not.toBeNull()
-  return Math.round(box!.y)
+  return box!.y
 }
 
 /** Contrast of the message against the composited card behind it, not a flat color. */
@@ -85,7 +87,7 @@ test.describe('auth field validation', () => {
     const error = fieldError(page, 'email')
     await expect(error).toHaveText('Enter a valid email address.')
     await expect(error).toBeVisible()
-    expect(await roundedGap(emailField(page), error)).toBe(LABEL_GAP)
+    await expectGap(emailField(page), error, LABEL_GAP)
 
     const style = await error.evaluate((element) => {
       const computed = getComputedStyle(element)
@@ -247,11 +249,11 @@ test.describe('auth field validation', () => {
     await emailField(page).focus()
     await emailField(page).blur()
     await expect(fieldError(page, 'email')).toHaveText('Enter your email.')
-    expect(await topOf(password)).toBe(before)
+    expect(Math.abs((await topOf(password)) - before)).toBeLessThanOrEqual(1)
 
     await emailField(page).fill('user@example.com')
     await expect(fieldError(page, 'email')).toHaveText('')
-    expect(await topOf(password)).toBe(before)
+    expect(Math.abs((await topOf(password)) - before)).toBeLessThanOrEqual(1)
   })
 
   test('several field errors stay under their inputs without overlapping', async ({ page }) => {
@@ -272,14 +274,14 @@ test.describe('auth field validation', () => {
       const field = page.locator(`#${fields[index].id}`)
       const error = fieldError(page, fields[index].id)
       await expect(error).toHaveText(fields[index].message)
-      expect(await roundedGap(field, error)).toBe(LABEL_GAP)
+      await expectGap(field, error, LABEL_GAP)
       if (fields[index].id === 'password') {
         const list = page.locator('#password-requirements')
-        expect(await roundedGap(error, list)).toBe(LABEL_GAP)
-        expect(await roundedGap(list, createAccountButton(page))).toBe(FIELD_GAP)
+        await expectGap(error, list, LABEL_GAP)
+        await expectGap(list, createAccountButton(page), FIELD_GAP)
       } else {
         const next = page.locator(`label[for="${fields[index + 1].id}"]`)
-        expect(await roundedGap(error, next)).toBe(FIELD_GAP)
+        await expectGap(error, next, FIELD_GAP)
       }
     }
     await expect(page.getByRole('alert')).not.toBeVisible()
