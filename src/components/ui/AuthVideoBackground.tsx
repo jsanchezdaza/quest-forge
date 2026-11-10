@@ -16,8 +16,13 @@ export default function AuthVideoBackground() {
 
   useEffect(() => {
     const video = videoRef.current
-    if (!video || !reduceMotion) return
-    video.pause()
+    if (!video) return
+    if (reduceMotion) {
+      video.pause()
+      return
+    }
+    // autoPlay only applies on mount. Turning reduced motion off later has to start it.
+    void video.play()
   }, [reduceMotion])
 
   return (
@@ -26,12 +31,13 @@ export default function AuthVideoBackground() {
         <video
           ref={videoRef}
           className="auth-video"
+          // Firefox still tabs to a video inside an aria-hidden wrapper.
           tabIndex={-1}
           autoPlay={!reduceMotion}
           muted
           loop
           playsInline
-          preload="auto"
+          preload={reduceMotion ? 'none' : 'auto'}
         >
           <source src={VIDEO_SRC} type="video/mp4" />
         </video>
