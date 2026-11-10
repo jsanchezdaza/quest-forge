@@ -290,6 +290,7 @@ async function fieldTypography(page: Page, field: ReturnType<typeof emailField>)
       fontSize: style.fontSize,
       placeholderSize: placeholder.fontSize,
       height: Math.round(element.getBoundingClientRect().height),
+      minHeight: style.minHeight,
       labelSize: labelStyle?.fontSize ?? '',
       labelTransform: labelStyle?.textTransform ?? '',
     }
@@ -297,7 +298,8 @@ async function fieldTypography(page: Page, field: ReturnType<typeof emailField>)
 }
 
 test.describe('auth field text on a phone', () => {
-  test('fields are 16px on a phone and 14px on desktop, and stay 46px tall', async ({ page }) => {
+  test('fields are 16px, and 14px only for a fine pointer from sm, and at least 46px tall', async ({ page }) => {
+    const fine = await page.evaluate(() => window.matchMedia('(pointer: fine)').matches)
     await page.setViewportSize({ width: 375, height: 667 })
     await showSignIn(page)
 
@@ -306,6 +308,7 @@ test.describe('auth field text on a phone', () => {
         fontSize: '16px',
         placeholderSize: '16px',
         height: 46,
+        minHeight: '46px',
         labelSize: '12px',
         labelTransform: 'uppercase',
       })
@@ -316,16 +319,22 @@ test.describe('auth field text on a phone', () => {
       fontSize: '16px',
       placeholderSize: '16px',
       height: 46,
+      minHeight: '46px',
       labelSize: '12px',
       labelTransform: 'uppercase',
     })
 
+    await page.setViewportSize({ width: 767, height: 900 })
+    expect(await fieldTypography(page, emailField(page))).toMatchObject({ fontSize: '16px', minHeight: '46px' })
+
     await page.setViewportSize({ width: 1280, height: 720 })
+    const desktopSize = fine ? '14px' : '16px'
     for (const field of [emailField(page), usernameField(page), passwordField(page)]) {
       expect(await fieldTypography(page, field)).toMatchObject({
-        fontSize: '14px',
-        placeholderSize: '14px',
+        fontSize: desktopSize,
+        placeholderSize: desktopSize,
         height: 46,
+        minHeight: '46px',
         labelSize: '12px',
         labelTransform: 'uppercase',
       })
