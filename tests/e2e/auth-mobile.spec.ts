@@ -291,3 +291,65 @@ test.describe('reduced motion on the auth background', () => {
     expect(await video.evaluate((element: HTMLVideoElement) => element.playbackRate)).toBe(1)
   })
 })
+
+/**
+ * Short landscape phones. The header tightens, the greeting stays, and the
+ * field, label, and card spacing tokens stay as they are.
+ */
+const LANDSCAPE_VIEWPORTS = [
+  { width: 740, height: 360 },
+  { width: 852, height: 393 },
+] as const
+
+const signInButton = (page: Page) => page.getByRole('button', { name: /^sign in$/i })
+
+async function cssPx(locator: ReturnType<typeof emailField>, property: string): Promise<number> {
+  const value = await locator.evaluate(
+    (element, name) => getComputedStyle(element).getPropertyValue(name),
+    property,
+  )
+  return Number.parseFloat(value)
+}
+
+test.describe('auth landscape header', () => {
+  for (const viewport of LANDSCAPE_VIEWPORTS) {
+    test(`login header compacts at ${viewport.width}×${viewport.height} and the sign-in button is measured`, async ({ page }) => {
+      await page.setViewportSize(viewport)
+      await showSignIn(page)
+      await page.evaluate(() => document.fonts.ready)
+      expect(await page.evaluate(() => window.scrollY)).toBe(0)
+
+      const title = page.getByRole('heading', { level: 1, name: /quest forge/i })
+      const header = title.locator('..')
+      const toggleRow = page.getByRole('button', { name: /sign up$/i }).locator('..')
+
+      expect(await cssPx(title, 'font-size')).toBe(24)
+      expect(await cssPx(title, 'margin-bottom')).toBe(12)
+      expect(await cssPx(header, 'margin-bottom')).toBe(16)
+      expect(await cssPx(toggleRow, 'margin-top')).toBe(12)
+      await expect(page.getByText(/welcome back, adventurer/i)).toBeVisible()
+
+      const cardPadding = viewport.width >= 768 ? 32 : 20
+      expect(await cssPx(authCard(page), 'padding-top')).toBe(cardPadding)
+      expect(await cssPx(authCard(page), 'padding-left')).toBe(cardPadding)
+
+      const email = emailField(page)
+      const labelBox = await page.locator('label[for="email"]').boundingBox()
+      const emailBox = await email.boundingBox()
+      const errorBox = await page.locator('#email-error').boundingBox()
+      const passwordLabel = await page.locator('label[for="password"]').boundingBox()
+      expect(labelBox && emailBox && errorBox && passwordLabel).toBeTruthy()
+      expect(Math.round(emailBox!.y - (labelBox!.y + labelBox!.height))).toBe(8)
+      expect(Math.round(passwordLabel!.y - (errorBox!.y + errorBox!.height))).toBe(20)
+
+      const button = await signInButton(page).boundingBox()
+      expect(button).not.toBeNull()
+      const missing = Math.max(0, Math.round(button!.y + button!.height - viewport.height))
+      // The specified compaction still leaves part of the button below the fold:
+      // 40px at 740×360 and 19px at 852×393. This story does not trim further.
+      const allowedShortfall = viewport.height === 360 ? 40 : 19
+      expect(missing).toBeLessThan(button!.height)
+      expect(missing).toBeLessThanOrEqual(allowedShortfall)
+    })
+  }
+})

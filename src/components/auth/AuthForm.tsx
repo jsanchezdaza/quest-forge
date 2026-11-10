@@ -95,13 +95,17 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
         {/* The checklist needs the room the title gives up on a short sign-up screen. */}
         <div className={[
           'text-center mb-6 sm:mb-8',
-          mode === 'signup' ? '[@media(max-height:800px)]:mb-0' : '[@media(max-height:800px)]:mb-2',
+          mode === 'signup'
+            ? '[@media(max-height:800px)_and_(min-height:451px)]:mb-0'
+            : '[@media(max-height:800px)_and_(min-height:451px)]:mb-2',
+          '[@media(max-height:450px)]:mb-4',
         ].join(' ')}>
           <h1 className={[
             'dnd-title text-3xl sm:text-4xl md:text-5xl mb-6 sm:mb-8 leading-tight',
             mode === 'signup'
-              ? '[@media(max-height:800px)]:mb-0 [@media(max-height:800px)]:md:text-3xl [@media(max-height:800px)]:md:leading-none'
-              : '[@media(max-height:800px)]:mb-2 [@media(max-height:800px)]:md:text-4xl',
+              ? '[@media(max-height:800px)_and_(min-height:451px)]:mb-0 [@media(max-height:800px)_and_(min-height:451px)]:md:text-3xl [@media(max-height:800px)_and_(min-height:451px)]:md:leading-none'
+              : '[@media(max-height:800px)_and_(min-height:451px)]:mb-2 [@media(max-height:800px)_and_(min-height:451px)]:md:text-4xl',
+            '[@media(max-height:450px)]:mb-3 [@media(max-height:450px)]:text-2xl [@media(max-height:450px)]:sm:text-2xl [@media(max-height:450px)]:md:text-2xl',
           ].join(' ')}>
             {t('app.title')}
           </h1>
@@ -182,7 +186,10 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
 
         <div className={[
           'mt-4 text-center sm:mt-6',
-          mode === 'signup' ? '[@media(max-height:800px)]:mt-0' : '[@media(max-height:800px)]:mt-1',
+          mode === 'signup'
+            ? '[@media(max-height:800px)_and_(min-height:451px)]:mt-0'
+            : '[@media(max-height:800px)_and_(min-height:451px)]:mt-1',
+          '[@media(max-height:450px)]:mt-3',
         ].join(' ')}>
           <button
             type="button"
