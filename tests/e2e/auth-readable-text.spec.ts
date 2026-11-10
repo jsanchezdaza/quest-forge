@@ -88,7 +88,7 @@ test.describe('readable auth text', () => {
     expect(await textTransform(email)).toBe('none')
     expect(await textTransform(password)).toBe('none')
 
-    await expect(email).toHaveAttribute('placeholder', 'your.email@example.com')
+    await expect(email).toHaveAttribute('placeholder', 'you@example.com')
     await expect(password).toHaveAttribute('placeholder', 'Your password')
     for (const field of [email, password]) {
       const placeholder = await placeholderStyle(field)
@@ -140,7 +140,7 @@ test.describe('readable auth text', () => {
     const username = usernameField(page)
     await expectReadable(username)
     expect(await textTransform(username)).toBe('none')
-    await expect(username).toHaveAttribute('placeholder', 'Choose a username')
+    await expect(username).toHaveAttribute('placeholder', 'Pick a username')
     const placeholder = await placeholderStyle(username)
     expect(placeholder.fontSize).toBeGreaterThanOrEqual(MIN_PX)
     expect(placeholder.fontSize).toBeLessThanOrEqual(MAX_PX)
@@ -175,7 +175,7 @@ test.describe('readable auth text', () => {
 
     const email = emailField(page)
     const password = passwordField(page)
-    await expect(email).toHaveAttribute('placeholder', 'tu.correo@ejemplo.com')
+    await expect(email).toHaveAttribute('placeholder', 'tu@ejemplo.com')
     await expect(password).toHaveAttribute('placeholder', 'Tu contraseña')
     expect(await labelText(email)).toBe('Correo')
     expect(await labelText(password)).toBe('Contraseña')
@@ -203,7 +203,7 @@ test.describe('readable auth text', () => {
     const signUpIntro = page.getByText(/comienza tu gesta/i)
     await expect(signUpIntro).toHaveText('Comienza tu gesta')
     expect(await labelText(usernameField(page))).toBe('Nombre de usuario')
-    await expect(usernameField(page)).toHaveAttribute('placeholder', 'Elige un nombre de usuario')
+    await expect(usernameField(page)).toHaveAttribute('placeholder', 'Elige tu usuario')
     const create = page.getByRole('button', { name: /^crear cuenta$/i })
     expect(await textTransform(create)).toBe('uppercase')
     await expect(page.getByRole('button', { name: /ya tienes cuenta/i })).toHaveText('¿Ya tienes cuenta? Entra')
