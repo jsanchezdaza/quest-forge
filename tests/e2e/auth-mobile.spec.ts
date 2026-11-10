@@ -231,11 +231,12 @@ test.describe('language selector on a narrow screen', () => {
     expect(boxesOverlap(selectorBox!, cardBox!)).toBe(false)
   })
 
-  // 740×360 still clears. These are narrower, so the same top-right control
-  // meets the card's corner (and 667×375 only just misses it).
+  // 740×360 still clears. 660×360 is the first width where the control is
+  // absolute. Below that it meets the card's corner (667×375 only just misses it).
   for (const viewport of [
     { width: 568, height: 320 },
     { width: 640, height: 360 },
+    { width: 660, height: 360 },
     { width: 667, height: 375 },
   ]) {
     for (const mode of ['sign-in', 'sign-up'] as const) {
@@ -641,6 +642,66 @@ test.describe('auth landscape header', () => {
         expect(labelBox && emailBox && errorBox && passwordLabel).toBeTruthy()
         expect(Math.abs(emailBox!.y - (labelBox!.y + labelBox!.height) - 8)).toBeLessThanOrEqual(0.5)
         expect(Math.abs(passwordLabel!.y - (errorBox!.y + errorBox!.height) - 12)).toBeLessThanOrEqual(0.5)
+      })
+    }
+  }
+})
+
+/**
+ * Design accepted vertical scroll at these two landscape widths. The control
+ * stays 44×44, the page does not scroll sideways, and the sign-in button is
+ * fully visible once scrolled into view. 740px and wider still fit without scrolling.
+ */
+const SCROLLING_LANDSCAPE_VIEWPORTS = [
+  { width: 568, height: 320 },
+  { width: 640, height: 360 },
+] as const
+
+test.describe('narrow landscape login scrolls to the button', () => {
+  for (const viewport of SCROLLING_LANDSCAPE_VIEWPORTS) {
+    for (const locale of LANDSCAPE_LOCALES) {
+      test(`login at ${viewport.width}×${viewport.height} in ${locale.name} reaches an uncovered sign-in button`, async ({ page }) => {
+        await page.setViewportSize(viewport)
+        await showSignIn(page)
+        await page.getByRole('button', { name: locale.language, exact: true }).click()
+        await page.mouse.move(0, 0)
+
+        const selectorBox = await languageSelector(page).boundingBox()
+        const cardBox = await authCard(page).boundingBox()
+        expect(selectorBox).not.toBeNull()
+        expect(cardBox).not.toBeNull()
+        expect(boxesOverlap(selectorBox!, cardBox!)).toBe(false)
+
+        const width = await page.evaluate(() => ({
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+        }))
+        expect(width.scrollWidth).toBeLessThanOrEqual(width.clientWidth)
+
+        for (const name of ['EN', 'ES'] as const) {
+          expectTouchTarget(await boxSize(page.getByRole('button', { name, exact: true })))
+        }
+
+        const button = page.getByRole('button', { name: locale.signIn })
+        await button.scrollIntoViewIfNeeded()
+        const placed = await button.evaluate((element) => {
+          const box = element.getBoundingClientRect()
+          const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)
+          return {
+            top: box.top,
+            right: box.right,
+            bottom: box.bottom,
+            left: box.left,
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight,
+            ownsHit: hit === element || (hit !== null && element.contains(hit)),
+          }
+        })
+        expect(placed.top).toBeGreaterThanOrEqual(0)
+        expect(placed.left).toBeGreaterThanOrEqual(0)
+        expect(placed.right).toBeLessThanOrEqual(placed.viewportWidth)
+        expect(placed.bottom).toBeLessThanOrEqual(placed.viewportHeight)
+        expect(placed.ownsHit).toBe(true)
       })
     }
   }
