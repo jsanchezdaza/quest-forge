@@ -58,6 +58,27 @@ test.describe('mobile auth layout', () => {
     })
   }
 
+  test('sideways clipping is limited to the auth screen', async ({ page }) => {
+    await page.goto('/auth')
+    await expect(page.getByRole('heading', { level: 1, name: /quest forge/i })).toBeVisible()
+
+    const onAuth = await page.evaluate(() => ({
+      root: getComputedStyle(document.documentElement).overflowX,
+      body: getComputedStyle(document.body).overflowX,
+    }))
+    expect(onAuth).toEqual({ root: 'clip', body: 'clip' })
+
+    const elsewhere = await page.evaluate(() => {
+      document.documentElement.classList.remove('auth-screen')
+      return {
+        root: getComputedStyle(document.documentElement).overflowX,
+        body: getComputedStyle(document.body).overflowX,
+      }
+    })
+    expect(elsewhere.root).not.toBe('clip')
+    expect(elsewhere.body).not.toBe('clip')
+  })
+
   test('sign-up at 320px stays inside the viewport too', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 568 })
     await showSignIn(page)
