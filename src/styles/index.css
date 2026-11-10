@@ -252,6 +252,10 @@
     .auth-video-bg {
       display: none;
     }
+
+    .ember {
+      animation: none;
+    }
   }
 }
 

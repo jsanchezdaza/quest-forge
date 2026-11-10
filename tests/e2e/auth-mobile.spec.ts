@@ -258,3 +258,36 @@ test.describe('auth password manager hints', () => {
     await expect(passwordField(page)).toHaveAttribute('autocomplete', 'new-password')
   })
 })
+
+test.describe('reduced motion on the auth background', () => {
+  test('embers and the desktop video stop when motion is reduced', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+
+    await page.setViewportSize({ width: 375, height: 667 })
+    await page.goto('/auth')
+    await expect(page.getByRole('heading', { level: 1, name: /quest forge/i })).toBeVisible()
+    await expect(page.locator('.ember')).toHaveCount(0)
+
+    await page.setViewportSize({ width: 1280, height: 720 })
+    await page.goto('/auth')
+    await expect(page.locator('.ember')).toHaveCount(0)
+    const video = page.locator('video.auth-video')
+    await expect(video).toHaveJSProperty('paused', true)
+    await expect(video).not.toHaveAttribute('autoplay')
+  })
+
+  test('the background still animates when motion is allowed', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.setViewportSize({ width: 1280, height: 720 })
+    await page.goto('/auth')
+
+    const ember = page.locator('.ember').first()
+    await expect(ember).toBeAttached()
+    expect(await ember.evaluate((element) => getComputedStyle(element).animationName)).toBe('ember-rise')
+
+    const video = page.locator('video.auth-video')
+    await expect(video).toBeVisible()
+    await expect(video).toHaveAttribute('autoplay', '')
+    expect(await video.evaluate((element: HTMLVideoElement) => element.playbackRate)).toBe(1)
+  })
+})

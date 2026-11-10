@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import usePrefersReducedMotion from '../../hooks/usePrefersReducedMotion'
 
 const EMBER_COUNT = 18
 const EMBER_COLORS = ['#d4af37', '#b87333'] // medieval-gold, medieval-copper
@@ -31,9 +32,12 @@ function createEmbers(): Ember[] {
  * Subtle rising golden embers behind the auth form. Pure CSS animation
  * (transform + opacity only) so it stays on the compositor and runs smoothly.
  * Decorative: pointer-events-none and aria-hidden so it never blocks the form.
+ * Reduced motion skips the embers and leaves the static background.
  */
 export default function EmberParticles() {
+  const reduceMotion = usePrefersReducedMotion()
   const embers = useMemo(createEmbers, [])
+  if (reduceMotion) return null
 
   return (
     <div className="ember-layer absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
