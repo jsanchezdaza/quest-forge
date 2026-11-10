@@ -85,12 +85,52 @@ test.describe('mobile auth layout', () => {
     await page.setViewportSize({ width: 320, height: 568 })
     await page.goto('/auth')
     await expect(page.getByRole('heading', { level: 1, name: /quest forge/i })).toBeVisible()
-    const fine = await page.evaluate(() => window.matchMedia('(pointer: fine)').matches)
-    const scrollbarWidth = await page.evaluate(() => getComputedStyle(document.documentElement).scrollbarWidth)
-    if (fine) {
-      expect(scrollbarWidth).not.toBe('none')
+
+    const result = await page.evaluate(() => {
+      const fine = window.matchMedia('(pointer: fine)').matches
+      // Firefox on this platform computes scrollbar-width as none even when set to thin.
+      const probe = document.createElement('div')
+      probe.style.scrollbarWidth = 'thin'
+      document.body.append(probe)
+      const reportsScrollbarWidth = getComputedStyle(probe).scrollbarWidth === 'thin'
+      probe.remove()
+
+      const hiddenByMatchingRule = (() => {
+        const walk = (rules: CSSRuleList): boolean => {
+          for (const rule of rules) {
+            if (rule instanceof CSSMediaRule) {
+              if (!window.matchMedia(rule.conditionText).matches) continue
+              if (walk(rule.cssRules)) return true
+              continue
+            }
+            if ('cssRules' in rule && rule.cssRules instanceof CSSRuleList && walk(rule.cssRules)) return true
+            if (rule instanceof CSSStyleRule && rule.style.scrollbarWidth === 'none') return true
+          }
+          return false
+        }
+        for (const sheet of document.styleSheets) {
+          try {
+            if (walk(sheet.cssRules)) return true
+          } catch {
+            // The font stylesheet is cross-origin.
+          }
+        }
+        return false
+      })()
+
+      return {
+        fine,
+        reportsScrollbarWidth,
+        scrollbarWidth: getComputedStyle(document.documentElement).scrollbarWidth,
+        hiddenByMatchingRule,
+      }
+    })
+
+    if (result.fine) {
+      if (result.reportsScrollbarWidth) expect(result.scrollbarWidth).not.toBe('none')
+      expect(result.hiddenByMatchingRule).toBe(false)
     } else {
-      expect(scrollbarWidth).toBe('none')
+      expect(result.scrollbarWidth).toBe('none')
     }
   })
 
