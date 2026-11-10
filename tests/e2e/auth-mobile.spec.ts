@@ -153,6 +153,28 @@ test.describe('language selector matches the document language', () => {
   }
 })
 
+test.describe('portrait auth header', () => {
+  for (const viewport of [
+    { width: 320, height: 568 },
+    { width: 375, height: 667 },
+  ]) {
+    test(`sign-up leaves room under the title at ${viewport.width}×${viewport.height}`, async ({ page }) => {
+      await page.setViewportSize(viewport)
+      await showSignIn(page)
+      await switchToSignUp(page).click()
+      await expect(usernameField(page)).toBeVisible()
+      await page.mouse.move(0, 0)
+
+      const title = await page.getByRole('heading', { level: 1, name: /quest forge/i }).boundingBox()
+      const subtitle = await page.getByText(/begin your quest/i).boundingBox()
+      const label = await page.locator('label[for="email"]').boundingBox()
+      expect(title && subtitle && label).toBeTruthy()
+      expect(Math.round(subtitle!.y - (title!.y + title!.height))).toBe(4)
+      expect(Math.round(label!.y - (subtitle!.y + subtitle!.height))).toBe(16)
+    })
+  }
+})
+
 const passwordField = (page: Page) =>
   page.getByRole('textbox', { name: /^(password|contraseña)$/i })
 const usernameField = (page: Page) => page.getByLabel(/username|nombre de usuario/i)
