@@ -27,12 +27,14 @@ function requirement(page: Page, index: number): Locator {
   return requirements(page).locator('li').nth(index)
 }
 
-async function roundedGap(above: Locator, below: Locator): Promise<number> {
+async function expectGap(above: Locator, below: Locator, expected: number) {
   const top = await above.boundingBox()
   const bottom = await below.boundingBox()
   expect(top).not.toBeNull()
   expect(bottom).not.toBeNull()
-  return Math.round(bottom!.y - (top!.y + top!.height))
+  // A flex gap can land on a half pixel. Rounding that to the next pixel flakes.
+  const gap = bottom!.y - (top!.y + top!.height)
+  expect(Math.abs(gap - expected)).toBeLessThanOrEqual(0.5)
 }
 
 async function requirementContrast(list: Locator): Promise<number> {
@@ -146,7 +148,7 @@ test.describe('password requirements', () => {
     await expect(error).not.toContainText('At least one letter')
     await expect(password).toHaveAttribute('aria-invalid', 'true')
     await expect(password).toHaveAttribute('aria-describedby', 'password-error password-requirements')
-    expect(await roundedGap(password, error)).toBe(LABEL_GAP)
+    await expectGap(password, error, LABEL_GAP)
     expect((await error.boundingBox())!.y).toBeLessThan((await requirements(page).boundingBox())!.y)
     await expect(requirements(page).locator('li')).toHaveCount(3)
   })
@@ -168,11 +170,11 @@ test.describe('password requirements', () => {
     expect(style.textAlign).toMatch(/^(left|start)$/)
     const error = page.locator('#password-error')
     await expect(error).toHaveText('')
-    expect(await roundedGap(passwordField(page), error)).toBe(LABEL_GAP)
-    expect(await roundedGap(error, list)).toBe(LABEL_GAP)
-    expect(await roundedGap(requirement(page, 0), requirement(page, 1))).toBe(ROW_GAP)
-    expect(await roundedGap(requirement(page, 1), requirement(page, 2))).toBe(ROW_GAP)
-    expect(await roundedGap(list, createAccountButton(page))).toBe(FIELD_GAP)
+    await expectGap(passwordField(page), error, LABEL_GAP)
+    await expectGap(error, list, LABEL_GAP)
+    await expectGap(requirement(page, 0), requirement(page, 1), ROW_GAP)
+    await expectGap(requirement(page, 1), requirement(page, 2), ROW_GAP)
+    await expectGap(list, createAccountButton(page), FIELD_GAP)
     for (const index of [0, 1, 2]) {
       const row = requirement(page, index)
       expect(Math.round((await row.boundingBox())!.height)).toBe(20)
@@ -303,7 +305,7 @@ test.describe('password requirements', () => {
     expect(metrics.whiteSpace).not.toBe('nowrap')
     expect(metrics.height).toBeGreaterThan(20)
     expect(metrics.scrollHeight).toBeLessThanOrEqual(metrics.clientHeight)
-    expect(await roundedGap(error, requirements(page))).toBe(LABEL_GAP)
+    await expectGap(error, requirements(page), LABEL_GAP)
   })
 
   test('Spanish copy follows the same three rules', async ({ page }) => {
