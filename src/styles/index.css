@@ -163,16 +163,18 @@
     overflow-x: clip;
   }
 
-  /* WebKit still reserves the 8px scrollbar gutter once /auth can scroll,
-     which shrinks the card. Hide that gutter on the auth page only. */
-  html.auth-screen {
-    scrollbar-width: none;
-  }
+  /* A touch scrollbar gutter shrinks the card and does not help a finger.
+     A mouse keeps the visible scrollbar. */
+  @media (pointer: coarse) {
+    html.auth-screen {
+      scrollbar-width: none;
+    }
 
-  html.auth-screen::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
+    html.auth-screen::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
   }
 }
 
