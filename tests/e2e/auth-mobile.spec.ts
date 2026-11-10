@@ -238,3 +238,23 @@ test.describe('auth touch targets', () => {
     expectTouchTarget(await boxSize(page.getByRole('link', { name: 'www.javisan.dev' })))
   })
 })
+
+test.describe('auth password manager hints', () => {
+  test('sign-in fields use email and current-password', async ({ page }) => {
+    await page.goto('/auth')
+    await expect(emailField(page)).toHaveAttribute('type', 'email')
+    await expect(emailField(page)).toHaveAttribute('autocomplete', 'email')
+    await expect(passwordField(page)).toHaveAttribute('type', 'password')
+    await expect(passwordField(page)).toHaveAttribute('autocomplete', 'current-password')
+  })
+
+  test('sign-up fields use email, username, and new-password', async ({ page }) => {
+    await page.goto('/auth?mode=signup')
+    await expect(emailField(page)).toHaveAttribute('type', 'email')
+    await expect(emailField(page)).toHaveAttribute('autocomplete', 'email')
+    await expect(usernameField(page)).toHaveAttribute('type', 'text')
+    await expect(usernameField(page)).toHaveAttribute('autocomplete', 'username')
+    await expect(passwordField(page)).toHaveAttribute('type', 'password')
+    await expect(passwordField(page)).toHaveAttribute('autocomplete', 'new-password')
+  })
+})

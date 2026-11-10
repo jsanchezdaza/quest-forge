@@ -118,6 +118,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             ref={emailRef}
             id="email"
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             onBlur={() => touch('email')}
@@ -133,6 +134,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
               ref={usernameRef}
               id="username"
               type="text"
+              autoComplete="username"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               onBlur={() => touch('username')}
@@ -148,6 +150,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
           <PasswordInput
             ref={passwordRef}
             id="password"
+            autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             onBlur={() => touch('password')}
