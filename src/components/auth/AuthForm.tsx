@@ -95,9 +95,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
         {/* The checklist needs the room the title gives up on a short sign-up screen. */}
         <div className={[
           'text-center mb-4 sm:mb-8',
-          mode === 'signup'
-            ? '[@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:mb-0'
-            : '[@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:mb-2',
+          '[@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:mb-2',
           '[@media(max-height:450px)]:mb-4',
         ].join(' ')}>
           <h1 className={[
