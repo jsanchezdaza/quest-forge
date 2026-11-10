@@ -439,7 +439,20 @@ test.describe('reduced motion on the auth background', () => {
     const video = page.locator('video.auth-video')
     await expect(video).toBeVisible()
     await expect(video).toHaveAttribute('autoplay', '')
-    expect(await video.evaluate((element: HTMLVideoElement) => element.playbackRate)).toBe(1)
+    await expect(video).toHaveJSProperty('paused', false)
+  })
+
+  test('the video resumes when reduced motion is turned off', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.setViewportSize({ width: 1280, height: 720 })
+    await page.goto('/auth')
+    const video = page.locator('video.auth-video')
+    await expect(video).toHaveJSProperty('paused', true)
+    await expect(video).toHaveAttribute('preload', 'none')
+
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await expect(video).toHaveJSProperty('paused', false)
+    await expect(video).toHaveAttribute('preload', 'auto')
   })
 })
 
