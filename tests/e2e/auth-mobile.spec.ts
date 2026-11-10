@@ -109,7 +109,8 @@ test.describe('language selector on a narrow screen', () => {
         expect(selectorBox).not.toBeNull()
         expect(cardBox).not.toBeNull()
         expect(boxesOverlap(selectorBox!, cardBox!)).toBe(false)
-        expect(Math.round(cardBox!.y - (selectorBox!.y + selectorBox!.height))).toBe(8)
+        const gap = cardBox!.y - (selectorBox!.y + selectorBox!.height)
+        expect(Math.abs(gap - 8)).toBeLessThanOrEqual(1)
         expect(Math.round(selectorBox!.x + selectorBox!.width)).toBe(Math.round(cardBox!.x + cardBox!.width))
 
         const position = await selector.evaluate((element) => getComputedStyle(element.parentElement!).position)

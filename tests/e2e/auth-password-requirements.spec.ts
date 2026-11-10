@@ -101,9 +101,16 @@ test.describe('password requirements', () => {
     await openSignUp(page)
     const password = passwordField(page)
     const tops = async () =>
-      Promise.all([0, 1, 2].map(async (index) => Math.round((await requirement(page, index).boundingBox())!.y)))
+      Promise.all([0, 1, 2].map(async (index) => (await requirement(page, index).boundingBox())!.y))
 
     const before = await tops()
+    const staysPut = async () => {
+      const after = await tops()
+      for (const [index, y] of after.entries()) {
+        // Half-pixel positions round either way. A real move is a whole row.
+        expect(Math.abs(y - before[index]), `row ${index}`).toBeLessThan(1)
+      }
+    }
     await password.pressSequentially('abc')
 
     await expect(requirement(page, 0).locator('.sr-only')).toHaveText('not met')
@@ -116,7 +123,7 @@ test.describe('password requirements', () => {
     await expect(reservedError).toHaveText('')
     await expect(reservedError).toHaveAttribute('aria-hidden', 'true')
     expect(await password.evaluate((element) => element.className)).not.toContain('border-red-500')
-    expect(await tops()).toEqual(before)
+    await staysPut()
 
     await password.fill('abc12345')
     for (const index of [0, 1, 2]) {
@@ -124,7 +131,7 @@ test.describe('password requirements', () => {
       await expect(requirement(page, index).locator('svg')).toHaveClass(/lucide-check/)
     }
     await expect(requirements(page).locator('li')).toHaveCount(3)
-    expect(await tops()).toEqual(before)
+    await staysPut()
     await expect(password).not.toHaveAttribute('aria-invalid', 'true')
   })
 
@@ -187,7 +194,16 @@ test.describe('password requirements', () => {
       const button = await createAccountButton(page).boundingBox()
       expect(list).not.toBeNull()
       expect(button).not.toBeNull()
-      return { list: Math.round(list!.y), button: Math.round(button!.y) }
+      return { list: list!.y, button: button!.y }
+    }
+
+    const staysPut = (
+      later: { list: number; button: number },
+      earlier: { list: number; button: number },
+    ) => {
+      // Half-pixel positions round either way. A real move is a whole row.
+      expect(Math.abs(later.list - earlier.list)).toBeLessThan(1)
+      expect(Math.abs(later.button - earlier.button)).toBeLessThan(1)
     }
 
     const fillValidNeighbors = async () => {
@@ -205,7 +221,7 @@ test.describe('password requirements', () => {
     const error = page.locator('#password-error')
     await expect(error).toHaveText('Include at least one number.')
     await expect(error).not.toHaveAttribute('aria-hidden', 'true')
-    expect(await tops()).toEqual(beforeBlur)
+    staysPut(await tops(), beforeBlur)
 
     await openSignUp(page)
     await fillValidNeighbors()
@@ -213,7 +229,7 @@ test.describe('password requirements', () => {
     await createAccountButton(page).click()
     await expect(passwordField(page)).toBeFocused()
     await expect(page.locator('#password-error')).toHaveText('Include at least one number.')
-    expect(await tops()).toEqual(beforeClick)
+    staysPut(await tops(), beforeClick)
 
     await openSignUp(page)
     await fillValidNeighbors()
@@ -227,7 +243,7 @@ test.describe('password requirements', () => {
     )
     await expect(requirements(page)).toHaveAttribute('aria-live', 'off')
     await expect(page.locator('#password-error')).toHaveText('Include at least one number.')
-    expect(await tops()).toEqual(beforeEnter)
+    staysPut(await tops(), beforeEnter)
   })
 
   test('the keyboard activates the mode toggle', async ({ page }) => {
