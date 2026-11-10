@@ -178,6 +178,11 @@ test.describe('password requirements', () => {
 
     const tops = async () => {
       await page.mouse.move(0, 0)
+      // The pointer scales the button it clicked. Wait until that scale is gone.
+      await expect.poll(async () => {
+        const box = await createAccountButton(page).boundingBox()
+        return Math.round(box!.height)
+      }).toBe(48)
       const list = await requirements(page).boundingBox()
       const button = await createAccountButton(page).boundingBox()
       expect(list).not.toBeNull()
