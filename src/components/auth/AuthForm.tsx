@@ -94,24 +94,26 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
       <div className="relative mx-auto w-full max-w-auth-card border-2 border-medieval-gold/40 rounded-xl bg-white/20 backdrop-blur-sm shadow-2xl shadow-black/50 p-card-pad-mobile sm:p-card-pad [@media(max-height:450px)]:py-card-pad-mobile [@media(max-height:450px)]:sm:py-card-pad-mobile">
         {/* The checklist needs the room the title gives up on a short sign-up screen. */}
         <div className={[
-          'text-center mb-6 sm:mb-8',
+          'text-center mb-4 sm:mb-8',
           mode === 'signup'
-            ? '[@media(max-height:800px)_and_(min-height:451px)]:mb-0'
-            : '[@media(max-height:800px)_and_(min-height:451px)]:mb-2',
+            ? '[@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:mb-0'
+            : '[@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:mb-2',
           '[@media(max-height:450px)]:mb-4',
         ].join(' ')}>
           <h1 className={[
-            'dnd-title text-3xl sm:text-4xl md:text-5xl mb-6 sm:mb-8 leading-tight',
+            'dnd-title text-3xl sm:text-4xl md:text-5xl mb-0 sm:mb-8 leading-tight',
             mode === 'signup'
-              ? '[@media(max-height:800px)_and_(min-height:451px)]:mb-0 [@media(max-height:800px)_and_(min-height:451px)]:md:text-3xl [@media(max-height:800px)_and_(min-height:451px)]:md:leading-none'
-              : '[@media(max-height:800px)_and_(min-height:451px)]:mb-2 [@media(max-height:800px)_and_(min-height:451px)]:md:text-4xl',
+              ? '[@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:mb-0 [@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:md:text-3xl [@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:md:leading-none'
+              : '[@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:mb-2 [@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:md:text-4xl',
             '[@media(max-height:450px)]:mb-3 [@media(max-height:450px)]:text-2xl [@media(max-height:450px)]:sm:text-2xl [@media(max-height:450px)]:md:text-2xl',
           ].join(' ')}>
             {t('app.title')}
           </h1>
           <p className={[
-            'font-pixel-body text-sm text-gray-300',
-            mode === 'signup' ? '[@media(max-height:800px)]:leading-none' : '[@media(max-height:450px)]:hidden',
+            'mt-1 font-pixel-body text-sm text-gray-300 sm:mt-0',
+            mode === 'signup'
+              ? '[@media(min-width:1024px)_and_(max-height:800px)]:leading-none'
+              : '[@media(max-height:450px)]:hidden',
           ].join(' ')}>
             {mode === 'signin' ? t('auth.welcomeReturning') : t('auth.welcomeNew')}
           </p>
