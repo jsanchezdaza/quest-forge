@@ -91,7 +91,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
 
   return (
     <div className="w-full px-4">
-      <div className="relative mx-auto w-full max-w-auth-card border-2 border-medieval-gold/40 rounded-xl bg-white/20 backdrop-blur-sm shadow-2xl shadow-black/50 p-card-pad-mobile sm:p-card-pad">
+      <div className="relative mx-auto w-full max-w-auth-card border-2 border-medieval-gold/40 rounded-xl bg-white/20 backdrop-blur-sm shadow-2xl shadow-black/50 p-card-pad-mobile sm:p-card-pad [@media(max-height:450px)]:py-card-pad-mobile [@media(max-height:450px)]:sm:py-card-pad-mobile">
         {/* The checklist needs the room the title gives up on a short sign-up screen. */}
         <div className={[
           'text-center mb-6 sm:mb-8',
@@ -111,13 +111,13 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
           </h1>
           <p className={[
             'font-pixel-body text-sm text-gray-300',
-            mode === 'signup' ? '[@media(max-height:800px)]:leading-none' : '',
+            mode === 'signup' ? '[@media(max-height:800px)]:leading-none' : '[@media(max-height:450px)]:hidden',
           ].join(' ')}>
             {mode === 'signin' ? t('auth.welcomeReturning') : t('auth.welcomeNew')}
           </p>
         </div>
 
-        <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-field-gap">
+        <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-field-gap [@media(max-height:450px)]:gap-3">
           <Input
             ref={emailRef}
             id="email"

@@ -24,7 +24,7 @@ export default function AppBackground({
   // sits outside that width.
   const baseClasses = variant === 'auth' ? 'relative app-background overflow-hidden' : 'min-h-screen app-background'
   const variantClasses = {
-    auth: 'flex items-center justify-center p-4',
+    auth: 'flex items-center justify-center p-4 [@media(max-height:450px)]:items-start [@media(max-height:450px)]:pt-2',
     game: 'game-background'
   }
   
