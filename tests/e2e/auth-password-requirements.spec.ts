@@ -341,4 +341,30 @@ test.describe('password requirements', () => {
     })
     await expectContrast('1280px')
   })
+
+  test('the error text lines up with the field and the checklist wash matches it', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 900 })
+    await openSignUp(page)
+    const username = page.getByLabel(/username|nombre de usuario/i)
+    await username.fill('a')
+    await username.blur()
+
+    const inputBox = await username.boundingBox()
+    const error = page.locator('#username-error')
+    const errorBox = await error.boundingBox()
+    const listBox = await requirements(page).boundingBox()
+    expect(inputBox).not.toBeNull()
+    expect(errorBox).not.toBeNull()
+    expect(listBox).not.toBeNull()
+
+    const textLeft = await error.evaluate((element) => {
+      const range = document.createRange()
+      range.selectNodeContents(element)
+      return range.getBoundingClientRect().left
+    })
+    // The wash extends 6px past the field. The glyphs stay on the field's left edge.
+    expect(Math.abs(textLeft - inputBox!.x)).toBeLessThanOrEqual(1)
+    expect(Math.abs(errorBox!.x - listBox!.x)).toBeLessThanOrEqual(1)
+    expect(Math.abs((errorBox!.x + errorBox!.width) - (listBox!.x + listBox!.width))).toBeLessThanOrEqual(1)
+  })
 })
