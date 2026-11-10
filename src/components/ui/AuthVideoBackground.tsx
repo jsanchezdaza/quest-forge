@@ -22,7 +22,7 @@ export default function AuthVideoBackground() {
       return
     }
     // autoPlay only applies on mount. Turning reduced motion off later has to start it.
-    void video.play()
+    video.play().catch(() => {})
   }, [reduceMotion])
 
   return (
