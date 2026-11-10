@@ -6,8 +6,8 @@ interface AppBackgroundProps {
   variant?: 'auth' | 'game'
   className?: string
   /**
-   * Sign-up only. At 1024px wide and at most 800px tall, vertical padding
-   * is 8px. Horizontal padding stays 16px.
+   * Sign-up only. With a fine pointer, at 1024px wide and at most 800px
+   * tall, vertical padding is 8px. Horizontal padding stays 16px.
    */
   compactOnShortDesktop?: boolean
 }
@@ -32,7 +32,7 @@ export default function AppBackground({
     <div className={[
       baseClasses,
       variantClasses[variant],
-      compactOnShortDesktop ? '[@media(min-width:1024px)_and_(max-height:800px)]:py-2' : '',
+      compactOnShortDesktop ? '[@media(pointer:fine)_and_(min-width:1024px)_and_(max-height:800px)]:py-2' : '',
       className,
     ].filter(Boolean).join(' ')}>
       {variant === 'auth' && (
