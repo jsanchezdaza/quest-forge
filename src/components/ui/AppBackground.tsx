@@ -46,7 +46,8 @@ export default function AppBackground({
         </>
       )}
 
-      <div className={variant === 'auth' ? 'relative z-10 w-full' : ''}>
+      {/* z-10 without position, so an absolute language control anchors to this panel. */}
+      <div className={variant === 'auth' ? 'z-10 w-full' : ''}>
         {children}
       </div>
     </div>
