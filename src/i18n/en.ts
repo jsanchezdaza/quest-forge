@@ -34,9 +34,9 @@ export const en = {
 
   // Forms
   'form.emailLabel': 'Email',
-  'form.emailPlaceholder': 'your.email@example.com',
+  'form.emailPlaceholder': 'you@example.com',
   'form.usernameLabel': 'Username',
-  'form.usernamePlaceholder': 'Choose a username',
+  'form.usernamePlaceholder': 'Pick a username',
   'form.passwordLabel': 'Password',
   'form.passwordPlaceholder': 'Your password',
   'form.showPassword': 'Show password',
