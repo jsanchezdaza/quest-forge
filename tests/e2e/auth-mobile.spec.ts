@@ -207,15 +207,15 @@ test.describe('language selector on a narrow screen', () => {
     await showSignIn(page)
     const tablet = await languageSelector(page).boundingBox()
     expect(tablet).not.toBeNull()
-    expect(Math.round(tablet!.y)).toBe(24)
-    expect(Math.round(768 - (tablet!.x + tablet!.width))).toBe(24)
+    expect(Math.abs(tablet!.y - 24)).toBeLessThanOrEqual(0.5)
+    expect(Math.abs(768 - (tablet!.x + tablet!.width) - 24)).toBeLessThanOrEqual(0.5)
     expect(await selectorPosition(page)).toBe('absolute')
 
     await page.setViewportSize({ width: 1280, height: 720 })
     const desktop = await languageSelector(page).boundingBox()
     expect(desktop).not.toBeNull()
-    expect(Math.round(desktop!.y)).toBe(24)
-    expect(Math.round(1280 - (desktop!.x + desktop!.width))).toBe(24)
+    expect(Math.abs(desktop!.y - 24)).toBeLessThanOrEqual(0.5)
+    expect(Math.abs(1280 - (desktop!.x + desktop!.width) - 24)).toBeLessThanOrEqual(0.5)
     expect(await selectorPosition(page)).toBe('absolute')
   })
 
@@ -271,7 +271,7 @@ test.describe('portrait auth header', () => {
       const labelBox = await page.locator('label[for="email"]').boundingBox()
       expect(titleBox && subtitleBox && labelBox).toBeTruthy()
       expect(Math.abs(subtitleBox!.y - (titleBox!.y + titleBox!.height) - 4)).toBeLessThanOrEqual(1)
-      expect(Math.round(labelBox!.y - (subtitleBox!.y + subtitleBox!.height))).toBe(16)
+      expect(Math.abs(labelBox!.y - (subtitleBox!.y + subtitleBox!.height) - 16)).toBeLessThanOrEqual(0.5)
     })
   }
 })
@@ -518,7 +518,7 @@ test.describe('auth landscape header', () => {
         await expect(page.getByText(locale.greeting)).toBeHidden()
 
         const card = authCard(page)
-        expect(Math.round((await card.boundingBox())!.y)).toBe(8)
+        expect(Math.abs((await card.boundingBox())!.y - 8)).toBeLessThanOrEqual(0.5)
         expect(await cssPx(card, 'padding-top')).toBe(20)
         expect(await cssPx(card, 'padding-bottom')).toBe(20)
         expect(await cssPx(card, 'padding-left')).toBe(viewport.width >= 768 ? 32 : 20)
@@ -528,8 +528,8 @@ test.describe('auth landscape header', () => {
         const errorBox = await page.locator('#email-error').boundingBox()
         const passwordLabel = await page.locator('label[for="password"]').boundingBox()
         expect(labelBox && emailBox && errorBox && passwordLabel).toBeTruthy()
-        expect(Math.round(emailBox!.y - (labelBox!.y + labelBox!.height))).toBe(8)
-        expect(Math.round(passwordLabel!.y - (errorBox!.y + errorBox!.height))).toBe(12)
+        expect(Math.abs(emailBox!.y - (labelBox!.y + labelBox!.height) - 8)).toBeLessThanOrEqual(0.5)
+        expect(Math.abs(passwordLabel!.y - (errorBox!.y + errorBox!.height) - 12)).toBeLessThanOrEqual(0.5)
       })
     }
   }
