@@ -301,22 +301,29 @@ test.describe('screen fit and copyright', () => {
       await expect(page.getByRole('heading', { level: 1, name: /quest forge/i })).toBeVisible()
     }
 
+    const linkMinHeight = () =>
+      page.getByRole('link', { name: 'www.javisan.dev' }).evaluate((element) => getComputedStyle(element).minHeight)
+
     await open(1280, 720, 'signin')
-    const signInLink = await page.getByRole('link', { name: 'www.javisan.dev' }).boundingBox()
     expect(await panelPadding()).toEqual(full)
     expect(await footerPadding()).toEqual(full)
+    // The short-desktop footer is sign-up only. Sign-in keeps the 44px target.
+    expect(await linkMinHeight()).toBe('44px')
 
+    const fine = await page.evaluate(() => window.matchMedia('(pointer: fine)').matches)
     await open(1280, 720, 'signup')
-    expect(await panelPadding()).toEqual(shortSignupPanel)
-    expect(await footerPadding()).toEqual(shortSignupFooter)
-    expect(await verticalOverflow(page)).toBeLessThanOrEqual(0)
+    if (fine) {
+      expect(await panelPadding()).toEqual(shortSignupPanel)
+      expect(await footerPadding()).toEqual(shortSignupFooter)
+      expect(await verticalOverflow(page)).toBeLessThanOrEqual(0)
+      expect(await linkMinHeight()).toBe('0px')
+    } else {
+      expect(await panelPadding()).toEqual(full)
+      expect(await footerPadding()).toEqual(full)
+      expect(await linkMinHeight()).toBe('44px')
+    }
 
     const link = page.getByRole('link', { name: 'www.javisan.dev' })
-    const signUpLink = await link.boundingBox()
-    expect(signUpLink).not.toBeNull()
-    expect(signInLink).not.toBeNull()
-    expect(Math.round(signUpLink!.height)).toBe(Math.round(signInLink!.height))
-    expect(Math.round(signUpLink!.width)).toBe(Math.round(signInLink!.width))
 
     await link.focus()
     const footerFit = await page.evaluate(() => {
