@@ -49,7 +49,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         hasError
           ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20'
           : 'border-medieval-gold/30 focus-visible:border-medieval-gold focus-visible:ring-medieval-gold/20',
-        endAdornment ? 'pr-12' : '',
+        endAdornment ? 'pr-14' : '',
         className,
       ].filter(Boolean).join(' ')}
       aria-invalid={hasError ? true : props['aria-invalid']}
@@ -70,7 +70,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       {endAdornment ? (
         <div className="relative">
           {input}
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+          <div className="absolute inset-y-0 right-0 flex items-center pr-1.5">
             {endAdornment}
           </div>
         </div>

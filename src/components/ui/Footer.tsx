@@ -22,7 +22,8 @@ export default function Footer({ compactOnShortDesktop = false }: FooterProps) {
             {t('footer.copyright', { year: new Date().getFullYear() })}
           </p>
           <p className="text-gray-400 font-pixel-body text-sm">
-            {t('footer.author')}<a href="https://www.javisan.dev" target="_blank" rel="noopener noreferrer" className="text-medieval-gold hover:text-medieval-darkgold transition-colors">www.javisan.dev</a>
+            {/* 44px tall on touch screens. A short desktop sign-up already fills 1280×720, so drop the minimum there. */}
+            {t('footer.author')}<a href="https://www.javisan.dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center min-h-[44px] px-2 text-medieval-gold hover:text-medieval-darkgold transition-colors [@media(min-width:1024px)_and_(max-height:800px)]:min-h-0">www.javisan.dev</a>
           </p>
         </div>
       </div>

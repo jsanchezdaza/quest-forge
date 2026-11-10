@@ -191,3 +191,50 @@ test.describe('auth field text on a phone', () => {
     }
   })
 })
+
+async function boxSize(locator: ReturnType<typeof emailField>): Promise<{ width: number; height: number }> {
+  const box = await locator.boundingBox()
+  expect(box).not.toBeNull()
+  return { width: box!.width, height: box!.height }
+}
+
+function expectTouchTarget(size: { width: number; height: number }) {
+  expect(size.width).toBeGreaterThanOrEqual(44)
+  expect(size.height).toBeGreaterThanOrEqual(44)
+}
+
+test.describe('auth touch targets', () => {
+  test('fields, buttons, links, and the language control are at least 44×44 at 375×667', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 })
+    await showSignIn(page)
+    await switchToSignUp(page).click()
+    await expect(usernameField(page)).toBeVisible()
+    await page.mouse.move(0, 0)
+
+    for (const field of [emailField(page), usernameField(page), passwordField(page)]) {
+      expectTouchTarget(await boxSize(field))
+    }
+    expectTouchTarget(await boxSize(page.getByRole('button', { name: /^create account$/i })))
+    expectTouchTarget(await boxSize(page.getByRole('button', { name: /already have an account/i })))
+
+    const eye = page.getByRole('button', { name: 'Show password', exact: true })
+    expectTouchTarget(await boxSize(eye))
+    const icon = await boxSize(eye.locator('svg'))
+    expect(Math.round(icon.width)).toBe(20)
+    expect(Math.round(icon.height)).toBe(20)
+
+    const clearance = await passwordField(page).evaluate((element) => {
+      const button = element.parentElement?.querySelector('button')
+      if (!button) throw new Error('password field has no toggle')
+      const style = getComputedStyle(element)
+      const contentRight = element.getBoundingClientRect().right - Number.parseFloat(style.paddingRight)
+      return button.getBoundingClientRect().left - contentRight
+    })
+    expect(clearance).toBeGreaterThanOrEqual(0)
+
+    for (const name of ['EN', 'ES'] as const) {
+      expectTouchTarget(await boxSize(page.getByRole('button', { name, exact: true })))
+    }
+    expectTouchTarget(await boxSize(page.getByRole('link', { name: 'www.javisan.dev' })))
+  })
+})
