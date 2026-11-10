@@ -126,9 +126,8 @@ for (const mode of ['sign-in', 'sign-up'] as const) {
     test('mobile card fills the width inside the outer padding, with 20px padding', async ({ page }) => {
       await page.setViewportSize({ width: 393, height: 851 })
       await showMode(page, mode)
-      const viewport = page.viewportSize()
-      expect(viewport).not.toBeNull()
-      await expectCardWidth(page, viewport!.width - MOBILE_SIDE_INSET * 2)
+      const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
+      await expectCardWidth(page, clientWidth - MOBILE_SIDE_INSET * 2)
       await expectPadding(authCard(page), MOBILE_PADDING)
       await expectFieldSpacing(page, mode)
     })

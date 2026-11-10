@@ -31,7 +31,9 @@ test.describe('mobile auth layout', () => {
 
       const box = await authCard(page).boundingBox()
       expect(box).not.toBeNull()
-      expect(Math.round(box!.width)).toBe(width - MOBILE_SIDE_INSET * 2)
+      // A classic scrollbar (fine pointer) is part of the layout width.
+      const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
+      expect(Math.round(box!.width)).toBe(clientWidth - MOBILE_SIDE_INSET * 2)
 
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
       expect(overflow).toBe(0)
@@ -77,6 +79,19 @@ test.describe('mobile auth layout', () => {
     })
     expect(elsewhere.root).not.toBe('clip')
     expect(elsewhere.body).not.toBe('clip')
+  })
+
+  test('a fine pointer keeps the auth scrollbar', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 })
+    await page.goto('/auth')
+    await expect(page.getByRole('heading', { level: 1, name: /quest forge/i })).toBeVisible()
+    const fine = await page.evaluate(() => window.matchMedia('(pointer: fine)').matches)
+    const scrollbarWidth = await page.evaluate(() => getComputedStyle(document.documentElement).scrollbarWidth)
+    if (fine) {
+      expect(scrollbarWidth).not.toBe('none')
+    } else {
+      expect(scrollbarWidth).toBe('none')
+    }
   })
 
   test('sign-up at 320px stays inside the viewport too', async ({ page }) => {
