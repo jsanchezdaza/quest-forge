@@ -276,6 +276,24 @@ test.describe('portrait auth header', () => {
   }
 })
 
+test.describe('short sign-up header on a coarse pointer', () => {
+  test.use({ hasTouch: true, isMobile: true })
+
+  test('keeps at least 8px between the subtitle and the email label at 1024×768', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 })
+    await page.goto('/auth?mode=signup')
+    await expect(page.getByLabel(/username|nombre de usuario/i)).toBeVisible()
+    expect(await page.evaluate(() => window.matchMedia('(pointer: coarse)').matches)).toBe(true)
+
+    const subtitle = await page.getByText(/begin your quest/i).boundingBox()
+    const label = await page.locator('label[for="email"]').boundingBox()
+    expect(subtitle).not.toBeNull()
+    expect(label).not.toBeNull()
+    const gap = label!.y - (subtitle!.y + subtitle!.height)
+    expect(gap).toBeGreaterThanOrEqual(8)
+  })
+})
+
 const passwordField = (page: Page) =>
   page.getByRole('textbox', { name: /^(password|contraseña)$/i })
 const usernameField = (page: Page) => page.getByLabel(/username|nombre de usuario/i)
