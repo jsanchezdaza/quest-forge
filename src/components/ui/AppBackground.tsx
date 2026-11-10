@@ -22,7 +22,7 @@ export default function AppBackground({
   // the footer on screen. `relative` anchors the video to the panel. The content
   // slot is `w-full` so the card's max width is the cap, and the outer padding
   // sits outside that width.
-  const baseClasses = variant === 'auth' ? 'relative app-background' : 'min-h-screen app-background'
+  const baseClasses = variant === 'auth' ? 'relative app-background overflow-hidden' : 'min-h-screen app-background'
   const variantClasses = {
     auth: 'flex items-center justify-center p-4',
     game: 'game-background'

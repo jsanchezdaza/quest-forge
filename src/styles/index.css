@@ -8,6 +8,9 @@
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
+    /* Embers and the corner glow can paint past the viewport. Clip sideways
+       scroll without taking away vertical scrolling. */
+    overflow-x: clip;
   }
   
   body {
@@ -15,6 +18,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overflow-x: clip;
   }
   
   h1, h2, h3, h4, h5, h6 {
