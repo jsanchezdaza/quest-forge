@@ -294,12 +294,13 @@ test.describe('auth password manager hints', () => {
     await expect(passwordField(page)).toHaveAttribute('autocomplete', 'current-password')
   })
 
-  test('sign-up fields use email, username, and new-password', async ({ page }) => {
+  test('sign-up fields use email, a nickname, and new-password', async ({ page }) => {
     await page.goto('/auth?mode=signup')
     await expect(emailField(page)).toHaveAttribute('type', 'email')
     await expect(emailField(page)).toHaveAttribute('autocomplete', 'email')
     await expect(usernameField(page)).toHaveAttribute('type', 'text')
-    await expect(usernameField(page)).toHaveAttribute('autocomplete', 'username')
+    // A display name is not the login. `username` would make a password manager store it as one.
+    await expect(usernameField(page)).toHaveAttribute('autocomplete', 'nickname')
     await expect(passwordField(page)).toHaveAttribute('type', 'password')
     await expect(passwordField(page)).toHaveAttribute('autocomplete', 'new-password')
   })
