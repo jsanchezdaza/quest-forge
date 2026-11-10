@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AppBackground, Footer, LanguageSelector } from '../components/ui'
 import AuthForm from '../components/auth/AuthForm'
@@ -8,7 +8,7 @@ export default function AuthPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const mode = parseAuthMode(searchParams.get('mode'))
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.classList.add('auth-screen')
     return () => document.documentElement.classList.remove('auth-screen')
   }, [])
