@@ -148,9 +148,10 @@ test.describe('mobile auth layout', () => {
 /**
  * Below sm (768px) the language control sits in normal flow, right-aligned,
  * with an 8px gap above the card. From sm it is absolute in the top-right
- * corner. It is never position:fixed. A short landscape phone (below sm, but
- * at most 450px tall) is absolute too, so the control does not push the
- * sign-in button off the screen.
+ * corner. It is never position:fixed. A short landscape phone from 660px wide
+ * is absolute too, so the control does not push the sign-in button off the
+ * screen. Narrower than that, the control stays in flow so it does not cover
+ * the card.
  */
 const languageSelector = (page: Page) => page.getByRole('group', { name: 'Language' })
 
@@ -229,6 +230,35 @@ test.describe('language selector on a narrow screen', () => {
     expect(cardBox).not.toBeNull()
     expect(boxesOverlap(selectorBox!, cardBox!)).toBe(false)
   })
+
+  // 740×360 still clears. These are narrower, so the same top-right control
+  // meets the card's corner (and 667×375 only just misses it).
+  for (const viewport of [
+    { width: 568, height: 320 },
+    { width: 640, height: 360 },
+    { width: 667, height: 375 },
+  ]) {
+    for (const mode of ['sign-in', 'sign-up'] as const) {
+      for (const locale of ['EN', 'ES'] as const) {
+        test(`does not cover the ${mode} card at ${viewport.width}×${viewport.height} in ${locale}`, async ({ page }) => {
+          await page.setViewportSize(viewport)
+          await showSignIn(page)
+          await page.getByRole('button', { name: locale, exact: true }).click()
+          if (mode === 'sign-up') {
+            await page.getByRole('button', { name: /sign up$|regístrate$/i }).click()
+            await expect(page.getByLabel(/username|nombre de usuario/i)).toBeVisible()
+          }
+          await page.mouse.move(0, 0)
+
+          const selectorBox = await languageSelector(page).boundingBox()
+          const cardBox = await authCard(page).boundingBox()
+          expect(selectorBox).not.toBeNull()
+          expect(cardBox).not.toBeNull()
+          expect(boxesOverlap(selectorBox!, cardBox!)).toBe(false)
+        })
+      }
+    }
+  }
 })
 
 test.describe('language selector matches the document language', () => {
@@ -246,6 +276,69 @@ test.describe('language selector matches the document language', () => {
       expect(await page.evaluate(() => document.documentElement.lang)).toBe(locale.lang)
     })
   }
+})
+
+/** `text-medieval-gold` (#d4af37). Idle `text-gray-400` paints as #99a1af. */
+const ACTIVE_LANGUAGE_COLOR = '#d4af37'
+const IDLE_LANGUAGE_COLOR = '#99a1af'
+
+/** One read, no retry, so a colour transition still counts as the previous button. */
+async function languageChoice(page: Page) {
+  return page.evaluate(() => {
+    const normalized = (color: string) => {
+      const canvas = document.createElement('canvas')
+      canvas.width = 1
+      canvas.height = 1
+      const context = canvas.getContext('2d')
+      if (!context) return color
+      context.fillStyle = color
+      context.fillRect(0, 0, 1, 1)
+      const [red, green, blue] = context.getImageData(0, 0, 1, 1).data
+      return `#${[red, green, blue].map((channel) => channel.toString(16).padStart(2, '0')).join('')}`
+    }
+    const group = document.querySelector('[aria-label="Language"]')
+    const buttons = [...(group?.querySelectorAll('button') ?? [])].map((button) => ({
+      name: (button.textContent ?? '').trim(),
+      pressed: button.getAttribute('aria-pressed'),
+      color: normalized(getComputedStyle(button).color),
+    }))
+    return { lang: document.documentElement.lang, buttons }
+  })
+}
+
+function expectSpanishActive(choice: Awaited<ReturnType<typeof languageChoice>>) {
+  const spanish = choice.buttons.find((button) => button.name === 'ES')
+  const english = choice.buttons.find((button) => button.name === 'EN')
+  expect(choice.lang).toBe('es')
+  expect(spanish?.pressed).toBe('true')
+  expect(english?.pressed).toBe('false')
+  expect(spanish?.color).toBe(ACTIVE_LANGUAGE_COLOR)
+  expect(english?.color).toBe(IDLE_LANGUAGE_COLOR)
+}
+
+async function expectSpanishOnLoadAndAfterSwitch(page: Page) {
+  await page.goto('/auth')
+  await expect(page.getByRole('heading', { level: 1, name: /quest forge/i })).toBeVisible()
+  expectSpanishActive(await languageChoice(page))
+
+  await page.getByRole('button', { name: 'EN', exact: true }).click()
+  await page.getByRole('button', { name: 'ES', exact: true }).click()
+  expectSpanishActive(await languageChoice(page))
+}
+
+test.describe('Spanish is active before anyone clicks', () => {
+  test.use({ locale: 'es-ES' })
+
+  test('a Spanish browser selects ES on load and keeps its colour after a switch', async ({ page }) => {
+    await expectSpanishOnLoadAndAfterSwitch(page)
+  })
+})
+
+test('a stored Spanish preference selects ES on an English browser', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('questforge.language', 'es')
+  })
+  await expectSpanishOnLoadAndAfterSwitch(page)
 })
 
 test.describe('portrait auth header', () => {
