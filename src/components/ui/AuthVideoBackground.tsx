@@ -14,7 +14,7 @@ export const AUTH_VIDEO_PLAYBACK_RATE = 0.6
  * where the static PNG in `.app-background` is used instead). The video is anchored top-left
  * and slightly zoomed (see CSS) to push the bottom-right generator watermark toward the
  * cropped edge. Decorative: aria-hidden and out of the tab order. Reduced
- * motion pauses it; playback speed is left alone.
+ * motion pauses it. Playback uses AUTH_VIDEO_PLAYBACK_RATE.
  */
 export default function AuthVideoBackground() {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -23,6 +23,8 @@ export default function AuthVideoBackground() {
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
+    // The element keeps this rate across a loop and a later play().
+    video.playbackRate = AUTH_VIDEO_PLAYBACK_RATE
     if (reduceMotion) {
       video.pause()
       return
