@@ -4,11 +4,17 @@ import usePrefersReducedMotion from '../../hooks/usePrefersReducedMotion'
 const VIDEO_SRC = '/images/backgrounds/background-animated-desktop.mp4'
 
 /**
+ * Desktop auth background speed, as a multiple of realtime.
+ * Initial value inside the 0.5–0.7 range; tune after a visual check.
+ */
+export const AUTH_VIDEO_PLAYBACK_RATE = 0.6
+
+/**
  * Animated dungeon background for the auth screen (desktop only; hidden on mobile via CSS,
  * where the static PNG in `.app-background` is used instead). The video is anchored top-left
  * and slightly zoomed (see CSS) to push the bottom-right generator watermark toward the
  * cropped edge. Decorative: aria-hidden and out of the tab order. Reduced
- * motion pauses it; playback speed is left alone.
+ * motion pauses it. Playback uses AUTH_VIDEO_PLAYBACK_RATE.
  */
 export default function AuthVideoBackground() {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -17,6 +23,8 @@ export default function AuthVideoBackground() {
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
+    // The element keeps this rate across a loop and a later play().
+    video.playbackRate = AUTH_VIDEO_PLAYBACK_RATE
     if (reduceMotion) {
       video.pause()
       return
