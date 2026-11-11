@@ -369,6 +369,18 @@ test.describe('reset view', () => {
           return { fontSize: style.fontSize, minHeight: style.minHeight }
         })
         expect(type).toEqual({ fontSize: '16px', minHeight: '46px' })
+        const titleStyle = await title.evaluate((element) => {
+          const style = getComputedStyle(element)
+          return { fontWeight: style.fontWeight, fontSize: style.fontSize, color: style.color }
+        })
+        const helpStyle = await help.evaluate((element) => {
+          const style = getComputedStyle(element)
+          return { fontWeight: style.fontWeight, fontSize: style.fontSize, color: style.color }
+        })
+        expect(titleStyle.fontWeight).toBe('600')
+        expect(helpStyle.fontWeight).toBe('400')
+        expect(titleStyle.fontSize).toBe(helpStyle.fontSize)
+        expect(helpStyle.color).toBe(titleStyle.color)
       })
     }
   }

@@ -187,7 +187,7 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
               <h2
                 ref={resetHeadingRef}
                 tabIndex={-1}
-                className="mt-1 font-pixel-body text-sm font-normal normal-case tracking-normal text-gray-300 sm:mt-0"
+                className="mt-1 font-pixel-body text-sm font-semibold normal-case tracking-normal text-gray-300 sm:mt-0"
               >
                 {t('auth.resetTitle')}
               </h2>
