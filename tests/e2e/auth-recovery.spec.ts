@@ -716,6 +716,9 @@ test.describe('recovery confirmation', () => {
 })
 
 test('sign-up stores the selected language in the account metadata', async ({ page }) => {
+  await page.route('**/auth/v1/signup**', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }),
+  )
   await page.goto('/auth?mode=signup')
   await page.getByRole('button', { name: 'ES', exact: true }).click()
   await emailField(page).fill('hero@example.com')
