@@ -4,6 +4,12 @@ import usePrefersReducedMotion from '../../hooks/usePrefersReducedMotion'
 const VIDEO_SRC = '/images/backgrounds/background-animated-desktop.mp4'
 
 /**
+ * Desktop auth background speed, as a multiple of realtime.
+ * Initial value inside the 0.5–0.7 range; tune after a visual check.
+ */
+export const AUTH_VIDEO_PLAYBACK_RATE = 0.6
+
+/**
  * Animated dungeon background for the auth screen (desktop only; hidden on mobile via CSS,
  * where the static PNG in `.app-background` is used instead). The video is anchored top-left
  * and slightly zoomed (see CSS) to push the bottom-right generator watermark toward the

@@ -1,4 +1,5 @@
-import { test, expect, type Page } from './setup'
+import { test, expect, type Locator, type Page } from './setup'
+import { AUTH_VIDEO_PLAYBACK_RATE } from '../../src/components/ui/AuthVideoBackground'
 
 /**
  * Login usable on a phone (#35).
@@ -568,8 +569,64 @@ test.describe('reduced motion on the auth background', () => {
     await page.emulateMedia({ reducedMotion: 'no-preference' })
     await expect(video).toHaveJSProperty('paused', false)
     await expect(video).toHaveAttribute('preload', 'auto')
+    await whenVideoReady(video)
+    await expect(video).toHaveJSProperty('playbackRate', AUTH_VIDEO_PLAYBACK_RATE)
   })
 })
+
+/**
+ * Desktop login video pace (#51). The rate lives in one named constant
+ * and stays applied after the video loops and after it resumes from pause.
+ */
+test.describe('desktop auth video pace', () => {
+  test('plays at the configured rate through a loop and a pause', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.setViewportSize({ width: 1280, height: 720 })
+    await page.goto('/auth')
+
+    const video = page.locator('video.auth-video')
+    await expect(video).toBeVisible()
+    await whenVideoReady(video)
+    await expect(video).toHaveJSProperty('paused', false)
+    await expect(video).toHaveJSProperty('playbackRate', AUTH_VIDEO_PLAYBACK_RATE)
+
+    await video.evaluate((element: HTMLVideoElement) => {
+      element.pause()
+      const target = Math.max(0, element.duration - 0.3)
+      return new Promise<void>((resolve) => {
+        const finish = () => {
+          if (Math.abs(element.currentTime - target) >= 0.05) return
+          element.removeEventListener('seeked', finish)
+          resolve()
+        }
+        element.addEventListener('seeked', finish)
+        element.currentTime = target
+        finish()
+      })
+    })
+    const nearEnd = await video.evaluate((element: HTMLVideoElement) => element.currentTime)
+    expect(nearEnd).toBeGreaterThan(0.5)
+    await expect(video).toHaveJSProperty('paused', true)
+    await expect(video).toHaveJSProperty('playbackRate', AUTH_VIDEO_PLAYBACK_RATE)
+
+    await video.evaluate((element: HTMLVideoElement) => element.play())
+    await expect(video).toHaveJSProperty('paused', false)
+    await expect(video).toHaveJSProperty('playbackRate', AUTH_VIDEO_PLAYBACK_RATE)
+    await expect
+      .poll(async () => video.evaluate((element: HTMLVideoElement) => element.currentTime))
+      .toBeLessThan(0.5)
+    await expect(video).toHaveJSProperty('playbackRate', AUTH_VIDEO_PLAYBACK_RATE)
+  })
+})
+
+async function whenVideoReady(video: Locator) {
+  await video.evaluate((element: HTMLVideoElement) => {
+    if (element.readyState >= HTMLMediaElement.HAVE_METADATA) return
+    return new Promise<void>((resolve) => {
+      element.addEventListener('loadedmetadata', () => resolve(), { once: true })
+    })
+  })
+}
 
 /**
  * Short landscape phones. Login must not scroll to reach the primary button.
