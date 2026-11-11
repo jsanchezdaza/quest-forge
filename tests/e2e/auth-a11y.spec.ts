@@ -59,6 +59,28 @@ test.describe('auth accessibility', () => {
     await expectAuthAccessible(page, 'sign-in error')
   })
 
+  test('password recovery has no unexpected contrast or ARIA violations', async ({ page }) => {
+    await page.goto('/auth?mode=reset')
+    await expect(page.getByRole('heading', { level: 2, name: /reset your password/i })).toBeVisible()
+    await expectAuthAccessible(page, 'password recovery')
+  })
+
+  test('a recovery confirmation has no unexpected contrast or ARIA violations', async ({ page }) => {
+    await page.route('**/auth/v1/recover**', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: '{}',
+      }),
+    )
+
+    await page.goto('/auth?mode=reset')
+    await page.getByLabel(/email/i).fill('user@example.com')
+    await page.getByRole('button', { name: /send reset link/i }).click()
+    await expect(page.getByRole('heading', { level: 2, name: /check your email/i })).toBeVisible()
+    await expectAuthAccessible(page, 'recovery confirmation')
+  })
+
   test('a field format error has no unexpected contrast or ARIA violations', async ({ page }) => {
     await page.goto('/auth')
     const email = page.getByLabel(/email/i)

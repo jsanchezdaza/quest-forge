@@ -291,3 +291,52 @@
     0 0 0 2px #1a1a1a,
     0 0 0 5px #1a1a1a;
 }
+
+/*
+  Forgot-password sits on the password label's baseline from 480px up and
+  takes no extra height. Below that its 44px row follows the password
+  field's reserved error slot. A coarse pointer grows the hit area without
+  moving either layout.
+*/
+.forgot-password-link {
+  line-height: 1.25rem;
+  /* Gold on the video misses 4.5:1. The same dark wash as a field error. */
+  background-color: rgb(10 10 10 / 75%);
+  padding-right: 0.375rem;
+  padding-left: 0.375rem;
+}
+
+@media (max-width: 479px) {
+  .forgot-password-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: fit-content;
+    margin-left: auto;
+    min-height: 44px;
+    padding-top: 0;
+    padding-bottom: 0;
+    text-align: right;
+  }
+}
+
+@media (min-width: 480px) {
+  .forgot-password-link {
+    position: absolute;
+    top: -3px;
+    right: 0;
+    min-height: 0;
+    width: auto;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+@media (pointer: coarse) {
+  .forgot-password-link::after {
+    content: '';
+    position: absolute;
+    inset: -14px -8px;
+  }
+}

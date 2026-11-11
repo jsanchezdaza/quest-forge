@@ -1,7 +1,10 @@
 import { create } from 'zustand'
+import { languageMetadataUpdate, signUpMetadata } from '../lib/authLanguage'
+import { passwordRecoveryRedirectTo } from '../lib/passwordRecovery'
 import { supabase } from '../lib/supabase'
 import { loadAndSyncUserProfile, type UserProfileRepository } from '../lib/userProfile'
 import { getMockAuth, isMockInitialLoading, isTestMode } from '../lib/testMode'
+import { useLanguageStore } from './languageStore'
 import type { AuthState, User } from '../types'
 
 const userProfileRepository: UserProfileRepository = {
@@ -80,7 +83,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { username: normalizedUsername } },
+        options: {
+          data: signUpMetadata(normalizedUsername, useLanguageStore.getState().language),
+        },
       })
       if (error) throw error
 
@@ -98,6 +103,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     }, set)
   },
 
+  requestPasswordReset: async (email: string) => {
+    const redirectTo = passwordRecoveryRedirectTo(window.location.origin)
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo })
+    if (error) throw error
+  },
+
   signOut: async () => {
     if (isTestMode()) {
       localStorage.removeItem('sb-mock-auth-token')
@@ -112,6 +123,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     }, set)
   },
 }))
+
+useLanguageStore.subscribe((state, previous) => {
+  if (state.language === previous.language) return
+  const update = languageMetadataUpdate(state.language, useAuthStore.getState().user !== null)
+  if (!update) return
+  void supabase.auth.updateUser(update).then(({ error }) => {
+    if (error) console.error('Failed to store the language preference:', error)
+  })
+})
 
 if (isTestMode()) {
   if (isMockInitialLoading()) {

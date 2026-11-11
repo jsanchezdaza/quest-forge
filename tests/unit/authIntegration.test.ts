@@ -6,7 +6,7 @@ test('signup sends the normalized username as Supabase auth metadata', async () 
   const authStore = await readFile(new URL('../../src/store/authStore.ts', import.meta.url), 'utf8')
 
   assert.match(authStore, /const normalizedUsername = username\.trim\(\)/)
-  assert.match(authStore, /options:\s*\{\s*data:\s*\{\s*username:\s*normalizedUsername\s*\}/s)
+  assert.match(authStore, /signUpMetadata\(\s*normalizedUsername,\s*useLanguageStore\.getState\(\)\.language\s*\)/)
 })
 
 test('authenticated sessions load and synchronize the persisted profile', async () => {

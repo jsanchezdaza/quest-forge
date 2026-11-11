@@ -1,9 +1,10 @@
-export type AuthMode = 'signin' | 'signup'
+export type AuthMode = 'signin' | 'signup' | 'reset'
 
 /**
- * `signup` opens sign-up. Every other value opens sign-in, including `reset`
- * until password recovery (#36) adds that view here.
+ * `signup` opens sign-up and `reset` opens password recovery. Every other
+ * value opens sign-in. `update-password` stays sign-in until #37.
  */
 export function parseAuthMode(value: string | null): AuthMode {
-  return value === 'signup' ? 'signup' : 'signin'
+  if (value === 'signup' || value === 'reset') return value
+  return 'signin'
 }

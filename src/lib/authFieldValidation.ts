@@ -20,6 +20,7 @@ const EMAIL_PATTERN =
 const FIELD_ORDER: Record<AuthMode, readonly AuthField[]> = {
   signin: ['email', 'password'],
   signup: ['email', 'username', 'password'],
+  reset: ['email'],
 }
 
 /** Format error for one auth field, or null when the current rules accept it. */
@@ -44,6 +45,8 @@ export function authFieldError(
     return null
   }
 
+  // Recovery asks for an email only. The new password is #37.
+  if (mode === 'reset') return null
   if (!value) return 'auth.passwordRequired'
   // Existing passwords stay valid. Length, a letter, and a number apply to new ones.
   if (mode === 'signin') return null

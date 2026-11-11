@@ -140,6 +140,26 @@ test('the checklist copy lists the same three rules in English and Spanish', () 
   assert.equal(es['auth.passwordRule.notMet'], 'no cumplido')
 })
 
+test('password recovery checks the email and nothing else', () => {
+  assert.equal(authFieldError('email', '', 'reset'), 'auth.emailRequired')
+  assert.equal(authFieldError('email', 'not-an-email', 'reset'), 'auth.emailInvalid')
+  assert.equal(authFieldError('email', 'user@example.com', 'reset'), null)
+  assert.equal(authFieldError('username', '', 'reset'), null)
+  assert.equal(authFieldError('password', '', 'reset'), null)
+  assert.equal(
+    firstInvalidAuthField({ email: '', username: '', password: '' }, 'reset'),
+    'email',
+  )
+  assert.equal(
+    firstInvalidAuthField({ email: 'not-an-email', username: '', password: '' }, 'reset'),
+    'email',
+  )
+  assert.equal(
+    firstInvalidAuthField({ email: 'user@example.com', username: '', password: '' }, 'reset'),
+    null,
+  )
+})
+
 test('the first invalid field follows email, username, then password', () => {
   assert.equal(
     firstInvalidAuthField({ email: '', username: '', password: '' }, 'signin'),

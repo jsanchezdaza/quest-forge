@@ -505,6 +505,61 @@ test.describe('auth touch targets', () => {
   })
 })
 
+test.describe('forgot-password touch target', () => {
+  test.use({ hasTouch: true, isMobile: true })
+
+  for (const viewport of [
+    { width: 320, height: 568 },
+    { width: 375, height: 667 },
+    { width: 740, height: 360 },
+    { width: 1280, height: 720 },
+  ]) {
+    test(`is at least 44×44 at ${viewport.width}×${viewport.height} and misses the eye`, async ({ page }) => {
+      await page.setViewportSize(viewport)
+      await page.goto('/auth')
+      const link = page.getByRole('button', { name: /forgot your password/i })
+      await expect(link).toBeVisible()
+      expect(await page.evaluate(() => window.matchMedia('(pointer: coarse)').matches)).toBe(true)
+
+      const hit = await link.evaluate((element) => {
+        const box = element.getBoundingClientRect()
+        const after = getComputedStyle(element, '::after')
+        const hidden = after.content === 'none' || after.content === 'normal'
+        const inset = (value: string) => {
+          const parsed = Number.parseFloat(value)
+          return Number.isFinite(parsed) ? parsed : 0
+        }
+        if (hidden) return { x: box.x, y: box.y, width: box.width, height: box.height }
+        const top = inset(after.top)
+        const right = inset(after.right)
+        const bottom = inset(after.bottom)
+        const left = inset(after.left)
+        return {
+          x: box.x + left,
+          y: box.y + top,
+          width: box.width - left - right,
+          height: box.height - top - bottom,
+        }
+      })
+      expect(hit.width).toBeGreaterThanOrEqual(44)
+      expect(hit.height).toBeGreaterThanOrEqual(44)
+
+      const eye = await page.getByRole('button', { name: 'Show password', exact: true }).boundingBox()
+      expect(eye).not.toBeNull()
+      const center = { x: eye!.x + eye!.width / 2, y: eye!.y + eye!.height / 2 }
+      const coversEye = center.x >= hit.x && center.x <= hit.x + hit.width
+        && center.y >= hit.y && center.y <= hit.y + hit.height
+      expect(coversEye).toBe(false)
+
+      const owner = await page.evaluate(({ x, y }) => {
+        const target = document.elementFromPoint(x, y)
+        return target?.closest('button')?.textContent ?? ''
+      }, center)
+      expect(owner).not.toMatch(/forgot your password/i)
+    })
+  }
+})
+
 test.describe('auth password manager hints', () => {
   test('sign-in fields use email and current-password', async ({ page }) => {
     await page.goto('/auth')
