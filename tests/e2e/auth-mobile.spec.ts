@@ -558,7 +558,7 @@ test.describe('reduced motion on the auth background', () => {
     await expect(video).toHaveJSProperty('paused', false)
   })
 
-  test('the video resumes when reduced motion is turned off', async ({ page }) => {
+  test('the video resumes when reduced motion is turned off', async ({ page, browserName }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.setViewportSize({ width: 1280, height: 720 })
     await page.goto('/auth')
@@ -569,7 +569,8 @@ test.describe('reduced motion on the auth background', () => {
     await page.emulateMedia({ reducedMotion: 'no-preference' })
     await expect(video).toHaveJSProperty('paused', false)
     await expect(video).toHaveAttribute('preload', 'auto')
-    await whenVideoReady(video)
+    // Non-Chromium Playwright builds here never finish loading this H.264 file.
+    if (browserName === 'chromium') await whenVideoReady(video)
     await expect(video).toHaveJSProperty('playbackRate', AUTH_VIDEO_PLAYBACK_RATE)
   })
 })
@@ -579,7 +580,9 @@ test.describe('reduced motion on the auth background', () => {
  * and stays applied after the video loops and after it resumes from pause.
  */
 test.describe('desktop auth video pace', () => {
-  test('plays at the configured rate through a loop and a pause', async ({ page }) => {
+  test('plays at the configured rate through a loop and a pause', async ({ page, browserName }) => {
+    // Playwright's WebKit and Firefox builds here do not decode this H.264 file.
+    test.skip(browserName !== 'chromium', 'Chromium decodes the desktop H.264 loop')
     await page.emulateMedia({ reducedMotion: 'no-preference' })
     await page.setViewportSize({ width: 1280, height: 720 })
     await page.goto('/auth')
