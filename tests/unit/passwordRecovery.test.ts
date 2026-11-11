@@ -81,7 +81,7 @@ test('recovery copy does not say whether an account exists', () => {
   assert.equal(en['auth.resetSending'], 'Sending…')
   assert.equal(es['auth.resetSending'], 'Enviando…')
   assert.equal(en['auth.resetBack'], 'Back to sign in')
-  assert.equal(es['auth.resetBack'], 'Volver a iniciar sesión')
+  assert.equal(es['auth.resetBack'], 'Volver a entrar')
   assert.equal(en['auth.resetSendFailed'], "We couldn't send the link. Check your connection and try again.")
   assert.equal(es['auth.resetSendFailed'], 'No hemos podido enviar el enlace. Revisa tu conexión e inténtalo de nuevo.')
   assert.equal(en['auth.resetTooManyAttempts'], 'Too many attempts. Wait a minute and try again.')

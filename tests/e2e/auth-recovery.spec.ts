@@ -35,7 +35,7 @@ const forgotPassword = (page: Page) =>
 const sendReset = (page: Page) =>
   page.getByRole('button', { name: /^(send reset link|enviar enlace)$/i })
 const backToSignIn = (page: Page) =>
-  page.getByRole('button', { name: /^(back to sign in|volver a iniciar sesión)$/i })
+  page.getByRole('button', { name: /^(back to sign in|volver a entrar)$/i })
 
 const LINK_VIEWPORTS = [
   { width: 320, height: 568 },
@@ -336,7 +336,7 @@ test.describe('reset view', () => {
         title: 'Recupera tu contraseña',
         help: /escribe tu correo y te enviaremos un enlace/i,
         send: /^enviar enlace$/i,
-        back: /^volver a iniciar sesión$/i,
+        back: /^volver a entrar$/i,
       },
     ] as const) {
       test(`shows the recovery form at ${viewport.width}×${viewport.height} in ${locale.button}`, async ({ page }) => {
@@ -594,6 +594,59 @@ test.describe('recovery confirmation', () => {
     await sendReset(page).click()
     await expect(page.getByRole('heading', { level: 2, name: 'Check your email' })).toBeVisible()
     await expectTextContrast(page.getByText(CONFIRMATION), 'confirmation')
+  })
+
+  test('the back button stays on one line at 320 and 375', async ({ page }) => {
+    await page.route('**/auth/v1/recover**', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }),
+    )
+
+    for (const viewport of [
+      { width: 320, height: 568 },
+      { width: 375, height: 667 },
+    ]) {
+      for (const locale of [
+        { button: 'EN', label: 'Back to sign in' },
+        { button: 'ES', label: 'Volver a entrar' },
+      ] as const) {
+        await page.setViewportSize(viewport)
+        await page.goto('/auth?mode=reset')
+        await page.getByRole('button', { name: locale.button, exact: true }).click()
+        await page.evaluate(() => document.fonts.ready)
+        await emailField(page).fill('hero@example.com')
+        await page.getByRole('button', { name: /^(send reset link|enviar enlace)$/i }).click()
+        await page.mouse.move(0, 0)
+
+        const back = page.getByRole('button', { name: locale.label, exact: true })
+        await expect(back).toBeVisible()
+        const laidOut = await back.evaluate((element) => {
+          const style = getComputedStyle(element)
+          const range = document.createRange()
+          range.selectNodeContents(element)
+          const rects = [...range.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0)
+          const lines = new Set(rects.map((rect) => Math.round(rect.top))).size
+          const padX = Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight)
+          const textWidth = rects.reduce((widest, rect) => Math.max(widest, rect.width), 0)
+          const contentHeight = Number.parseFloat(style.paddingTop)
+            + Number.parseFloat(style.paddingBottom)
+            + Number.parseFloat(style.lineHeight)
+          const border = Number.parseFloat(style.borderTopWidth) + Number.parseFloat(style.borderBottomWidth)
+          const singleLine = Math.max(contentHeight, Number.parseFloat(style.minHeight)) + border
+          return {
+            lines,
+            textWidth,
+            contentWidth: element.getBoundingClientRect().width - padX,
+            height: element.getBoundingClientRect().height,
+            singleLine,
+            letterSpacing: style.letterSpacing,
+          }
+        })
+        expect(laidOut.letterSpacing, locale.label).not.toBe('0px')
+        expect(laidOut.lines, `${viewport.width} ${locale.label}`).toBe(1)
+        expect(laidOut.textWidth, `${viewport.width} ${locale.label}`).toBeLessThanOrEqual(laidOut.contentWidth + 1)
+        expect(laidOut.height, `${viewport.width} ${locale.label}`).toBeLessThanOrEqual(laidOut.singleLine + 0.5)
+      }
+    }
   })
 })
 

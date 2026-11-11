@@ -38,7 +38,7 @@ export const es: typeof en = {
   'auth.resetHelp': 'Escribe tu correo y te enviaremos un enlace para elegir una nueva contraseña.',
   'auth.resetSend': 'Enviar enlace',
   'auth.resetSending': 'Enviando…',
-  'auth.resetBack': 'Volver a iniciar sesión',
+  'auth.resetBack': 'Volver a entrar',
   'auth.resetConfirmedTitle': 'Revisa tu correo',
   'auth.resetConfirmedBody': 'Si existe una cuenta con ese correo, te hemos enviado un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.',
   'auth.resetDifferentEmail': 'Usar otro correo',
