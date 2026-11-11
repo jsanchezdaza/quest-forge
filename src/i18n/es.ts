@@ -33,6 +33,17 @@ export const es: typeof en = {
   'auth.passwordRule.number': 'Al menos un número',
   'auth.passwordRule.met': 'cumplido',
   'auth.passwordRule.notMet': 'no cumplido',
+  'auth.forgotPassword': '¿Olvidaste tu contraseña?',
+  'auth.resetTitle': 'Recupera tu contraseña',
+  'auth.resetHelp': 'Escribe tu correo y te enviaremos un enlace para elegir una nueva contraseña.',
+  'auth.resetSend': 'Enviar enlace',
+  'auth.resetSending': 'Enviando…',
+  'auth.resetBack': 'Volver a iniciar sesión',
+  'auth.resetConfirmedTitle': 'Revisa tu correo',
+  'auth.resetConfirmedBody': 'Si existe una cuenta con ese correo, te hemos enviado un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.',
+  'auth.resetDifferentEmail': 'Usar otro correo',
+  'auth.resetSendFailed': 'No hemos podido enviar el enlace. Revisa tu conexión e inténtalo de nuevo.',
+  'auth.resetTooManyAttempts': 'Demasiados intentos. Espera un minuto e inténtalo de nuevo.',
 
   // Forms
   'form.emailLabel': 'Correo',

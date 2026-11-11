@@ -31,6 +31,17 @@ export const en = {
   'auth.passwordRule.number': 'At least one number',
   'auth.passwordRule.met': 'met',
   'auth.passwordRule.notMet': 'not met',
+  'auth.forgotPassword': 'Forgot your password?',
+  'auth.resetTitle': 'Reset your password',
+  'auth.resetHelp': "Enter your email and we'll send you a link to choose a new password.",
+  'auth.resetSend': 'Send reset link',
+  'auth.resetSending': 'Sending…',
+  'auth.resetBack': 'Back to sign in',
+  'auth.resetConfirmedTitle': 'Check your email',
+  'auth.resetConfirmedBody': "If an account exists for that email, we've sent a link to reset your password. Check your inbox and your spam folder.",
+  'auth.resetDifferentEmail': 'Use a different email',
+  'auth.resetSendFailed': "We couldn't send the link. Check your connection and try again.",
+  'auth.resetTooManyAttempts': 'Too many attempts. Wait a minute and try again.',
 
   // Forms
   'form.emailLabel': 'Email',

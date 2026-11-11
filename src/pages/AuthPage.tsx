@@ -25,6 +25,14 @@ export default function AuthPage() {
     })
   }
 
+  const openReset = () => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('mode', 'reset')
+      return next
+    })
+  }
+
   return (
     <div className="focus-ring min-h-screen flex flex-col">
       <AppBackground variant="auth" className="flex-1" compactOnShortDesktop={mode === 'signup'}>
@@ -40,7 +48,7 @@ export default function AuthPage() {
               <LanguageSelector />
             </div>
           </div>
-          <AuthForm mode={mode} onToggleMode={toggleMode} />
+          <AuthForm mode={mode} onToggleMode={toggleMode} onForgotPassword={openReset} />
         </div>
       </AppBackground>
       <Footer compactOnShortDesktop={mode === 'signup'} />

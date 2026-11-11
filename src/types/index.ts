@@ -68,6 +68,8 @@ export interface AuthState {
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string, username: string) => Promise<void>
   signOut: () => Promise<void>
+  /** Sends a recovery email. Does not use `loading`; the form has its own busy state. */
+  requestPasswordReset: (email: string) => Promise<void>
 }
 
 export interface GameStore {

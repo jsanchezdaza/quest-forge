@@ -47,11 +47,13 @@ test.describe('linkable auth urls', () => {
     await expect(usernameField(page)).not.toBeVisible()
   })
 
-  test('/auth?mode=reset opens sign-in until password recovery exists', async ({ page }) => {
+  test('/auth?mode=reset opens password recovery', async ({ page }) => {
     await page.goto('/auth?mode=reset')
 
     await expect(page).toHaveURL('/auth?mode=reset')
-    await expect(signInButton(page)).toBeVisible()
+    await expect(page.getByRole('heading', { level: 2, name: 'Reset your password' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /send reset link/i })).toBeVisible()
+    await expect(passwordField(page)).not.toBeVisible()
     await expect(usernameField(page)).not.toBeVisible()
   })
 

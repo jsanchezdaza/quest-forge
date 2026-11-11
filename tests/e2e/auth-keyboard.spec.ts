@@ -39,6 +39,7 @@ function signInOrder(page: Page): Locator[] {
     emailField(page),
     passwordField(page),
     showPasswordButton(page),
+    page.getByRole('button', { name: /forgot your password/i }),
     signInButton(page),
     switchToSignUp(page),
     authorLink(page),
