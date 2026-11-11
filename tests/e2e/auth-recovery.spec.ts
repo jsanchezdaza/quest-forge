@@ -517,6 +517,34 @@ test.describe('recovery confirmation', () => {
     await expect(page.getByRole('alert')).toHaveCount(0)
   })
 
+  test('leaving recovery drops the confirmation so the form comes back empty of it', async ({ page }) => {
+    await page.route('**/auth/v1/recover**', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }),
+    )
+
+    await page.goto('/auth?mode=reset')
+    await emailField(page).fill('hero@example.com')
+    await sendReset(page).click()
+    await expect(page.getByRole('heading', { level: 2, name: 'Check your email' })).toBeVisible()
+
+    await backToSignIn(page).click()
+    await expect(forgotPassword(page)).toBeVisible()
+
+    await forgotPassword(page).click()
+    await expect(page.getByRole('heading', { level: 2, name: 'Reset your password' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 2, name: 'Check your email' })).toHaveCount(0)
+    await expect(sendReset(page)).toBeVisible()
+    await expect(page.getByRole('alert')).toHaveCount(0)
+    await expect(emailField(page)).toHaveValue('hero@example.com')
+
+    await page.goBack()
+    await page.goBack()
+    await expect(page).toHaveURL(/mode=reset/)
+    await expect(page.getByRole('heading', { level: 2, name: 'Check your email' })).toHaveCount(0)
+    await expect(page.getByRole('heading', { level: 2, name: 'Reset your password' })).toBeVisible()
+    await expect(sendReset(page)).toBeVisible()
+  })
+
   test('uses the Spanish confirmation and can try a different email', async ({ page }) => {
     await page.route('**/auth/v1/recover**', (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }),

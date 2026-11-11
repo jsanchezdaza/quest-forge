@@ -88,10 +88,11 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
   }
 
   useEffect(() => {
-    if (mode === 'reset') return
     requestRef.current += 1
     sendingRef.current = false
     setSending(false)
+    setConfirmed(false)
+    setFailure(null)
   }, [mode])
 
   useLayoutEffect(() => {
