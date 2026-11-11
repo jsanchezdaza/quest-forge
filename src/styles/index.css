@@ -294,8 +294,9 @@
 
 /*
   Forgot-password sits on the password label's baseline from 480px up and
-  takes no extra height. Below that it is its own right-aligned row. A coarse
-  pointer grows the hit area without moving either layout.
+  takes no extra height. Below that its 44px row follows the password
+  field's reserved error slot. A coarse pointer grows the hit area without
+  moving either layout.
 */
 .forgot-password-link {
   line-height: 1.25rem;
@@ -308,12 +309,14 @@
 @media (max-width: 479px) {
   .forgot-password-link {
     position: relative;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
     width: fit-content;
     margin-left: auto;
     min-height: 44px;
-    padding-top: 12px;
-    padding-bottom: 12px;
+    padding-top: 0;
+    padding-bottom: 0;
     text-align: right;
   }
 }

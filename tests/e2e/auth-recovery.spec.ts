@@ -213,8 +213,12 @@ test.describe('forgot-password link', () => {
           expect(minHeight).toBe('44px')
           const linkBox = await link.boundingBox()
           const fieldBox = await passwordField(page).boundingBox()
-          expect(linkBox && fieldBox).toBeTruthy()
+          const errorBox = await page.locator('#password-error').boundingBox()
+          expect(linkBox && fieldBox && errorBox).toBeTruthy()
           expect(linkBox!.y).toBeGreaterThan(fieldBox!.y + fieldBox!.height)
+          // The 44px row sits against the reserved error slot, not a field below it.
+          expect(Math.abs(linkBox!.y - (errorBox!.y + errorBox!.height))).toBeLessThanOrEqual(1)
+          expect(await link.evaluate((element) => getComputedStyle(element).alignItems)).toBe('center')
           expect(Math.abs(linkBox!.x + linkBox!.width - (fieldBox!.x + fieldBox!.width))).toBeLessThanOrEqual(1)
         } else {
           const label = page.locator('label[for="password"]')

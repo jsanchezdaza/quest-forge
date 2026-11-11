@@ -262,7 +262,7 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
 
               {mode !== 'reset' && (
                 mode === 'signin' ? (
-                  <div className="relative flex w-full flex-col gap-field-gap">
+                  <div className="relative flex w-full flex-col">
                     <PasswordInput
                       ref={passwordRef}
                       id="password"

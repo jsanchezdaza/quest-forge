@@ -95,7 +95,8 @@ async function expectFieldSpacing(page: Page, mode: 'sign-in' | 'sign-up') {
     const forgot = page.getByRole('button', { name: /forgot your password/i })
     const inFlow = await forgot.evaluate((element) => getComputedStyle(element).position !== 'absolute')
     if (inFlow) {
-      await expectGap(aboveSubmit, forgot, FIELD_GAP)
+      // The portrait row belongs to the password field, flush with its error slot.
+      await expectGap(aboveSubmit, forgot, 0)
       await expectGap(forgot, submit, FIELD_GAP)
       return
     }
