@@ -11,7 +11,7 @@ import {
   type AuthField,
 } from '../../lib/authFieldValidation'
 import type { AuthMode } from '../../lib/authMode'
-import { recoveryErrorMessageKey } from '../../lib/passwordRecovery'
+import { recoveryConcealsAccount, recoveryErrorMessageKey } from '../../lib/passwordRecovery'
 import PasswordRequirements from './PasswordRequirements'
 
 interface AuthFailure {
@@ -142,6 +142,10 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
         setConfirmed(true)
       } catch (cause) {
         if (requestId !== requestRef.current) return
+        if (recoveryConcealsAccount(cause)) {
+          setConfirmed(true)
+          return
+        }
         setFailure({ mode, message: t(recoveryErrorMessageKey(cause)) })
       } finally {
         if (requestId === requestRef.current) {

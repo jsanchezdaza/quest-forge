@@ -12,6 +12,14 @@ export function passwordRecoveryRedirectTo(origin: string): string {
   return `${origin}/auth?mode=update-password`
 }
 
+/**
+ * GoTrue may answer that the address has no account. That is still the
+ * confirmation: a failure here would reveal that the account is missing.
+ */
+export function recoveryConcealsAccount(error: unknown): boolean {
+  return (error as { code?: unknown } | null)?.code === 'user_not_found'
+}
+
 /** A failed recovery request never says whether the account exists. */
 export function recoveryErrorMessageKey(error: unknown): TranslationKey {
   const status = (error as { status?: unknown } | null)?.status

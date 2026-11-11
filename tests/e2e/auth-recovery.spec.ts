@@ -496,6 +496,27 @@ test.describe('recovery confirmation', () => {
     expect(seen[1]).toBe(seen[0])
   })
 
+  test('a missing account shows the same confirmation as a successful request', async ({ page }) => {
+    await page.route('**/auth/v1/recover**', (route) =>
+      route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({ error_code: 'user_not_found', msg: 'User not found' }),
+      }),
+    )
+
+    await page.goto('/auth?mode=reset')
+    await emailField(page).fill('missing@example.com')
+    await sendReset(page).click()
+
+    const heading = page.getByRole('heading', { level: 2, name: 'Check your email' })
+    await expect(heading).toBeVisible()
+    await expect(heading).toBeFocused()
+    await expect(page.getByText(CONFIRMATION)).toBeVisible()
+    await expect(page.getByText('missing@example.com')).toHaveCount(0)
+    await expect(page.getByRole('alert')).toHaveCount(0)
+  })
+
   test('uses the Spanish confirmation and can try a different email', async ({ page }) => {
     await page.route('**/auth/v1/recover**', (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }),

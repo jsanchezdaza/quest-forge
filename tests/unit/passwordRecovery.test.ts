@@ -5,6 +5,7 @@ import { en } from '../../src/i18n/en.ts'
 import { es } from '../../src/i18n/es.ts'
 import {
   passwordRecoveryRedirectTo,
+  recoveryConcealsAccount,
   recoveryErrorMessageKey,
 } from '../../src/lib/passwordRecovery.ts'
 
@@ -40,11 +41,15 @@ test('any other recovery failure uses the same connection message', () => {
     recoveryErrorMessageKey(new AuthApiError('nope', 500, 'unexpected_failure')),
     'auth.resetSendFailed',
   )
-  assert.equal(
-    recoveryErrorMessageKey(new AuthApiError('missing', 400, 'user_not_found')),
-    'auth.resetSendFailed',
-  )
   assert.equal(recoveryErrorMessageKey(null), 'auth.resetSendFailed')
+})
+
+test('a missing account is the same confirmation, not a failure', () => {
+  const missing = new AuthApiError('missing', 400, 'user_not_found')
+  assert.equal(recoveryConcealsAccount(missing), true)
+  assert.equal(recoveryConcealsAccount(new AuthApiError('nope', 500, 'unexpected_failure')), false)
+  assert.equal(recoveryConcealsAccount(new AuthRetryableFetchError('Failed to fetch', 0)), false)
+  assert.equal(recoveryConcealsAccount(null), false)
 })
 
 test('recovery copy does not say whether an account exists', () => {
