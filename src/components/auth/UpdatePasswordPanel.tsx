@@ -87,8 +87,13 @@ export default function UpdatePasswordPanel({
     focusHeading(headingRef.current)
   }, [shownHeading])
 
+  useEffect(() => {
+    return () => {
+      clearPasswordRecovery()
+    }
+  }, [clearPasswordRecovery])
+
   const enterGame = () => {
-    clearPasswordRecovery()
     navigate('/game')
   }
 

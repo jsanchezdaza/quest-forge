@@ -145,6 +145,19 @@ test.describe('new password from the recovery link', () => {
     await expect(page.getByRole('button', { name: 'EN', exact: true })).toBeVisible()
   })
 
+  test('leaving the card drops the recovery hold so sign-in enters the game', async ({ page }) => {
+    await installRecoverySession(page)
+    await page.goto('/auth?mode=update-password')
+    await expect(passwordField(page)).toBeVisible()
+
+    await page.evaluate(() => {
+      window.history.pushState(null, '', '/auth')
+      window.dispatchEvent(new PopStateEvent('popstate'))
+    })
+
+    await expect(page).toHaveURL(/\/game$/)
+  })
+
   test('a signed-in visit to the recovery url is not sent to the game before the recovery event', async ({ page }) => {
     await page.addInitScript((address) => {
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({

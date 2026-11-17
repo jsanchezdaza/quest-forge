@@ -146,7 +146,7 @@ export function recoveryHoldAfterAuthEvent(input: {
 
 /**
  * The hold has to survive the events that follow a save, and it has to stay
- * down after the player enters the game. A token refresh must not put it back.
+ * down after the player leaves the card. A token refresh must not put it back.
  */
 export function createRecoveryHold() {
   let held = false
