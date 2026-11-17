@@ -13,6 +13,7 @@ import {
   updatePasswordReducer,
   type UpdatePasswordState,
 } from '../../lib/updatePassword'
+import { useReleaseOnUnmount } from '../../lib/useReleaseOnUnmount'
 import { useAuthStore } from '../../store/authStore'
 import { Button, PasswordInput, narrowAuthButtonClassName } from '../ui'
 import PasswordRequirements from './PasswordRequirements'
@@ -90,11 +91,7 @@ export default function UpdatePasswordPanel({
     focusHeading(headingRef.current)
   }, [shownHeading])
 
-  useEffect(() => {
-    return () => {
-      clearPasswordRecovery()
-    }
-  }, [clearPasswordRecovery])
+  useReleaseOnUnmount(clearPasswordRecovery)
 
   useEffect(() => {
     setPassword((draft) => retainedPassword(state.status, draft))
