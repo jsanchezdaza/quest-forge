@@ -52,7 +52,7 @@ Optional narrative goes from `src/lib/openrouter.ts` through `api/openrouter.ts`
 
 ## Definition of done
 
-Lint, typecheck, unit tests, and the relevant end-to-end specs pass locally (`pnpm check` and `pnpm test:e2e`, or the specs and projects you changed, including `auth-a11y.spec.ts` when the auth UI changes). Open a pull request against `main` and leave it unmerged. Coding agents never merge and never close issues. Always use `Refs #N` in pull requests. Never use `Closes` or `Fixes`. The product manager closes the issue after she checks the acceptance criteria, never automatically. Manual steps or QA can keep an issue open.
+Lint, typecheck, unit tests, and the relevant end-to-end specs pass locally (`pnpm check` and `pnpm test:e2e`, or the specs and projects you changed, including `auth-a11y.spec.ts` when the auth UI changes). Open a pull request against `main` and leave it unmerged. Coding agents never merge and never close issues. Pull requests use only `Refs #N`, never `Closes #N`. The product manager closes the issue after she checks the acceptance criteria, never automatically. Manual steps or QA can keep an issue open.
 
 ## Product
 
@@ -66,7 +66,7 @@ The implementing agent passes this before marking the pull request ready, and co
 - Any new end-to-end spec runs in CI, and the `e2e` job is green on the head.
 - The diff touches only what the story asks. Flag any change to shared components or styles in the pull request body.
 - For a UI change: text contrast is at least 4.5:1, and touch targets are at least 44px.
-- The pull request body uses `Refs #N`.
+- The pull request body uses only `Refs #N`, never `Closes #N`.
 
 ## Screenshots
 
@@ -85,7 +85,7 @@ This section is the source of truth for how the team ships a story.
 - The repo owner (Javi) approves the story order in issue #40 once. No per-story go-ahead is needed.
 - The dev assistant (Calcifer) briefs coding agents, who implement with test-driven development and open the pull request unmerged. The dev assistant batches all feedback into a single round back to the implementing agent. Bot-to-bot messages that require the other to act are sent with priority.
 - Every pull request goes to both the code reviewer and the designer, including fast-path ones. Code review and visual review happen on the same head at the same time.
-- The code reviewer (Jiji) reviews every pull request and every new head, reporting either "no blockers" or a list of blockers. Reviews without blockers are published on GitHub directly. The code reviewer asks the repo owner only when there are blockers or the pull request touches auth. The code reviewer never approves or merges.
+- The code reviewer (Jiji) reviews every pull request and every new head, reporting either "no blockers" or a list of blockers. The code reviewer publishes reviews without blockers directly, and asks the repo owner only when there are blockers or the pull request touches auth, data, Supabase, or security. The code reviewer never approves or merges.
 - Merge (squash): only the dev assistant merges, once CI is green, the reviewer reports no blockers on the final head, and, for visual changes, the designer gave her visual OK. Coding agents never merge.
 - Pull requests touching auth logic, data, Supabase, or security are the exception: only the repo owner merges them, after his explicit yes.
 - Small visual tweak fast path: a small visual tweak is CSS only, with no new copy, no new components, and no logic. It never applies to pull requests touching auth logic, data, Supabase, or security. The dev assistant merges it once CI is green, without code review or a pre-merge design review. The pull request still goes to both. Post-merge screenshots are sent to the designer automatically; she checks them after merge, and any follow-up goes in a new small pull request.
