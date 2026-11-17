@@ -58,6 +58,12 @@ export const es: typeof en = {
   'auth.updatePasswordInvalidTitle': 'Este enlace no es válido',
   'auth.updatePasswordInvalidBody': 'Pide un enlace nuevo para restablecer tu contraseña.',
   'auth.updatePasswordRequest': 'Pedir un enlace nuevo',
+  'auth.updatePasswordExpiredTitle': 'Este enlace ha caducado',
+  'auth.updatePasswordExpiredBody': 'Los enlaces de recuperación solo sirven una vez y durante un tiempo limitado. Pide uno nuevo y usa el correo más reciente.',
+  'auth.updatePasswordUnreachableTitle': 'No hemos podido comprobar el enlace',
+  'auth.updatePasswordUnreachableBody': 'Revisa tu conexión y vuelve a intentarlo.',
+  'auth.updatePasswordTryAgain': 'Reintentar',
+  'auth.updatePasswordRetrying': 'Comprobando…',
 
   // Forms
   'form.emailLabel': 'Correo',

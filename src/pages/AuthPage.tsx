@@ -1,11 +1,12 @@
 import { useLayoutEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { AppBackground, Footer, LanguageSelector } from '../components/ui'
 import AuthForm from '../components/auth/AuthForm'
 import { parseAuthMode } from '../lib/authMode'
 
 export default function AuthPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
   const mode = parseAuthMode(searchParams.get('mode'))
 
   useLayoutEffect(() => {
@@ -26,11 +27,8 @@ export default function AuthPage() {
   }
 
   const openReset = () => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      next.set('mode', 'reset')
-      return next
-    })
+    // Drop a leftover recovery code or error. The reset form does not use them.
+    navigate('/auth?mode=reset')
   }
 
   return (

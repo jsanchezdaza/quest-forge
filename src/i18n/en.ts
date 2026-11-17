@@ -56,6 +56,12 @@ export const en = {
   'auth.updatePasswordInvalidTitle': "This link isn't valid",
   'auth.updatePasswordInvalidBody': 'Request a new link to reset your password.',
   'auth.updatePasswordRequest': 'Request a new link',
+  'auth.updatePasswordExpiredTitle': 'This link has expired',
+  'auth.updatePasswordExpiredBody': 'Reset links only work once and for a limited time. Request a new one and use the most recent email.',
+  'auth.updatePasswordUnreachableTitle': "We couldn't check your link",
+  'auth.updatePasswordUnreachableBody': 'Check your connection and try again.',
+  'auth.updatePasswordTryAgain': 'Try again',
+  'auth.updatePasswordRetrying': 'Checking…',
 
   // Forms
   'form.emailLabel': 'Email',

@@ -163,7 +163,7 @@ export async function postRecoveryCode(input: {
   try {
     body = await response.json()
   } catch {
-    body = null
+    // A non-JSON error page is classified from the status alone.
   }
   if (!response.ok) {
     const failure = classifyRecoveryFailure({
