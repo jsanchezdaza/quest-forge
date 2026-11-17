@@ -121,7 +121,7 @@ export default function UpdatePasswordPanel({
     } catch (cause) {
       if (requestId !== requestRef.current) return
       if (passwordUpdateFailure(cause).outcome === 'invalid-session') {
-        await endRecoverySession()
+        endRecoverySession()
       }
       dispatch({ type: 'failed', error: cause })
       passwordRef.current?.focus()

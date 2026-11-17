@@ -77,7 +77,7 @@ export interface AuthState {
   /** Drops the recovery hold so a later visit to /auth enters the game. */
   clearPasswordRecovery: () => void
   /** The recovery session is gone. Clears it locally so the invalid link can offer a new one. */
-  endRecoverySession: () => Promise<void>
+  endRecoverySession: () => void
 }
 
 export interface GameStore {

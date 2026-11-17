@@ -12,6 +12,7 @@ import {
   isUpdatePasswordSearch,
   recoveryHoldAfterAuthEvent,
   shouldRedirectSignedInToGame,
+  signOutInBackground,
   showUpdatePasswordChecking,
   updatePasswordHelp,
   updatePasswordReducer,
@@ -100,6 +101,23 @@ test('same password, a weak password, a rate limit, and a network failure stay o
   failed(new AuthRetryableFetchError('Failed to fetch', 0), 'auth.resetSendFailed')
   failed(new AuthApiError('nope', 400, 'unexpected_failure'), 'error.authError.message')
   failed(new AuthRetryableFetchError('Service Unavailable', 503), 'error.authError.message')
+})
+
+test('sign-out after an expired recovery link does not block the card', async () => {
+  const blocked = new Promise<never>(() => {})
+  const result = await Promise.race([
+    Promise.resolve(signOutInBackground(() => blocked, () => {})).then(() => 'returned'),
+    new Promise((resolve) => setTimeout(() => resolve('blocked'), 50)),
+  ])
+  assert.equal(result, 'returned')
+
+  let reported = false
+  signOutInBackground(
+    () => Promise.reject(new Error('offline')),
+    () => { reported = true },
+  )
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  assert.equal(reported, true)
 })
 
 test('a missing or rejected recovery session on save opens the invalid link', () => {

@@ -166,6 +166,19 @@ export function createRecoveryHold() {
   }
 }
 
+/**
+ * The card has already dropped the local session. Waiting on the network
+ * would leave the button on "Saving…".
+ */
+export function signOutInBackground(
+  signOut: () => Promise<unknown>,
+  onError: (error: unknown) => void,
+): void {
+  void Promise.resolve()
+    .then(signOut)
+    .catch(onError)
+}
+
 /** Keep the draft while the player is still on the form. Drop it after save or an invalid link. */
 export function retainedPassword(status: UpdatePasswordState['status'], draft: string): string {
   if (status === 'done' || status === 'invalid') return ''

@@ -4,7 +4,7 @@ import { passwordRecoveryRedirectTo } from '../lib/passwordRecovery'
 import { supabase } from '../lib/supabase'
 import { loadAndSyncUserProfile, type UserProfileRepository } from '../lib/userProfile'
 import { getMockAuth, isMockInitialLoading, isMockPasswordRecovery, isTestMode } from '../lib/testMode'
-import { createRecoveryHold } from '../lib/updatePassword'
+import { createRecoveryHold, signOutInBackground } from '../lib/updatePassword'
 import { useLanguageStore } from './languageStore'
 import type { AuthState, User } from '../types'
 
@@ -123,15 +123,20 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ passwordRecovery: false })
   },
 
-  endRecoverySession: async () => {
+  endRecoverySession: () => {
     recoveryHold.release()
     set({ user: null, profile: null, passwordRecovery: false, loading: false })
     if (isTestMode()) {
       localStorage.removeItem('sb-mock-auth-token')
       return
     }
-    const { error } = await supabase.auth.signOut()
-    if (error) console.error('Failed to end the recovery session:', error)
+    signOutInBackground(
+      async () => {
+        const { error } = await supabase.auth.signOut()
+        if (error) throw error
+      },
+      (error) => console.error('Failed to end the recovery session:', error),
+    )
   },
 
   signOut: async () => {
