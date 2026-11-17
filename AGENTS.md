@@ -21,7 +21,7 @@ Playwright loads `tests/e2e/setup.ts`, which supplies mock `VITE_SUPABASE_*` val
 
 Query the UI with `getByRole` and `getByLabel`, as the auth specs do. `tests/e2e/auth-a11y.spec.ts` runs `@axe-core/playwright` for contrast (`wcag143`) and ARIA (`cat.aria`) and must stay green.
 
-`playwright.config.ts` defines desktop Chromium (`chromium`, Desktop Chrome) and `Mobile Chrome` (Pixel 5), plus Firefox, WebKit, Mobile Safari, and Tablet. CI (`.github/workflows/ci.yml`, 10-minute timeout) runs `auth.spec.ts` and `auth-a11y.spec.ts` on `chromium` and `Mobile Chrome` only. Run one file with `pnpm exec playwright test tests/e2e/auth.spec.ts --project=chromium`. Run the other specs your change touches; they are not all in CI.
+`playwright.config.ts` defines desktop Chromium (`chromium`, Desktop Chrome) and `Mobile Chrome` (Pixel 5), plus Firefox, WebKit, Mobile Safari, and Tablet. CI (`.github/workflows/ci.yml`, 20-minute timeout) runs every spec under `tests/e2e/` on `chromium` and `Mobile Chrome`. Run one file with `pnpm exec playwright test tests/e2e/auth.spec.ts --project=chromium`.
 
 ## Commits
 

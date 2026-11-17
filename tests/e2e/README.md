@@ -1,85 +1,33 @@
 # E2E Tests
 
-## Overview
-This directory contains end-to-end tests for Quest Forge using Playwright.
+Playwright specs live in this directory. `playwright.config.ts` sets `testDir` to `./tests/e2e`.
 
-## Test Files
+CI (`.github/workflows/ci.yml`) runs every `*.spec.ts` here on `chromium` and `Mobile Chrome`. The job does not pass a file list, so a new spec is included automatically. `setup.ts` and `pixelContrast.ts` are helpers, not specs.
 
-### Currently Running in CI
-- **auth.spec.ts** - Authentication UI tests, on desktop Chromium and Mobile Chrome
-- **auth-a11y.spec.ts** - Contrast and ARIA checks for /auth, on the same projects
-- **auth-keyboard.spec.ts** - Keyboard order and focus rings, on the same projects
-- **auth-password.spec.ts** - Show and hide password, on the same projects
-- **auth-readable-text.spec.ts** - Readable auth copy, on the same projects
-- **auth-urls.spec.ts** - Linkable sign-in and sign-up URLs, on the same projects
-- **auth-field-validation.spec.ts** - Format errors under each auth field, on the same projects
-- **auth-password-requirements.spec.ts** - Password requirements on sign-up, on the same projects
+The suite mocks Supabase through `window.mockSupabaseAuth` in `setup.ts` and the test-mode seam in `src/lib/testMode.ts`. It does not need real credentials.
 
-`pnpm test:unit` runs in the `ci` job. It covers `api/*.test.ts` and `tests/unit/*.test.ts`, including auth mode parsing.
+## Running tests locally
 
-### Pending Backend Mock Infrastructure
-The following test files have been created but require proper backend mocking infrastructure before they can run in CI:
+### All tests
 
-- **game-page.spec.ts** (8 tests) - Game page navigation and UI
-- **character-creation.spec.ts** (17 tests) - Character creation flow
-- **gameplay.spec.ts** (12 tests) - Scene progression and player choices
-- **level-up.spec.ts** (13 tests) - Character progression and stat allocation
-- **navigation.spec.ts** (17 tests) - Auth redirects and session management
-
-**Total**: 67 tests pending proper mock infrastructure
-
-## Why Tests Are Not Running Yet
-
-The new tests require proper mocking of Supabase backend calls. Currently:
-- Tests set mock data in localStorage
-- However, the app still makes real Supabase API calls
-- These calls timeout without a real backend or proper mocks
-- This causes CI to exceed time limits
-
-## Next Steps
-
-To enable these tests in CI, we need to:
-
-1. **Implement Backend Mocking**
-   - Use MSW (Mock Service Worker) or similar to intercept API calls
-   - Create mock handlers for Supabase endpoints
-   - Set up test fixtures for database responses
-
-2. **Update Test Setup**
-   - Configure MSW in `tests/e2e/setup.ts`
-   - Add mock handlers for all Supabase operations
-   - Ensure deterministic test behavior
-
-3. **Update CI Configuration**
-   - Once mocking is in place, update `.github/workflows/ci.yml`
-   - Change from `tests/e2e/auth.spec.ts` to run all tests
-   - Tests should complete within the 10-minute timeout
-
-## Running Tests Locally
-
-### All Tests
 ```bash
 pnpm test:e2e
 ```
 
-### Specific Test File
+### One file
+
 ```bash
 pnpm test:e2e tests/e2e/auth.spec.ts
 ```
 
+### One project
+
+```bash
+pnpm exec playwright test --project=chromium
+```
+
 ### With UI
+
 ```bash
 pnpm test:e2e --ui
 ```
-
-## Test Coverage
-
-| Area | Tests | Status |
-|------|-------|--------|
-| Authentication UI | 6 | ✅ Running in CI |
-| Game Page | 8 | ⏸️ Needs mocks |
-| Character Creation | 17 | ⏸️ Needs mocks |
-| Gameplay | 12 | ⏸️ Needs mocks |
-| Level Up | 13 | ⏸️ Needs mocks |
-| Navigation | 17 | ⏸️ Needs mocks |
-| **Total** | **73** | **6 active, 67 pending** |
