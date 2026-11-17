@@ -15,6 +15,7 @@ const CONFIRMATION_ES =
   'Si existe una cuenta con ese correo, te hemos enviado un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.'
 
 const medievalGold = tailwindConfig.theme.extend.colors.medieval.gold
+const medievalGoldLight = tailwindConfig.theme.extend.colors.medieval['gold-light']
 
 function hexToCssRgb(hex: string): string {
   const value = Number.parseInt(hex.slice(1), 16)
@@ -22,8 +23,10 @@ function hexToCssRgb(hex: string): string {
 }
 
 const goldenRingColor = hexToCssRgb(medievalGold)
+const goldLight = hexToCssRgb(medievalGoldLight)
 const inkBlack = hexToCssRgb(tailwindConfig.theme.extend.colors.medieval.inkblack)
 const goldenRingShadow = `${inkBlack} 0px 0px 0px 2px, ${inkBlack} 0px 0px 0px 5px`
+const transparent = 'rgba(0, 0, 0, 0)'
 
 const emailField = (page: Page) => page.getByLabel(/email|correo/i)
 const passwordField = (page: Page) =>
@@ -172,9 +175,9 @@ async function foreground(locator: Locator): Promise<[number, number, number]> {
   })
 }
 
-async function expectTextContrast(locator: Locator, label: string) {
+async function textContrast(locator: Locator): Promise<number> {
   const box = await locator.boundingBox()
-  expect(box, label).not.toBeNull()
+  expect(box).not.toBeNull()
   const textRects = await locator.evaluate((element) => {
     const host = element.getBoundingClientRect()
     const range = document.createRange()
@@ -186,8 +189,103 @@ async function expectTextContrast(locator: Locator, label: string) {
       height: rect.height,
     }))
   })
-  const ratio = minimumContrast(await locator.screenshot(), box!.width, textRects, await foreground(locator))
+  return minimumContrast(await locator.screenshot(), box!.width, textRects, await foreground(locator))
+}
+
+async function expectTextContrast(locator: Locator, label: string) {
+  const ratio = await textContrast(locator)
   expect(ratio, `${label} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
+}
+
+/**
+ * Lowest contrast of the link against the scene behind it.
+ * Embers are random, so they are hidden and the desktop video is sampled
+ * across its loop. The static image is one shot.
+ */
+async function sceneContrasts(page: Page, locator: Locator): Promise<number[]> {
+  await page.addStyleTag({
+    content: '.ember { animation: none !important; opacity: 0 !important; }',
+  })
+  const video = page.locator('video.auth-video')
+  const duration = await video.evaluate(async (element: HTMLVideoElement) => {
+    const box = element.getBoundingClientRect()
+    const shown = getComputedStyle(element).display !== 'none' && box.width > 0 && box.height > 0
+    if (!shown) return 0
+    if (element.readyState < 1 || !Number.isFinite(element.duration)) {
+      await new Promise<void>((resolve, reject) => {
+        const timer = window.setTimeout(() => reject(new Error('auth video did not load')), 5000)
+        element.addEventListener('loadedmetadata', () => {
+          window.clearTimeout(timer)
+          resolve()
+        }, { once: true })
+      })
+    }
+    if (!Number.isFinite(element.duration) || element.duration <= 0) {
+      throw new Error('auth video has no duration')
+    }
+    return element.duration
+  })
+  if (duration <= 0) {
+    await page.evaluate(() => new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)))
+    }))
+    return [await textContrast(locator)]
+  }
+
+  const ratios: number[] = []
+  for (let time = 0; time < duration - 0.02; time += 0.25) {
+    await video.evaluate(async (element: HTMLVideoElement, target: number) => {
+      element.pause()
+      const ready = () => element.readyState >= 2 && Math.abs(element.currentTime - target) < 0.03
+      if (ready()) return
+      await new Promise<void>((resolve) => {
+        const finish = () => {
+          if (element.readyState >= 2) resolve()
+          else element.addEventListener('loadeddata', () => resolve(), { once: true })
+        }
+        if (Math.abs(element.currentTime - target) < 0.03) {
+          finish()
+          return
+        }
+        element.addEventListener('seeked', () => finish(), { once: true })
+        element.currentTime = target
+      })
+    }, time)
+    await page.evaluate(() => new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)))
+    }))
+    ratios.push(await textContrast(locator))
+  }
+  return ratios
+}
+
+async function expectNoBackdrop(link: Locator, accountLink: Locator) {
+  const paint = await link.evaluate((element) => {
+    const style = getComputedStyle(element)
+    return {
+      backgroundColor: style.backgroundColor,
+      backgroundImage: style.backgroundImage,
+      boxShadow: style.boxShadow,
+      textShadow: style.textShadow,
+      color: style.color,
+      textDecorationLine: style.textDecorationLine,
+      textUnderlineOffset: style.textUnderlineOffset,
+      beforeBackground: getComputedStyle(element, '::before').backgroundColor,
+      afterBackground: getComputedStyle(element, '::after').backgroundColor,
+    }
+  })
+  const accountBackground = await accountLink.evaluate((element) => getComputedStyle(element).backgroundColor)
+
+  expect(paint.backgroundColor).toBe(transparent)
+  expect(paint.backgroundColor).toBe(accountBackground)
+  expect(paint.backgroundImage).toBe('none')
+  expect(paint.beforeBackground).toBe(transparent)
+  expect(paint.afterBackground).toBe(transparent)
+  expect(paint.boxShadow).toBe('none')
+  expect(paint.textShadow).toBe('none')
+  expect(paint.color).toBe(goldLight)
+  expect(paint.textDecorationLine).toBe('underline')
+  expect(paint.textUnderlineOffset).toBe('2px')
 }
 
 test.describe('forgot-password link', () => {
@@ -645,12 +743,64 @@ test.describe('recovery confirmation', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'Check your email' })).toBeVisible()
   })
 
-  test('the link and the confirmation clear 4.5:1 on the card', async ({ page }) => {
+  test('the forgot-password link has no backdrop and keeps contrast, the focus ring, and a 44px target', async ({ page }) => {
+    for (const viewport of [
+      { width: 375, height: 667 },
+      { width: 1280, height: 720 },
+    ]) {
+      for (const locale of ['EN', 'ES'] as const) {
+        await page.setViewportSize(viewport)
+        await page.goto('/auth')
+        await page.getByRole('button', { name: locale, exact: true }).click()
+        await page.evaluate(() => document.fonts.ready)
+        await page.mouse.move(0, 0)
+
+        const link = forgotPassword(page)
+        const accountLink = page.getByRole('button', { name: /don't have an account|no tienes cuenta/i })
+        await expect(link).toBeVisible()
+        await expectNoBackdrop(link, accountLink)
+
+        if (viewport.width < 480) {
+          const box = await link.boundingBox()
+          expect(box).not.toBeNull()
+          expect(box!.width).toBeGreaterThanOrEqual(44)
+          expect(box!.height).toBeGreaterThanOrEqual(44)
+        }
+        if (await page.evaluate(() => window.matchMedia('(pointer: coarse)').matches)) {
+          const hit = await hitBox(link)
+          expect(hit.width).toBeGreaterThanOrEqual(44)
+          expect(hit.height).toBeGreaterThanOrEqual(44)
+        }
+
+        const ratios = await sceneContrasts(page, link)
+        expect(ratios.length).toBeGreaterThan(0)
+        const lowest = Math.min(...ratios)
+        const listed = ratios.map((ratio) => ratio.toFixed(2)).join(', ')
+        console.log(`forgot-password contrast ${viewport.width}x${viewport.height} ${locale}: ${listed} min ${lowest.toFixed(2)}`)
+        expect(lowest, `${viewport.width} ${locale} ${lowest.toFixed(2)}:1 [${listed}]`).toBeGreaterThanOrEqual(4.5)
+      }
+    }
+
     await page.setViewportSize({ width: 1280, height: 720 })
     await page.goto('/auth')
+    await page.getByRole('button', { name: 'ES', exact: true }).click()
     await page.evaluate(() => document.fonts.ready)
-    await expectTextContrast(forgotPassword(page), 'forgot password')
+    await resetTabStart(page)
+    for (const control of [
+      page.getByRole('button', { name: 'EN', exact: true }),
+      page.getByRole('button', { name: 'ES', exact: true }),
+      emailField(page),
+      passwordField(page),
+      showPasswordButton(page),
+      forgotPassword(page),
+    ]) {
+      await page.keyboard.press('Tab')
+      await expect(control).toBeFocused()
+    }
+    await expectGoldenFocusRing(forgotPassword(page))
+  })
 
+  test('the confirmation clears 4.5:1 on the card', async ({ page }) => {
     await page.route('**/auth/v1/recover**', (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }),
     )
