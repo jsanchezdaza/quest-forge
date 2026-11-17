@@ -206,7 +206,9 @@ export default function UpdatePasswordPanel({
           autoComplete="username"
           value={email}
           readOnly
-          hidden
+          tabIndex={-1}
+          aria-hidden="true"
+          className="sr-only"
         />
         <PasswordInput
           ref={passwordRef}
