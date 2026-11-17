@@ -166,6 +166,12 @@ export function createRecoveryHold() {
   }
 }
 
+/** Keep the draft while the player is still on the form. Drop it after save or an invalid link. */
+export function retainedPassword(status: UpdatePasswordState['status'], draft: string): string {
+  if (status === 'done' || status === 'invalid') return ''
+  return draft
+}
+
 function resolveSession(signedIn: boolean, email: string): UpdatePasswordState {
   if (!signedIn) return { status: 'invalid' }
   return { status: 'form', email, fieldError: null }

@@ -8,6 +8,7 @@ import {
   beginUpdatePassword,
   passwordUpdateFailure,
   showUpdatePasswordChecking,
+  retainedPassword,
   updatePasswordHelp,
   updatePasswordReducer,
   type UpdatePasswordState,
@@ -92,6 +93,10 @@ export default function UpdatePasswordPanel({
       clearPasswordRecovery()
     }
   }, [clearPasswordRecovery])
+
+  useEffect(() => {
+    setPassword((draft) => retainedPassword(state.status, draft))
+  }, [state.status])
 
   const enterGame = () => {
     navigate('/game')

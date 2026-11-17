@@ -8,6 +8,7 @@ import {
   UPDATE_PASSWORD_CHECKING_MS,
   beginUpdatePassword,
   createRecoveryHold,
+  retainedPassword,
   isUpdatePasswordSearch,
   recoveryHoldAfterAuthEvent,
   shouldRedirectSignedInToGame,
@@ -71,6 +72,14 @@ test('submit stays on the form until the new password meets the sign-up rules', 
   assert.deepEqual(updatePasswordReducer(form(), { type: 'submit', password: '12345678' }), form('auth.passwordNeedsLetter'))
   assert.deepEqual(updatePasswordReducer(form(), { type: 'submit', password: 'abcd1234' }), saving)
   assert.deepEqual(updatePasswordReducer(saving, { type: 'submit', password: 'abcd1234' }), saving)
+})
+
+test('the typed password is dropped once the card leaves the form', () => {
+  assert.equal(retainedPassword('form', 'abcd1234'), 'abcd1234')
+  assert.equal(retainedPassword('saving', 'abcd1234'), 'abcd1234')
+  assert.equal(retainedPassword('checking', 'abcd1234'), 'abcd1234')
+  assert.equal(retainedPassword('done', 'abcd1234'), '')
+  assert.equal(retainedPassword('invalid', 'secret'), '')
 })
 
 test('a saved password replaces the form with the confirmation', () => {
