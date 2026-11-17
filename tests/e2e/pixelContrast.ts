@@ -18,14 +18,15 @@ interface Rect {
 export function minimumContrast(
   png: Buffer,
   elementWidth: number,
+  elementHeight: number,
   textRects: Rect[],
   foreground: Rgb,
 ): number {
   const image = decodePng(png)
   const scale = image.width / elementWidth
   // A fractional device pixel makes the screenshot a little larger than the
-  // element, so the outer CSS pixel can be the scene beside it.
-  const elementHeight = image.height / scale
+  // element, so the outer CSS pixel can be the scene beside it. Inset from
+  // the CSS box, not the inflated screenshot, or the extra row stays in.
   let lowest = Number.POSITIVE_INFINITY
   let samples = 0
 

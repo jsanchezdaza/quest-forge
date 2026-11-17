@@ -189,7 +189,7 @@ async function textContrast(locator: Locator): Promise<number> {
       height: rect.height,
     }))
   })
-  return minimumContrast(await locator.screenshot(), box!.width, textRects, await foreground(locator))
+  return minimumContrast(await locator.screenshot(), box!.width, box!.height, textRects, await foreground(locator))
 }
 
 async function expectTextContrast(locator: Locator, label: string) {
