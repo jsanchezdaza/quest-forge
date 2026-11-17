@@ -4,7 +4,7 @@ import { passwordRecoveryRedirectTo } from '../lib/passwordRecovery'
 import { supabase } from '../lib/supabase'
 import { loadAndSyncUserProfile, type UserProfileRepository } from '../lib/userProfile'
 import { getMockAuth, isMockInitialLoading, isMockPasswordRecovery, isTestMode } from '../lib/testMode'
-import { createRecoveryHold, signOutInBackground } from '../lib/updatePassword'
+import { createRecoveryHold, signOutInBackground, signOutLocalSession } from '../lib/updatePassword'
 import { useLanguageStore } from './languageStore'
 import type { AuthState, User } from '../types'
 
@@ -132,7 +132,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     signOutInBackground(
       async () => {
-        const { error } = await supabase.auth.signOut()
+        const { error } = await signOutLocalSession((options) => supabase.auth.signOut(options))
         if (error) throw error
       },
       (error) => console.error('Failed to end the recovery session:', error),

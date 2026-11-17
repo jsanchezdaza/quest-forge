@@ -13,6 +13,7 @@ import {
   recoveryHoldAfterAuthEvent,
   shouldRedirectSignedInToGame,
   signOutInBackground,
+  signOutLocalSession,
   showUpdatePasswordChecking,
   updatePasswordHelp,
   updatePasswordReducer,
@@ -118,6 +119,16 @@ test('sign-out after an expired recovery link does not block the card', async ()
   )
   await new Promise((resolve) => setTimeout(resolve, 0))
   assert.equal(reported, true)
+})
+
+test('an expired recovery link signs out only this browser', async () => {
+  let received: unknown
+  const result = await signOutLocalSession(async (options) => {
+    received = options
+    return { error: null }
+  })
+  assert.deepEqual(received, { scope: 'local' })
+  assert.deepEqual(result, { error: null })
 })
 
 test('a missing or rejected recovery session on save opens the invalid link', () => {

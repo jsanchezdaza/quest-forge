@@ -174,6 +174,16 @@ export function createRecoveryHold() {
 }
 
 /**
+ * End the recovery session in this browser. The default sign-out scope is
+ * global, which also ends the player's other sessions.
+ */
+export function signOutLocalSession<T>(
+  signOut: (options: { scope: 'local' }) => Promise<T>,
+): Promise<T> {
+  return signOut({ scope: 'local' })
+}
+
+/**
  * The card has already dropped the local session. Waiting on the network
  * would leave the button on "Saving…".
  */
