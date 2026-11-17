@@ -127,6 +127,8 @@ test('a missing or rejected recovery session on save opens the invalid link', ()
   expired(new AuthApiError('unauthorized', 401, 'bad_jwt'))
   expired(new AuthSessionMissingError())
   expired({ status: 403, code: 'session_not_found' })
+  expired(new AuthApiError('reauth', 400, 'reauthentication_needed'))
+  expired(new AuthApiError('forbidden', 403, 'forbidden'))
 })
 
 test('the help line names the recovery email and drops the phrase when there is none', () => {

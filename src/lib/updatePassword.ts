@@ -81,14 +81,21 @@ export type PasswordUpdateFailure =
  *
  * auth-js 2.114 turns a GoTrue `session_not_found` into `AuthSessionMissingError`
  * (status 400, no code) before this runs. A raw 401 is the other expiry that
- * leaves the player on the invalid-link card. `same_password` and `weak_password`
+ * leaves the player on the invalid-link card, as do `reauthentication_needed`
+ * and a 403 `forbidden`. `same_password` and `weak_password`
  * stay on the field. A dropped connection and a 429 reuse the recovery copy.
  */
 export function passwordUpdateFailure(error: unknown): PasswordUpdateFailure {
   if (isAuthSessionMissingError(error)) return { outcome: 'invalid-session' }
   const status = (error as { status?: unknown } | null)?.status
   const code = (error as { code?: unknown } | null)?.code
-  if (status === 401 || code === 'session_not_found') return { outcome: 'invalid-session' }
+  if (
+    status === 401
+    || status === 403
+    || code === 'session_not_found'
+    || code === 'reauthentication_needed'
+    || code === 'forbidden'
+  ) return { outcome: 'invalid-session' }
   if (code === 'same_password') return { outcome: 'field', messageKey: 'auth.updatePasswordSame' }
   if (code === 'weak_password') return { outcome: 'field', messageKey: 'error.weakPassword.message' }
   if (
