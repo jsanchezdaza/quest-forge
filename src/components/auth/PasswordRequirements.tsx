@@ -10,8 +10,8 @@ interface PasswordRequirementsProps {
 const RULES = ['minLength', 'letter', 'number'] as const
 
 /**
- * Checklist for a new password. Sign-up uses it today; the new-password
- * view (#37) can place the same list under its field.
+ * Checklist for a new password. Sign-up and the new-password view both
+ * place this list under the field.
  *
  * aria-live is off so typing is not announced. Blur and submit report
  * problems through the field error, which the input exposes with

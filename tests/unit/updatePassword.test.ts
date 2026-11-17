@@ -7,6 +7,7 @@ import type { TranslationKey } from '../../src/i18n/index.ts'
 import {
   UPDATE_PASSWORD_CHECKING_MS,
   beginUpdatePassword,
+  createRecoveryHold,
   isUpdatePasswordSearch,
   recoveryHoldAfterAuthEvent,
   shouldRedirectSignedInToGame,
@@ -127,6 +128,16 @@ test('the recovery url is the only auth url that skips the signed-in redirect', 
   assert.equal(shouldRedirectSignedInToGame({ signedIn: true, mode: 'signin', passwordRecovery: false }), true)
   assert.equal(shouldRedirectSignedInToGame({ signedIn: true, mode: 'reset', passwordRecovery: false }), true)
   assert.equal(shouldRedirectSignedInToGame({ signedIn: false, mode: 'signin', passwordRecovery: false }), false)
+})
+
+test('leaving the recovery card drops the hold, and a later session event stays dropped', () => {
+  const hold = createRecoveryHold()
+  assert.equal(hold.apply('PASSWORD_RECOVERY', true), true)
+  assert.equal(hold.apply('USER_UPDATED', true), true)
+  assert.equal(hold.release(), false)
+  assert.equal(hold.current(), false)
+  assert.equal(hold.apply('TOKEN_REFRESHED', true), false)
+  assert.equal(hold.apply('USER_UPDATED', true), false)
 })
 
 test('PASSWORD_RECOVERY holds the session and a following sign-in event keeps the hold', () => {

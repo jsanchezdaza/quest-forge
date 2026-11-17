@@ -144,6 +144,28 @@ export function recoveryHoldAfterAuthEvent(input: {
   return input.held
 }
 
+/**
+ * The hold has to survive the events that follow a save, and it has to stay
+ * down after the player enters the game. A token refresh must not put it back.
+ */
+export function createRecoveryHold() {
+  let held = false
+  return {
+    apply(event: string, hasSession: boolean): boolean {
+      held = recoveryHoldAfterAuthEvent({ event, hasSession, held })
+      return held
+    },
+    release(): boolean {
+      held = false
+      return held
+    },
+    /** Read when a deferred auth update lands. Do not apply the old event again. */
+    current(): boolean {
+      return held
+    },
+  }
+}
+
 function resolveSession(signedIn: boolean, email: string): UpdatePasswordState {
   if (!signedIn) return { status: 'invalid' }
   return { status: 'form', email, fieldError: null }

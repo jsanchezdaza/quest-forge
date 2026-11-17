@@ -18,6 +18,8 @@ type TestWindow = Window & {
   mockLoading?: boolean
   mockIsGenerating?: boolean
   mockInitialLoading?: boolean
+  /** Recovery link. The real client emits PASSWORD_RECOVERY; tests set this instead. */
+  mockPasswordRecovery?: boolean
 }
 
 function testWindow(): TestWindow | null {
@@ -59,4 +61,8 @@ export function isMockGenerating(): boolean {
 
 export function isMockInitialLoading(): boolean {
   return testWindow()?.mockInitialLoading === true
+}
+
+export function isMockPasswordRecovery(): boolean {
+  return testWindow()?.mockPasswordRecovery === true
 }

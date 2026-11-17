@@ -13,6 +13,7 @@ import {
 import type { AuthMode } from '../../lib/authMode'
 import { recoveryConcealsAccount, recoveryErrorMessageKey } from '../../lib/passwordRecovery'
 import PasswordRequirements from './PasswordRequirements'
+import UpdatePasswordPanel from './UpdatePasswordPanel'
 
 interface AuthFailure {
   mode: AuthMode
@@ -174,7 +175,7 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
         {/* The checklist needs the room the title gives up on a short sign-up screen. */}
         <div className={[
           'text-center',
-          mode === 'reset'
+          mode === 'reset' || mode === 'update-password'
             ? 'mb-4'
             : 'mb-4 sm:mb-8 [@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:mb-2 [@media(max-height:450px)]:mb-4',
         ].join(' ')}>
@@ -203,7 +204,7 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
                 {t('auth.resetHelp')}
               </p>
             </>
-          ) : mode !== 'reset' ? (
+          ) : mode === 'signin' || mode === 'signup' ? (
             <p className={[
               'mt-1 font-pixel-body text-sm text-gray-300 sm:mt-0',
               mode === 'signup'
@@ -215,7 +216,9 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
           ) : null}
         </div>
 
-        {mode === 'reset' && confirmed ? (
+        {mode === 'update-password' ? (
+          <UpdatePasswordPanel onSignIn={handleToggleMode} onRequestReset={handleForgotPassword} />
+        ) : mode === 'reset' && confirmed ? (
           <ResetConfirmation
             headingRef={confirmedHeadingRef}
             onBack={handleToggleMode}
