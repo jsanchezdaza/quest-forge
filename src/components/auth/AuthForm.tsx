@@ -33,7 +33,7 @@ const modeLinkClassName =
   'text-medieval-gold-light hover:underline focus-visible:underline font-pixel-body text-sm min-h-[44px] py-2 disabled:opacity-50 disabled:cursor-not-allowed'
 
 const forgotPasswordClassName =
-  'forgot-password-link font-pixel-body text-sm text-medieval-gold-light underline underline-offset-2 hover:decoration-2'
+  'forgot-password-link text-shadow-legible font-pixel-body text-sm text-medieval-gold-light underline underline-offset-2 hover:decoration-2'
 
 const PASSWORD_REQUIREMENTS_ID = 'password-requirements'
 const RESET_HELP_ID = 'reset-help'
@@ -340,7 +340,7 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
                 type="button"
                 onClick={handleToggleMode}
                 disabled={loading}
-                className={modeLinkClassName}
+                className={mode === 'signin' ? `${modeLinkClassName} text-shadow-legible` : modeLinkClassName}
               >
                 {mode === 'signin' && t('auth.toggleToSignUp')}
                 {mode === 'signup' && t('auth.toggleToSignIn')}
