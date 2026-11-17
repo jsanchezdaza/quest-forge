@@ -44,17 +44,23 @@ jobs:
         path: dist/
         retention-days: 7
 
-  e2e:
+  e2e-shard:
+    name: e2e (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2, 3]
+        shardTotal: [3]
     env:
       VITE_SUPABASE_URL: https://mock.supabase.co
       VITE_SUPABASE_ANON_KEY: mock-anon-key
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup pnpm
       uses: pnpm/action-setup@v4
 
@@ -69,16 +75,28 @@ jobs:
 
     - name: Install Playwright Browsers
       run: pnpm exec playwright install chromium --with-deps
-      
+
     - name: Run E2E tests
-      run: pnpm run test:e2e --project=chromium --project="Mobile Chrome"
-      
+      run: pnpm run test:e2e --project=chromium --project="Mobile Chrome" --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+
     - name: Upload E2E test results
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: e2e-results
+        name: e2e-results-${{ matrix.shardIndex }}
         path: |
           test-results/
           playwright-report/
         retention-days: 3
+
+  e2e:
+    needs: e2e-shard
+    if: always() && !cancelled()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - name: Require every shard to pass
+      run: |
+        result="${{ needs.e2e-shard.result }}"
+        echo "e2e shards result: ${result}"
+        test "${result}" = "success"
