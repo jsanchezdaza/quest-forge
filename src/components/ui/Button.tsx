@@ -8,6 +8,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
 }
 
+/**
+ * Auth actions at 320px. The longest Spanish label needs 12px of clearance,
+ * so padding, tracking, and type step down together below 360px.
+ * Kept off the shared button: a caller's `text-xs` or `px-8` has to win.
+ */
+export const narrowAuthButtonClassName =
+  'max-[359px]:px-3 max-[359px]:tracking-normal max-[359px]:text-sm'
+
 export default function Button({ 
   variant = 'primary', 
   size = 'md', 
@@ -31,14 +39,9 @@ export default function Button({
     lg: 'px-8 py-4 text-lg min-h-[52px]'
   }
 
-  // Below 360px the longest label is wider than the button at 16px. 12px of
-  // clearance needs the glyphs under the inner width, so padding, tracking, and
-  // type all step down together. From 375px up the size classes stay as they are.
-  const narrow = 'max-[359px]:px-3 max-[359px]:tracking-normal max-[359px]:text-sm'
-
   return (
     <button
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${narrow} ${className}`}
+      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       disabled={isLoading || props.disabled}
       {...props}
     >

@@ -706,7 +706,7 @@ test.describe('recovery confirmation', () => {
             letterSpacing: style.letterSpacing,
           }
         })
-        // Wide tracking stays from 375px up. Below 360px the shared button
+        // Wide tracking stays from 375px up. Below 360px the auth button
         // drops it so the longest label fits.
         if (viewport.width >= 360) {
           expect(laidOut.letterSpacing, locale.label).not.toBe('0px')

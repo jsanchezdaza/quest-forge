@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Mail } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
-import { Input, PasswordInput, Button, ErrorMessage } from '../ui'
+import { Input, PasswordInput, Button, ErrorMessage, narrowAuthButtonClassName } from '../ui'
 import { VALIDATION_RULES } from '../../constants/validation'
 import { useTranslation } from '../../i18n'
 import { authErrorMessageKey } from '../../lib/authErrors'
@@ -321,7 +321,7 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
                 variant="primary"
                 isLoading={mode !== 'reset' && loading}
                 aria-disabled={sending ? true : undefined}
-                className={mode === 'reset' ? 'w-full whitespace-nowrap' : 'w-full'}
+                className={mode === 'reset' ? `w-full whitespace-nowrap ${narrowAuthButtonClassName}` : `w-full ${narrowAuthButtonClassName}`}
               >
                 {mode === 'signin' && t('auth.signInButton')}
                 {mode === 'signup' && t('auth.signUpButton')}
@@ -380,7 +380,7 @@ function ResetConfirmation({
           {t('auth.resetConfirmedBody')}
         </p>
       </div>
-      <Button type="button" variant="secondary" className="mt-4 w-full" onClick={onBack}>
+      <Button type="button" variant="secondary" className={`mt-4 w-full ${narrowAuthButtonClassName}`} onClick={onBack}>
         {t('auth.resetBack')}
       </Button>
       <div className="mt-4 text-center">

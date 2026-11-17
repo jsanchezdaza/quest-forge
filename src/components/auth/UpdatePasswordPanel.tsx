@@ -14,7 +14,7 @@ import {
   type UpdatePasswordState,
 } from '../../lib/updatePassword'
 import { useAuthStore } from '../../store/authStore'
-import { Button, PasswordInput } from '../ui'
+import { Button, PasswordInput, narrowAuthButtonClassName } from '../ui'
 import PasswordRequirements from './PasswordRequirements'
 
 const REQUIREMENTS_ID = 'password-requirements'
@@ -28,6 +28,8 @@ const titleClassName =
 
 const modeLinkClassName =
   'text-medieval-gold-light hover:underline focus-visible:underline font-pixel-body text-sm min-h-[44px] py-2'
+
+const actionClassName = `w-full whitespace-nowrap ${narrowAuthButtonClassName}`
 
 function focusHeading(heading: HTMLHeadingElement | null) {
   if (!heading) return
@@ -150,7 +152,7 @@ export default function UpdatePasswordPanel({
             {t('auth.updatePasswordInvalidBody')}
           </p>
         </div>
-        <Button type="button" variant="primary" className="mt-4 w-full whitespace-nowrap" onClick={onRequestReset}>
+        <Button type="button" variant="primary" className={`mt-4 ${actionClassName}`} onClick={onRequestReset}>
           {t('auth.updatePasswordRequest')}
         </Button>
         <div className="mt-4 text-center">
@@ -174,7 +176,7 @@ export default function UpdatePasswordPanel({
             {t('auth.updatePasswordDoneBody')}
           </p>
         </div>
-        <Button type="button" variant="primary" className="mt-4 w-full whitespace-nowrap" onClick={enterGame}>
+        <Button type="button" variant="primary" className={`mt-4 ${actionClassName}`} onClick={enterGame}>
           {t('auth.updatePasswordEnter')}
         </Button>
       </div>
@@ -229,7 +231,7 @@ export default function UpdatePasswordPanel({
           type="submit"
           variant="primary"
           aria-disabled={saving ? true : undefined}
-          className="w-full whitespace-nowrap"
+          className={actionClassName}
         >
           {saving ? t('auth.updatePasswordSaving') : t('auth.updatePasswordSave')}
         </Button>
