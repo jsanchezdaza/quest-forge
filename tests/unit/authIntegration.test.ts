@@ -14,7 +14,7 @@ test('authenticated sessions load and synchronize the persisted profile', async 
 
   assert.match(authStore, /loadAndSyncUserProfile/)
   assert.match(authStore, /from\(['"]user_profiles['"]\)/)
-  assert.match(authStore, /onAuthStateChange\(\(_event, session\) =>/)
+  assert.match(authStore, /onAuthStateChange\(\(event, session\) =>/)
   assert.match(authStore, /setTimeout\(async/)
   assert.doesNotMatch(authStore, /onAuthStateChange\(async/)
 })

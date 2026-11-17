@@ -14,8 +14,10 @@ test('opens sign-in when the mode query is unknown', () => {
   assert.equal(parseAuthMode('bogus'), 'signin')
   assert.equal(parseAuthMode(''), 'signin')
   assert.equal(parseAuthMode('SIGNUP'), 'signin')
-  // Setting the new password is #37. The recovery email lands there later.
-  assert.equal(parseAuthMode('update-password'), 'signin')
+})
+
+test('opens the new-password view when the mode query is update-password', () => {
+  assert.equal(parseAuthMode('update-password'), 'update-password')
 })
 
 test('opens password recovery when the mode query is reset', () => {

@@ -32,6 +32,15 @@ test('username is required, and too short or too long, after trimming', () => {
   assert.equal(authFieldError('username', `  ${'a'.repeat(USERNAME_MIN_LENGTH)}  `, 'signup'), null)
 })
 
+test('the new-password view checks the password only, with the sign-up rules', () => {
+  const values = { email: '', username: '', password: '' }
+  assert.equal(firstInvalidAuthField(values, 'update-password'), 'password')
+  assert.equal(authFieldError('password', '', 'update-password'), 'auth.passwordRequired')
+  assert.equal(authFieldError('password', 'abcdefgh', 'update-password'), 'auth.passwordNeedsNumber')
+  assert.equal(authFieldError('password', 'abcd1234', 'update-password'), null)
+  assert.equal(firstInvalidAuthField({ ...values, password: 'abcd1234' }, 'update-password'), null)
+})
+
 test('username is not checked on sign-in', () => {
   assert.equal(authFieldError('username', '', 'signin'), null)
   assert.equal(authFieldError('username', 'ab', 'signin'), null)

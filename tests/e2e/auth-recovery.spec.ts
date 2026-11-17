@@ -706,7 +706,11 @@ test.describe('recovery confirmation', () => {
             letterSpacing: style.letterSpacing,
           }
         })
-        expect(laidOut.letterSpacing, locale.label).not.toBe('0px')
+        // Wide tracking stays from 375px up. Below 360px the auth button
+        // drops it so the longest label fits.
+        if (viewport.width >= 360) {
+          expect(laidOut.letterSpacing, locale.label).not.toBe('0px')
+        }
         expect(laidOut.lines, `${viewport.width} ${locale.label}`).toBe(1)
         expect(laidOut.textWidth, `${viewport.width} ${locale.label}`).toBeLessThanOrEqual(laidOut.contentWidth + 1)
         expect(laidOut.height, `${viewport.width} ${locale.label}`).toBeLessThanOrEqual(laidOut.singleLine + 0.5)

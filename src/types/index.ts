@@ -65,11 +65,19 @@ export interface AuthState {
   initializing: boolean
   /** True while a sign in, sign up or sign out request is in flight. */
   loading: boolean
+  /** True after PASSWORD_RECOVERY until the player leaves that flow. */
+  passwordRecovery: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string, username: string) => Promise<void>
   signOut: () => Promise<void>
   /** Sends a recovery email. Does not use `loading`; the form has its own busy state. */
   requestPasswordReset: (email: string) => Promise<void>
+  /** Sets the password on the current recovery session. */
+  updatePassword: (password: string) => Promise<void>
+  /** Drops the recovery hold so a later visit to /auth enters the game. */
+  clearPasswordRecovery: () => void
+  /** The recovery session is gone. Clears it locally so the invalid link can offer a new one. */
+  endRecoverySession: () => void
 }
 
 export interface GameStore {

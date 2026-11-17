@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Mail } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
-import { Input, PasswordInput, Button, ErrorMessage } from '../ui'
+import { Input, PasswordInput, Button, ErrorMessage, narrowAuthButtonClassName } from '../ui'
 import { VALIDATION_RULES } from '../../constants/validation'
 import { useTranslation } from '../../i18n'
 import { authErrorMessageKey } from '../../lib/authErrors'
@@ -13,6 +13,7 @@ import {
 import type { AuthMode } from '../../lib/authMode'
 import { recoveryConcealsAccount, recoveryErrorMessageKey } from '../../lib/passwordRecovery'
 import PasswordRequirements from './PasswordRequirements'
+import UpdatePasswordPanel from './UpdatePasswordPanel'
 
 interface AuthFailure {
   mode: AuthMode
@@ -174,7 +175,7 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
         {/* The checklist needs the room the title gives up on a short sign-up screen. */}
         <div className={[
           'text-center',
-          mode === 'reset'
+          mode === 'reset' || mode === 'update-password'
             ? 'mb-4'
             : 'mb-4 sm:mb-8 [@media(min-width:1024px)_and_(max-height:800px)_and_(min-height:451px)]:mb-2 [@media(max-height:450px)]:mb-4',
         ].join(' ')}>
@@ -203,7 +204,7 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
                 {t('auth.resetHelp')}
               </p>
             </>
-          ) : mode !== 'reset' ? (
+          ) : mode === 'signin' || mode === 'signup' ? (
             <p className={[
               'mt-1 font-pixel-body text-sm text-gray-300 sm:mt-0',
               mode === 'signup'
@@ -215,7 +216,9 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
           ) : null}
         </div>
 
-        {mode === 'reset' && confirmed ? (
+        {mode === 'update-password' ? (
+          <UpdatePasswordPanel onSignIn={handleToggleMode} onRequestReset={handleForgotPassword} />
+        ) : mode === 'reset' && confirmed ? (
           <ResetConfirmation
             headingRef={confirmedHeadingRef}
             onBack={handleToggleMode}
@@ -318,7 +321,7 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
                 variant="primary"
                 isLoading={mode !== 'reset' && loading}
                 aria-disabled={sending ? true : undefined}
-                className={mode === 'reset' ? 'w-full whitespace-nowrap' : 'w-full'}
+                className={mode === 'reset' ? `w-full whitespace-nowrap ${narrowAuthButtonClassName}` : `w-full ${narrowAuthButtonClassName}`}
               >
                 {mode === 'signin' && t('auth.signInButton')}
                 {mode === 'signup' && t('auth.signUpButton')}
@@ -377,7 +380,7 @@ function ResetConfirmation({
           {t('auth.resetConfirmedBody')}
         </p>
       </div>
-      <Button type="button" variant="secondary" className="mt-4 w-full" onClick={onBack}>
+      <Button type="button" variant="secondary" className={`mt-4 w-full ${narrowAuthButtonClassName}`} onClick={onBack}>
         {t('auth.resetBack')}
       </Button>
       <div className="mt-4 text-center">

@@ -8,6 +8,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
 }
 
+/**
+ * Auth actions at 320px. The longest Spanish label needs 12px of clearance,
+ * so padding, tracking, and type step down together below 360px.
+ * Kept off the shared button: a caller's `text-xs` or `px-8` has to win.
+ */
+export const narrowAuthButtonClassName =
+  'max-[359px]:px-3 max-[359px]:tracking-normal max-[359px]:text-sm'
+
 export default function Button({ 
   variant = 'primary', 
   size = 'md', 

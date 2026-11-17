@@ -179,6 +179,71 @@ test.describe('Navigation and Auth Flow', () => {
     await expect(page).toHaveURL(/\/game/)
   })
 
+  test('a level-up confirm button keeps caller padding at 320', async ({ page }) => {
+    await page.addInitScript(() => {
+      const mockUser = { id: 'test-user-id', email: 'test@example.com' }
+      const mockProfile = {
+        id: 'test-user-id',
+        username: 'TestHero',
+        created_at: '2024-01-01T00:00:00.000Z',
+      }
+      const mockSession = {
+        id: 'session-1',
+        user_id: 'test-user-id',
+        character_name: 'Thorin',
+        character_class: 'warrior',
+        game_state: {
+          level: 2,
+          health: 120,
+          maxHealth: 120,
+          experience: 0,
+          currentScene: 5,
+          inventory: [],
+          pendingLevelUp: true,
+          levelsGained: 1,
+          stats: {
+            strength: 15,
+            dexterity: 10,
+            intelligence: 10,
+            wisdom: 10,
+            constitution: 14,
+            charisma: 10,
+          },
+        },
+      }
+      localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
+      const testWindow = window as Window & { mockGameSession?: unknown; mockScenes?: unknown }
+      testWindow.mockGameSession = mockSession
+      testWindow.mockScenes = [{
+        id: 'scene-1',
+        session_id: 'session-1',
+        narrative: 'Your adventure continues...',
+        choices: ['Option 1'],
+        player_choice: null,
+        created_at: '2024-01-01T00:00:00.000Z',
+      }]
+    })
+
+    await page.setViewportSize({ width: 320, height: 568 })
+    await page.goto('/game')
+    const confirm = page.getByRole('button', { name: 'Confirm Changes' })
+    await expect(confirm).toBeVisible()
+    const style = await confirm.evaluate((element) => {
+      const computed = getComputedStyle(element)
+      return {
+        paddingLeft: computed.paddingLeft,
+        paddingRight: computed.paddingRight,
+        fontSize: computed.fontSize,
+        letterSpacing: computed.letterSpacing,
+      }
+    })
+    // LevelUpModal passes px-8. The shared button must not replace that below 360px.
+    expect(style.paddingLeft).toBe('32px')
+    expect(style.paddingRight).toBe('32px')
+    expect(style.fontSize).toBe('16px')
+    expect(style.letterSpacing).not.toBe('0px')
+  })
+
   test('should handle browser forward button correctly', async ({ page }) => {
     await page.goto('/auth')
     await expect(page).toHaveURL(/\/auth/)

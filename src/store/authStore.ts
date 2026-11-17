@@ -3,9 +3,12 @@ import { languageMetadataUpdate, signUpMetadata } from '../lib/authLanguage'
 import { passwordRecoveryRedirectTo } from '../lib/passwordRecovery'
 import { supabase } from '../lib/supabase'
 import { loadAndSyncUserProfile, type UserProfileRepository } from '../lib/userProfile'
-import { getMockAuth, isMockInitialLoading, isTestMode } from '../lib/testMode'
+import { getMockAuth, isMockInitialLoading, isMockPasswordRecovery, isTestMode } from '../lib/testMode'
+import { createRecoveryHold, signOutInBackground, signOutLocalSession } from '../lib/updatePassword'
 import { useLanguageStore } from './languageStore'
 import type { AuthState, User } from '../types'
+
+const recoveryHold = createRecoveryHold()
 
 const userProfileRepository: UserProfileRepository = {
   findById: async (id) => {
@@ -64,6 +67,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   profile: null,
   initializing: !isTestMode(),
   loading: false,
+  passwordRecovery: false,
 
   signIn: async (email: string, password: string) => {
     return withErrorHandling(async () => {
@@ -109,6 +113,32 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (error) throw error
   },
 
+  updatePassword: async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password })
+    if (error) throw error
+  },
+
+  clearPasswordRecovery: () => {
+    recoveryHold.release()
+    set({ passwordRecovery: false })
+  },
+
+  endRecoverySession: () => {
+    recoveryHold.release()
+    set({ user: null, profile: null, passwordRecovery: false, loading: false })
+    if (isTestMode()) {
+      localStorage.removeItem('sb-mock-auth-token')
+      return
+    }
+    signOutInBackground(
+      async () => {
+        const { error } = await signOutLocalSession((options) => supabase.auth.signOut(options))
+        if (error) throw error
+      },
+      (error) => console.error('Failed to end the recovery session:', error),
+    )
+  },
+
   signOut: async () => {
     if (isTestMode()) {
       localStorage.removeItem('sb-mock-auth-token')
@@ -135,29 +165,38 @@ useLanguageStore.subscribe((state, previous) => {
 
 if (isTestMode()) {
   if (isMockInitialLoading()) {
-    useAuthStore.setState({ user: null, profile: null, initializing: true })
+    useAuthStore.setState({
+      user: null,
+      profile: null,
+      initializing: true,
+      passwordRecovery: isMockPasswordRecovery(),
+    })
   } else {
     const mockAuth = getMockAuth()
     useAuthStore.setState({
       user: mockAuth?.user ?? null,
       profile: mockAuth?.profile ?? null,
       initializing: false,
+      passwordRecovery: isMockPasswordRecovery(),
     })
   }
 } else {
   let authSequence = 0
-  supabase.auth.onAuthStateChange((_event, session) => {
+  supabase.auth.onAuthStateChange((event, session) => {
     const sequence = ++authSequence
+    const passwordRecovery = recoveryHold.apply(event, Boolean(session?.user))
     if (!session?.user) {
       useAuthStore.setState({
         user: null,
         profile: null,
         initializing: false,
+        passwordRecovery,
       })
       return
     }
 
     // Supabase advises deferring other client calls until its auth callback releases its lock.
+    // Read the hold when the timer runs: Enter the game may have released it.
     setTimeout(async () => {
       const profile = await loadProfile(session.user)
       if (sequence !== authSequence) return
@@ -165,6 +204,7 @@ if (isTestMode()) {
         user: appUser(session.user),
         profile,
         initializing: false,
+        passwordRecovery: recoveryHold.current(),
       })
     }, 0)
   })
