@@ -131,6 +131,18 @@ test('an expired recovery link signs out only this browser', async () => {
   assert.deepEqual(result, { error: null })
 })
 
+test('a forbidden response stays on the form unless the session itself is gone', () => {
+  const stayed = (error: unknown) => {
+    assert.deepEqual(
+      updatePasswordReducer(saving, { type: 'failed', error }),
+      form('error.authError.message'),
+    )
+  }
+  stayed(new AuthApiError('banned', 403, 'user_banned'))
+  stayed(new AuthApiError('other', 403, 'unexpected_failure'))
+  stayed({ status: 403 })
+})
+
 test('a missing or rejected recovery session on save opens the invalid link', () => {
   const expired = (error: unknown) => {
     assert.deepEqual(updatePasswordReducer(saving, { type: 'failed', error }), { status: 'invalid' })
