@@ -18,6 +18,38 @@ function saveButton(page: Page) {
   return page.getByRole('button', { name: /^(save password|guardar contraseña)$/i })
 }
 
+/** The label sits on one line, inside the button, with 12px clear of each edge. */
+async function expectCtaFits(button: ReturnType<Page['getByRole']>) {
+  await expect(button).toBeVisible()
+  const fit = await button.evaluate((element) => {
+    const style = getComputedStyle(element)
+    const range = document.createRange()
+    range.selectNodeContents(element)
+    const text = range.getBoundingClientRect()
+    const host = element.getBoundingClientRect()
+    const lines = new Set(
+      [...range.getClientRects()]
+        .filter((rect) => rect.width > 0 && rect.height > 0)
+        .map((rect) => Math.round(rect.top)),
+    ).size
+    return {
+      scrollWidth: element.scrollWidth,
+      clientWidth: element.clientWidth,
+      labelWidth: text.width,
+      left: text.left - host.left,
+      right: host.right - text.right,
+      lines,
+      textOverflow: style.textOverflow,
+    }
+  })
+  expect(fit.lines, JSON.stringify(fit)).toBe(1)
+  expect(fit.scrollWidth, JSON.stringify(fit)).toBeLessThanOrEqual(fit.clientWidth)
+  expect(fit.labelWidth, JSON.stringify(fit)).toBeLessThanOrEqual(fit.clientWidth)
+  expect(fit.left, JSON.stringify(fit)).toBeGreaterThanOrEqual(12)
+  expect(fit.right, JSON.stringify(fit)).toBeGreaterThanOrEqual(12)
+  expect(fit.textOverflow).not.toBe('ellipsis')
+}
+
 async function installRecoverySession(page: Page, email = EMAIL) {
   await page.addInitScript((address) => {
     const session = {
@@ -383,20 +415,54 @@ test.describe('new password from the recovery link', () => {
     await expect(page.locator('#password-requirements')).toBeVisible()
   })
 
-  test('the Spanish save button stays on one line at 320', async ({ page }) => {
-    await installRecoverySession(page)
-    await page.setViewportSize({ width: 320, height: 568 })
-    await page.goto('/auth?mode=update-password')
-    await page.getByRole('button', { name: 'ES', exact: true }).click()
-    await page.evaluate(() => document.fonts.ready)
-
-    const button = page.getByRole('button', { name: /^guardar contraseña$/i })
-    const lines = await button.evaluate((element) => {
-      const range = document.createRange()
-      range.selectNodeContents(element)
-      const rects = [...range.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0)
-      return new Set(rects.map((rect) => Math.round(rect.top))).size
+  test('Spanish auth buttons keep 12px of clearance on one line at 320', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('questforge.language', 'es')
     })
-    expect(lines).toBe(1)
+    await page.setViewportSize({ width: 320, height: 568 })
+
+    await page.goto('/auth')
+    await page.evaluate(() => document.fonts.ready)
+    await expectCtaFits(page.getByRole('button', { name: 'Entrar', exact: true }))
+
+    await page.getByRole('button', { name: /regístrate/i }).click()
+    await expectCtaFits(page.getByRole('button', { name: 'Crear cuenta' }))
+
+    await page.goto('/auth?mode=reset')
+    await expectCtaFits(page.getByRole('button', { name: 'Enviar enlace' }))
+
+    await page.goto('/auth?mode=update-password')
+    await expectCtaFits(page.getByRole('button', { name: 'Pedir un enlace nuevo' }))
+
+    await installRecoverySession(page)
+    await routePasswordUpdate(page, () => ({
+      status: 200,
+      body: { id: 'recovery-user', email: EMAIL },
+    }))
+    await page.goto('/auth?mode=update-password')
+    await page.evaluate(() => document.fonts.ready)
+    await expectCtaFits(page.getByRole('button', { name: 'Guardar contraseña' }))
+
+    await page.getByLabel('Contraseña nueva').fill('abcd1234')
+    await page.getByRole('button', { name: 'Guardar contraseña' }).click()
+    await expectCtaFits(page.getByRole('button', { name: 'Entrar al juego' }))
+  })
+
+  test('auth button padding stays 24px from 375px up', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 })
+    await page.goto('/auth')
+    const padding = await page.locator('button[type="submit"]').evaluate((element) => {
+      const style = getComputedStyle(element)
+      return {
+        left: style.paddingLeft,
+        right: style.paddingRight,
+        tracking: style.letterSpacing,
+        fontSize: style.fontSize,
+      }
+    })
+    expect(padding.left).toBe('24px')
+    expect(padding.right).toBe('24px')
+    expect(padding.tracking).toBe('0.4px')
+    expect(padding.fontSize).toBe('16px')
   })
 })

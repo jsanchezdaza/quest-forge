@@ -31,9 +31,14 @@ export default function Button({
     lg: 'px-8 py-4 text-lg min-h-[52px]'
   }
 
+  // Below 360px the longest label is wider than the button at 16px. 12px of
+  // clearance needs the glyphs under the inner width, so padding, tracking, and
+  // type all step down together. From 375px up the size classes stay as they are.
+  const narrow = 'max-[359px]:px-3 max-[359px]:tracking-normal max-[359px]:text-sm'
+
   return (
     <button
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${narrow} ${className}`}
       disabled={isLoading || props.disabled}
       {...props}
     >
