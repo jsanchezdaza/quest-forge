@@ -52,7 +52,7 @@ Optional narrative goes from `src/lib/openrouter.ts` through `api/openrouter.ts`
 
 ## Definition of done
 
-Lint, typecheck, unit tests, and the relevant end-to-end specs pass locally (`pnpm check` and `pnpm test:e2e`, or the specs and projects you changed, including `auth-a11y.spec.ts` when the auth UI changes). Open a pull request against `main` and leave it unmerged. Coding agents never merge and never close issues. Use `Closes #N` when the pull request completes the story. Use `Refs #N` when manual steps or QA remain after merge; the issue stays open until they are done.
+Lint, typecheck, unit tests, and the relevant end-to-end specs pass locally (`pnpm check` and `pnpm test:e2e`, or the specs and projects you changed, including `auth-a11y.spec.ts` when the auth UI changes). Open a pull request against `main` and leave it unmerged. Coding agents never merge and never close issues. Always use `Refs #N` in pull requests. Never use `Closes` or `Fixes`. The product manager closes the issue after she checks the acceptance criteria, never automatically. Manual steps or QA can keep an issue open.
 
 ## Product
 
@@ -64,8 +64,8 @@ User stories come from the product manager. Design comes from the product design
 - The product designer (Sophie) gives design guidance before a story with UI is implemented, and gives a visual OK on screenshots before merge when a pull request changes anything visual. She reviews screenshots, not code.
 - The repo owner (Javi) gives the go-ahead to start each story.
 - The dev assistant (Calcifer) briefs coding agents, who implement with test-driven development and open the pull request unmerged.
-- The code reviewer (Jiji) reviews every pull request and every new head, reporting either "no blockers" or a list of blockers.
-- Merge (squash): the dev assistant merges once CI is green, the reviewer reports no blockers on the final head, and, for visual changes, the designer gave her visual OK.
-- Pull requests touching auth logic, data, Supabase, or security are merged only by the repo owner after his explicit yes.
-- Small visual tweak fast path: a small visual tweak is CSS only, with no new copy, no new components, and no logic. The dev assistant merges it once CI is green, without code review or a pre-merge design review. The designer checks it after merge, and any follow-up goes in a new small pull request.
-- After every merge, the product manager checks the acceptance criteria and either closes the issue or comments what is missing.
+- The code reviewer (Jiji) reviews every pull request and every new head, reporting either "no blockers" or a list of blockers. The code reviewer never approves or merges.
+- Merge (squash): only the dev assistant merges, once CI is green, the reviewer reports no blockers on the final head, and, for visual changes, the designer gave her visual OK. Coding agents never merge.
+- Pull requests touching auth logic, data, Supabase, or security are the exception: only the repo owner merges them, after his explicit yes.
+- Small visual tweak fast path: a small visual tweak is CSS only, with no new copy, no new components, and no logic. It never applies to pull requests touching auth logic, data, Supabase, or security. The dev assistant merges it once CI is green, without code review or a pre-merge design review. The designer checks it after merge, and any follow-up goes in a new small pull request.
+- After every merge, the product manager checks the acceptance criteria and either closes the issue or comments what is missing. The issue is never closed automatically. Manual steps or QA can keep it open.
