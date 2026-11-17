@@ -1,6 +1,6 @@
 import { test, expect, type Locator, type Page } from './setup'
 import tailwindConfig from '../../tailwind.config.js'
-import { minimumContrast } from './pixelContrast'
+import { legibleTextContrast, minimumContrast } from './pixelContrast'
 
 /**
  * Request a recovery link (#36).
@@ -27,6 +27,7 @@ const goldLight = hexToCssRgb(medievalGoldLight)
 const inkBlack = hexToCssRgb(tailwindConfig.theme.extend.colors.medieval.inkblack)
 const goldenRingShadow = `${inkBlack} 0px 0px 0px 2px, ${inkBlack} 0px 0px 0px 5px`
 const transparent = 'rgba(0, 0, 0, 0)'
+const legibleTextShadow = 'rgba(0, 0, 0, 0.9) 0px 0px 4px, rgba(0, 0, 0, 0.8) 0px 1px 2px'
 
 const emailField = (page: Page) => page.getByLabel(/email|correo/i)
 const passwordField = (page: Page) =>
@@ -192,6 +193,35 @@ async function textContrast(locator: Locator): Promise<number> {
   return minimumContrast(await locator.screenshot(), box!.width, box!.height, textRects, await foreground(locator))
 }
 
+async function linkContrast(locator: Locator): Promise<number> {
+  const box = await locator.boundingBox()
+  expect(box).not.toBeNull()
+  const color = await foreground(locator)
+  // The glyph is transparent so the screenshot is the shadow on the scene,
+  // then the shadow is removed so the same pixels show the scene alone.
+  const shadow = await painted(locator, { color: 'transparent' })
+  const bare = await painted(locator, { color: 'transparent', textShadow: 'none' })
+  return legibleTextContrast(shadow, bare, box!.width, box!.height, color)
+}
+
+async function painted(
+  locator: Locator,
+  style: { color?: string, textShadow?: string },
+): Promise<Buffer> {
+  await locator.evaluate((element, next) => {
+    element.style.color = next.color ?? ''
+    element.style.textShadow = next.textShadow ?? ''
+  }, style)
+  try {
+    return await locator.screenshot()
+  } finally {
+    await locator.evaluate((element) => {
+      element.style.color = ''
+      element.style.textShadow = ''
+    })
+  }
+}
+
 async function expectTextContrast(locator: Locator, label: string) {
   const ratio = await textContrast(locator)
   expect(ratio, `${label} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
@@ -202,7 +232,11 @@ async function expectTextContrast(locator: Locator, label: string) {
  * Embers are random, so they are hidden and the desktop video is sampled
  * across its loop. The static image is one shot.
  */
-async function sceneContrasts(page: Page, locator: Locator): Promise<number[]> {
+async function sceneContrasts(
+  page: Page,
+  locator: Locator,
+  measure: (locator: Locator) => Promise<number> = textContrast,
+): Promise<number[]> {
   await page.addStyleTag({
     content: '.ember { animation: none !important; opacity: 0 !important; }',
   })
@@ -229,7 +263,7 @@ async function sceneContrasts(page: Page, locator: Locator): Promise<number[]> {
     await page.evaluate(() => new Promise((resolve) => {
       requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)))
     }))
-    return [await textContrast(locator)]
+    return [await measure(locator)]
   }
 
   const ratios: number[] = []
@@ -254,7 +288,7 @@ async function sceneContrasts(page: Page, locator: Locator): Promise<number[]> {
     await page.evaluate(() => new Promise((resolve) => {
       requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)))
     }))
-    ratios.push(await textContrast(locator))
+    ratios.push(await measure(locator))
   }
   return ratios
 }
@@ -274,16 +308,25 @@ async function expectNoBackdrop(link: Locator, accountLink: Locator) {
       afterBackground: getComputedStyle(element, '::after').backgroundColor,
     }
   })
-  const accountBackground = await accountLink.evaluate((element) => getComputedStyle(element).backgroundColor)
+  const accountPaint = await accountLink.evaluate((element) => {
+    const style = getComputedStyle(element)
+    return {
+      backgroundColor: style.backgroundColor,
+      textShadow: style.textShadow,
+      color: style.color,
+    }
+  })
 
   expect(paint.backgroundColor).toBe(transparent)
-  expect(paint.backgroundColor).toBe(accountBackground)
+  expect(paint.backgroundColor).toBe(accountPaint.backgroundColor)
   expect(paint.backgroundImage).toBe('none')
   expect(paint.beforeBackground).toBe(transparent)
   expect(paint.afterBackground).toBe(transparent)
   expect(paint.boxShadow).toBe('none')
-  expect(paint.textShadow).toBe('none')
+  expect(paint.textShadow).toBe(legibleTextShadow)
+  expect(accountPaint.textShadow).toBe(legibleTextShadow)
   expect(paint.color).toBe(goldLight)
+  expect(accountPaint.color).toBe(goldLight)
   expect(paint.textDecorationLine).toBe('underline')
   expect(paint.textUnderlineOffset).toBe('2px')
 }
@@ -743,9 +786,11 @@ test.describe('recovery confirmation', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'Check your email' })).toBeVisible()
   })
 
-  test('the forgot-password link has no backdrop and keeps contrast, the focus ring, and a 44px target', async ({ page }) => {
+  test('the login links have no backdrop, share a legible shadow, and clear 4.5:1', async ({ page }) => {
     for (const viewport of [
+      { width: 320, height: 568 },
       { width: 375, height: 667 },
+      { width: 740, height: 360 },
       { width: 1280, height: 720 },
     ]) {
       for (const locale of ['EN', 'ES'] as const) {
@@ -772,14 +817,25 @@ test.describe('recovery confirmation', () => {
           expect(hit.height).toBeGreaterThanOrEqual(44)
         }
 
-        const ratios = await sceneContrasts(page, link)
-        expect(ratios.length).toBeGreaterThan(0)
-        const lowest = Math.min(...ratios)
-        const listed = ratios.map((ratio) => ratio.toFixed(2)).join(', ')
-        console.log(`forgot-password contrast ${viewport.width}x${viewport.height} ${locale}: ${listed} min ${lowest.toFixed(2)}`)
-        expect(lowest, `${viewport.width} ${locale} ${lowest.toFixed(2)}:1 [${listed}]`).toBeGreaterThanOrEqual(4.5)
+        for (const [name, control] of [
+          ['forgot-password', link],
+          ['sign-up', accountLink],
+        ] as const) {
+          const ratios = await sceneContrasts(page, control, linkContrast)
+          expect(ratios.length).toBeGreaterThan(0)
+          const lowest = Math.min(...ratios)
+          const listed = ratios.map((ratio) => ratio.toFixed(2)).join(', ')
+          console.log(`${name} contrast ${viewport.width}x${viewport.height} ${locale}: ${listed} min ${lowest.toFixed(2)}`)
+          expect(lowest, `${name} ${viewport.width} ${locale} ${lowest.toFixed(2)}:1 [${listed}]`).toBeGreaterThanOrEqual(4.5)
+        }
       }
     }
+
+    await page.setViewportSize({ width: 375, height: 667 })
+    await page.goto('/auth?mode=signup')
+    const signInLink = page.getByRole('button', { name: /already have an account|ya tienes cuenta/i })
+    await expect(signInLink).toBeVisible()
+    expect(await signInLink.evaluate((element) => getComputedStyle(element).textShadow)).toBe('none')
 
     await page.setViewportSize({ width: 1280, height: 720 })
     await page.goto('/auth')

@@ -57,10 +57,70 @@ export function minimumContrast(
   return lowest
 }
 
+/**
+ * Lowest contrast of `foreground` against the shadow the text is drawn on.
+ *
+ * `minimumContrast` skips a margin around the whole line, which is where a
+ * text-shadow is drawn, so that check cannot see the shadow. Here `shadowPng`
+ * is the element with the text color removed and the shadow left in place,
+ * and `barePng` is the same element with the shadow removed too. A pixel the
+ * shadow darkens by at least half is the reading background. The faint edge
+ * of the blur, and the empty padding of a 44px target, are not.
+ */
+export function legibleTextContrast(
+  shadowPng: Buffer,
+  barePng: Buffer,
+  elementWidth: number,
+  elementHeight: number,
+  foreground: Rgb,
+): number {
+  const shadow = decodePng(shadowPng)
+  const bare = decodePng(barePng)
+  if (bare.width !== shadow.width || bare.height !== shadow.height) {
+    throw new Error('shadow screenshots differ in size')
+  }
+  const scale = shadow.width / elementWidth
+  let lowest = Number.POSITIVE_INFINITY
+  let samples = 0
+
+  for (let y = 0; y < shadow.height; y += 1) {
+    for (let x = 0; x < shadow.width; x += 1) {
+      const cssX = x / scale
+      const cssY = y / scale
+      if (cssX < 1 || cssY < 1 || cssX > elementWidth - 1 || cssY > elementHeight - 1) continue
+      const offset = (y * shadow.width + x) * 4
+      const painted: Rgb = [shadow.pixels[offset], shadow.pixels[offset + 1], shadow.pixels[offset + 2]]
+      const underneath: Rgb = [bare.pixels[offset], bare.pixels[offset + 1], bare.pixels[offset + 2]]
+      if (shadowCoverage(underneath, painted) < 0.5) continue
+      const ratio = contrastRatio(foreground, painted)
+      samples += 1
+      if (ratio < lowest) lowest = ratio
+    }
+  }
+
+  if (samples < 20) {
+    throw new Error(`not enough shadow pixels around the text (${samples})`)
+  }
+  return lowest
+}
+
 interface DecodedPng {
   width: number
   height: number
   pixels: Uint8ClampedArray
+}
+
+/** How much of a black shadow is covering `underneath` in `painted`. */
+function shadowCoverage(underneath: Rgb, painted: Rgb): number {
+  let covered = 0
+  let channels = 0
+  for (let channel = 0; channel < 3; channel += 1) {
+    if (underneath[channel] < 8) continue
+    const alpha = 1 - painted[channel] / underneath[channel]
+    covered += Math.min(1, Math.max(0, alpha))
+    channels += 1
+  }
+  return channels === 0 ? 0 : covered / channels
 }
 
 function contrastRatio(foreground: Rgb, background: Rgb): number {
