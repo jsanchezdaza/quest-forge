@@ -58,14 +58,35 @@ Lint, typecheck, unit tests, and the relevant end-to-end specs pass locally (`pn
 
 User stories come from the product manager. Design comes from the product designer. When an acceptance criterion is ambiguous, state the assumption in the pull request description and implement that. Stay inside the issue.
 
+## Pre-PR checklist
+
+The implementing agent passes this before marking the pull request ready, and copies it into the pull request body as a checked list:
+
+- Issue acceptance criteria reviewed one by one.
+- Any new end-to-end spec runs in CI, and the `e2e` job is green on the head.
+- The diff touches only what the story asks. Flag any change to shared components or styles in the pull request body.
+- For a UI change: text contrast is at least 4.5:1, and touch targets are at least 44px.
+- The pull request body uses `Refs #N`.
+
+## Screenshots
+
+Any UI change includes this set, saved under `/workspace/qf/<pr-number>/` and attached or linked in the pull request:
+
+- ES: 320x568, 375x667, 740x360 (landscape), and 1280x720.
+- EN: 375x667.
+- Error, submitting, and focus states, where they exist.
+
 ## Team workflow
 
+This section is the source of truth for how the team ships a story.
+
 - The product manager (Kiki) writes user stories as GitHub issues with acceptance criteria and sets their order.
-- The product designer (Sophie) gives design guidance before a story with UI is implemented, and gives a visual OK on screenshots before merge when a pull request changes anything visual. She reviews screenshots, not code.
-- The repo owner (Javi) gives the go-ahead to start each story.
-- The dev assistant (Calcifer) briefs coding agents, who implement with test-driven development and open the pull request unmerged.
-- The code reviewer (Jiji) reviews every pull request and every new head, reporting either "no blockers" or a list of blockers. The code reviewer never approves or merges.
+- The product designer (Sophie) gives design guidance before a story with UI is implemented. She reviews screenshots, not code, and gives a visual OK before merge when a pull request changes anything visual. The fast path below is the exception.
+- The repo owner (Javi) approves the story order in issue #40 once. No per-story go-ahead is needed.
+- The dev assistant (Calcifer) briefs coding agents, who implement with test-driven development and open the pull request unmerged. The dev assistant batches all feedback into a single round back to the implementing agent. Bot-to-bot messages that require the other to act are sent with priority.
+- Every pull request goes to both the code reviewer and the designer, including fast-path ones. Code review and visual review happen on the same head at the same time.
+- The code reviewer (Jiji) reviews every pull request and every new head, reporting either "no blockers" or a list of blockers. Reviews without blockers are published on GitHub directly. The code reviewer asks the repo owner only when there are blockers or the pull request touches auth. The code reviewer never approves or merges.
 - Merge (squash): only the dev assistant merges, once CI is green, the reviewer reports no blockers on the final head, and, for visual changes, the designer gave her visual OK. Coding agents never merge.
 - Pull requests touching auth logic, data, Supabase, or security are the exception: only the repo owner merges them, after his explicit yes.
-- Small visual tweak fast path: a small visual tweak is CSS only, with no new copy, no new components, and no logic. It never applies to pull requests touching auth logic, data, Supabase, or security. The dev assistant merges it once CI is green, without code review or a pre-merge design review. The designer checks it after merge, and any follow-up goes in a new small pull request.
+- Small visual tweak fast path: a small visual tweak is CSS only, with no new copy, no new components, and no logic. It never applies to pull requests touching auth logic, data, Supabase, or security. The dev assistant merges it once CI is green, without code review or a pre-merge design review. The pull request still goes to both. Post-merge screenshots are sent to the designer automatically; she checks them after merge, and any follow-up goes in a new small pull request.
 - After every merge, the product manager checks the acceptance criteria and either closes the issue or comments what is missing. The issue is never closed automatically. Manual steps or QA can keep it open.
