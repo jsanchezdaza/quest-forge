@@ -42,7 +42,7 @@ Use pnpm only (Node >= 24, pnpm >= 11, lockfile `pnpm-lock.yaml`). Install with 
 3. `pnpm lint` (ESLint on `src/**/*.{ts,tsx}`, `--max-warnings 0`)
 4. `pnpm build` (`tsc && vite build`: app typecheck, then the production bundle)
 
-`pnpm test:e2e` is separate. CI lints, builds, and runs the auth end-to-end specs above. It does not run `pnpm test:unit`.
+`pnpm test:e2e` is separate. CI (`.github/workflows/ci.yml`) runs `pnpm run test:unit`, lint, build, and every Playwright spec under `tests/e2e/` on `chromium` and `Mobile Chrome`.
 
 Stack in this repo: React 19, TypeScript, Vite, React Router v7, Zustand, Tailwind CSS, and Supabase Auth. Stores in `src/store/`: `authStore.ts` (session and profile), `gameStore.ts` (session, scenes, mutations), `languageStore.ts` (`en` or `es`). Components subscribe to them directly. Supabase client and schema types are in `src/lib/supabase.ts`. `src/App.tsx` sends signed-out users to `/auth` and signed-in users to `/game`.
 
@@ -52,8 +52,20 @@ Optional narrative goes from `src/lib/openrouter.ts` through `api/openrouter.ts`
 
 ## Definition of done
 
-Lint, typecheck, unit tests, and the relevant end-to-end specs pass locally (`pnpm check` and `pnpm test:e2e`, or the specs and projects you changed, including `auth-a11y.spec.ts` when the auth UI changes). Open a pull request against `main` with `Closes #N`. Leave it unmerged. The repo owner reviews and merges.
+Lint, typecheck, unit tests, and the relevant end-to-end specs pass locally (`pnpm check` and `pnpm test:e2e`, or the specs and projects you changed, including `auth-a11y.spec.ts` when the auth UI changes). Open a pull request against `main` and leave it unmerged. Coding agents never merge and never close issues. Use `Closes #N` when the pull request completes the story. Use `Refs #N` when manual steps or QA remain after merge; the issue stays open until they are done.
 
 ## Product
 
 User stories come from the product manager. Design comes from the product designer. When an acceptance criterion is ambiguous, state the assumption in the pull request description and implement that. Stay inside the issue.
+
+## Team workflow
+
+- The product manager (Kiki) writes user stories as GitHub issues with acceptance criteria and sets their order.
+- The product designer (Sophie) gives design guidance before a story with UI is implemented, and gives a visual OK on screenshots before merge when a pull request changes anything visual. She reviews screenshots, not code.
+- The repo owner (Javi) gives the go-ahead to start each story.
+- The dev assistant (Calcifer) briefs coding agents, who implement with test-driven development and open the pull request unmerged.
+- The code reviewer (Jiji) reviews every pull request and every new head, reporting either "no blockers" or a list of blockers.
+- Merge (squash): the dev assistant merges once CI is green, the reviewer reports no blockers on the final head, and, for visual changes, the designer gave her visual OK.
+- Pull requests touching auth logic, data, Supabase, or security are merged only by the repo owner after his explicit yes.
+- Small visual tweak fast path: a small visual tweak is CSS only, with no new copy, no new components, and no logic. The dev assistant merges it once CI is green, without code review or a pre-merge design review. The designer checks it after merge, and any follow-up goes in a new small pull request.
+- After every merge, the product manager checks the acceptance criteria and either closes the issue or comments what is missing.
