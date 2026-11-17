@@ -2,6 +2,7 @@ import { isAuthRetryableFetchError, isAuthSessionMissingError } from '@supabase/
 import type { TranslationKey } from '../i18n'
 import { authFieldError } from './authFieldValidation.ts'
 import { parseAuthMode, type AuthMode } from './authMode.ts'
+import type { RecoveryArrival } from './recoveryLink.ts'
 
 /**
  * How long the recovery card waits before it says it is checking the link.
@@ -16,12 +17,17 @@ export const UPDATE_PASSWORD_CHECKING_MS = 300
 export type UpdatePasswordState =
   | { status: 'checking' }
   | { status: 'invalid' }
+  | { status: 'expired' }
+  | { status: 'unreachable'; retrying: boolean }
   | { status: 'form'; email: string; fieldError: TranslationKey | null }
   | { status: 'saving'; email: string }
   | { status: 'done' }
 
 export type UpdatePasswordAction =
-  | { type: 'resolved'; signedIn: boolean; email: string }
+  | { type: 'resolved'; signedIn: boolean; email: string; linkPending?: boolean }
+  | { type: 'checked'; outcome: 'expired' | 'unreachable' | 'invalid' | 'session'; email?: string }
+  | { type: 'retry' }
+  | { type: 'timed-out' }
   | { type: 'submit'; password: string }
   | { type: 'saved' }
   | { type: 'failed'; error: unknown }
@@ -30,10 +36,14 @@ interface SessionInput {
   initializing: boolean
   signedIn: boolean
   email: string
+  /** Set when the recovery URL already names the outcome, or still needs a check. */
+  arrival?: RecoveryArrival
 }
 
 export function beginUpdatePassword(input: SessionInput): UpdatePasswordState {
-  if (input.initializing) return { status: 'checking' }
+  if (input.arrival === 'expired') return { status: 'expired' }
+  if (input.arrival === 'invalid') return { status: 'invalid' }
+  if (input.arrival === 'check' || input.initializing) return { status: 'checking' }
   return resolveSession(input.signedIn, input.email)
 }
 
@@ -43,7 +53,24 @@ export function updatePasswordReducer(
 ): UpdatePasswordState {
   if (action.type === 'resolved') {
     if (state.status !== 'checking') return state
+    if (!action.signedIn && action.linkPending) return state
     return resolveSession(action.signedIn, action.email)
+  }
+  if (action.type === 'checked') {
+    if (!checkInFlight(state)) return state
+    if (action.outcome === 'session') return { status: 'form', email: action.email ?? '', fieldError: null }
+    if (action.outcome === 'expired') return { status: 'expired' }
+    if (action.outcome === 'unreachable') return { status: 'unreachable', retrying: false }
+    return { status: 'invalid' }
+  }
+  if (action.type === 'retry') {
+    if (state.status !== 'unreachable' || state.retrying) return state
+    return { status: 'unreachable', retrying: true }
+  }
+  if (action.type === 'timed-out') {
+    if (state.status === 'checking') return { status: 'unreachable', retrying: false }
+    if (state.status === 'unreachable' && state.retrying) return { ...state, retrying: false }
+    return state
   }
   if (action.type === 'submit') {
     if (state.status !== 'form') return state
@@ -198,8 +225,12 @@ export function signOutInBackground(
 
 /** Keep the draft while the player is still on the form. Drop it after save or an invalid link. */
 export function retainedPassword(status: UpdatePasswordState['status'], draft: string): string {
-  if (status === 'done' || status === 'invalid') return ''
+  if (status === 'done' || status === 'invalid' || status === 'expired' || status === 'unreachable') return ''
   return draft
+}
+
+function checkInFlight(state: UpdatePasswordState): boolean {
+  return state.status === 'checking' || (state.status === 'unreachable' && state.retrying)
 }
 
 function resolveSession(signedIn: boolean, email: string): UpdatePasswordState {
