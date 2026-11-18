@@ -171,7 +171,7 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
 
   return (
     <div className="w-full px-4">
-      <div className="relative mx-auto w-full max-w-auth-card border-2 border-medieval-gold/40 rounded-xl bg-white/20 backdrop-blur-sm shadow-2xl shadow-black/50 p-card-pad-mobile sm:p-card-pad [@media(max-height:450px)]:py-card-pad-mobile [@media(max-height:450px)]:sm:py-card-pad-mobile">
+      <div data-testid="auth-card" className="relative mx-auto w-full max-w-auth-card border-2 border-medieval-gold/40 rounded-xl bg-white/20 backdrop-blur-sm shadow-2xl shadow-black/50 p-card-pad-mobile sm:p-card-pad [@media(max-height:450px)]:py-card-pad-mobile [@media(max-height:450px)]:sm:py-card-pad-mobile">
         {/* The checklist needs the room the title gives up on a short sign-up screen. */}
         <div className={[
           'text-center',

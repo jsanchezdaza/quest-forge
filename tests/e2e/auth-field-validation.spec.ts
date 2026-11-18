@@ -310,7 +310,6 @@ test.describe('auth field validation', () => {
     const expectContrasts = async (label: string, ids: string[]) => {
       for (const id of ids) {
         const ratio = await fieldErrorContrast(fieldError(page, id))
-        console.log(`field-error contrast ${label} ${id}: ${ratio.toFixed(2)}:1`)
         expect(ratio, `${label} ${id} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
       }
     }
@@ -375,10 +374,11 @@ test.describe('auth field validation', () => {
   })
 
   test('login field errors stay inside the field and the card and clear 4.5:1', async ({ page }) => {
-    const card = page.locator('form').locator('..')
+    const card = page.getByTestId('auth-card')
     const forgot = page.getByRole('button', { name: /forgot your password|olvidaste tu contraseña/i })
 
     for (const viewport of [
+      { width: 320, height: 568 },
       { width: 375, height: 667 },
       { width: 390, height: 844 },
     ]) {
@@ -441,7 +441,6 @@ test.describe('auth field validation', () => {
           }
 
           const ratio = await fieldErrorContrast(error)
-          console.log(`field-error contrast ${place}: ${ratio.toFixed(2)}:1`)
           expect(ratio, `${place} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
         }
       }

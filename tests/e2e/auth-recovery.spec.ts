@@ -825,7 +825,6 @@ test.describe('recovery confirmation', () => {
           expect(ratios.length).toBeGreaterThan(0)
           const lowest = Math.min(...ratios)
           const listed = ratios.map((ratio) => ratio.toFixed(2)).join(', ')
-          console.log(`${name} contrast ${viewport.width}x${viewport.height} ${locale}: ${listed} min ${lowest.toFixed(2)}`)
           expect(lowest, `${name} ${viewport.width} ${locale} ${lowest.toFixed(2)}:1 [${listed}]`).toBeGreaterThanOrEqual(4.5)
         }
       }
@@ -837,23 +836,28 @@ test.describe('recovery confirmation', () => {
     await expect(signInLink).toBeVisible()
     expect(await signInLink.evaluate((element) => getComputedStyle(element).textShadow)).toBe('none')
 
-    await page.setViewportSize({ width: 1280, height: 720 })
-    await page.goto('/auth')
-    await page.getByRole('button', { name: 'ES', exact: true }).click()
-    await page.evaluate(() => document.fonts.ready)
-    await resetTabStart(page)
-    for (const control of [
-      page.getByRole('button', { name: 'EN', exact: true }),
-      page.getByRole('button', { name: 'ES', exact: true }),
-      emailField(page),
-      passwordField(page),
-      showPasswordButton(page),
-      forgotPassword(page),
+    for (const viewport of [
+      { width: 375, height: 667 },
+      { width: 1280, height: 720 },
     ]) {
-      await page.keyboard.press('Tab')
-      await expect(control).toBeFocused()
+      await page.setViewportSize(viewport)
+      await page.goto('/auth')
+      await page.getByRole('button', { name: 'ES', exact: true }).click()
+      await page.evaluate(() => document.fonts.ready)
+      await resetTabStart(page)
+      for (const control of [
+        page.getByRole('button', { name: 'EN', exact: true }),
+        page.getByRole('button', { name: 'ES', exact: true }),
+        emailField(page),
+        passwordField(page),
+        showPasswordButton(page),
+        forgotPassword(page),
+      ]) {
+        await page.keyboard.press('Tab')
+        await expect(control, String(viewport.width)).toBeFocused()
+      }
+      await expectGoldenFocusRing(forgotPassword(page))
     }
-    await expectGoldenFocusRing(forgotPassword(page))
   })
 
   test('the confirmation clears 4.5:1 on the card', async ({ page }) => {
