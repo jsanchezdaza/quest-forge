@@ -548,12 +548,14 @@ test.describe('expired or unreachable recovery link', () => {
       }
     }
 
+    const cardReport = `${lines.join('\n')}\n`
     await testInfo.attach('recovery-card-contrast.txt', {
-      body: Buffer.from(`${lines.join('\n')}\n`),
+      body: Buffer.from(cardReport),
       contentType: 'text/plain',
     })
-    testInfo.annotations.push({ type: 'recovery-card-contrast', description: lines.join('\n') })
-    expect(short, lines.join('\n')).toEqual([])
+    testInfo.annotations.push({ type: 'recovery-card-contrast', description: cardReport })
+    console.log(cardReport)
+    expect(short, cardReport).toEqual([])
 
     const results = await new AxeBuilder({ page }).withTags(['cat.aria', 'wcag143']).analyze()
     const axe = results.violations.flatMap((violation) =>
@@ -590,10 +592,24 @@ test.describe('expired or unreachable recovery link', () => {
       if (measured.againstCard < 3 || measured.againstFill < 3) short.push(where)
     }
 
+    const borderReport = `${lines.join('\n')}\n`
+    await testInfo.attach('recovery-input-border.txt', {
+      body: Buffer.from(borderReport),
+      contentType: 'text/plain',
+    })
+    testInfo.annotations.push({ type: 'recovery-input-border', description: borderReport })
+    console.log(borderReport)
+    expect(short, borderReport).toEqual([])
+
+    // The heading takes focus when the form appears. Wait for that, then
+    // focus the field, or the resting border is what gets measured.
     await page.setViewportSize({ width: 375, height: 667 })
     await page.goto('/auth?mode=update-password')
+    await expect(page.getByRole('heading', { level: 2, name: /set a new password|crea una contraseña nueva/i })).toBeVisible()
+    await page.addStyleTag({ content: '#password { transition: none !important; }' })
     const password = page.locator('#password')
     await password.evaluate((element) => element.focus({ focusVisible: true }))
+    await expect.poll(() => password.evaluate((element) => element.matches(':focus-visible'))).toBe(true)
     const focused = await password.evaluate((element) => getComputedStyle(element).borderTopColor)
     expect(await rasterColor(page, focused), `focused border ${focused}`).toBe(await rasterColor(page, 'rgb(212 175 55)'))
 
@@ -609,12 +625,5 @@ test.describe('expired or unreachable recovery link', () => {
       return color
     })
     expect(desktop, 'desktop border stays border-medieval-gold/30').toBe(resting)
-
-    await testInfo.attach('recovery-input-border.txt', {
-      body: Buffer.from(`${lines.join('\n')}\n`),
-      contentType: 'text/plain',
-    })
-    testInfo.annotations.push({ type: 'recovery-input-border', description: lines.join('\n') })
-    expect(short, lines.join('\n')).toEqual([])
   })
 })
