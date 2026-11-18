@@ -1,6 +1,6 @@
 import { test, expect, type Locator, type Page } from './setup'
 import tailwindConfig from '../../tailwind.config.js'
-import { cropPng, legibleTextContrast, minimumContrast } from './pixelContrast'
+import { legibleTextContrast, minimumContrast } from './pixelContrast'
 
 /**
  * Request a recovery link (#36).
@@ -331,20 +331,13 @@ async function eachSceneFrame<T>(page: Page, measure: () => Promise<T>): Promise
 interface CardText {
   name: string
   locator: Locator
-  /** Reading text. The decorative logo's ring is its own gold glow, so it is measured and not gated. */
   gate: boolean
 }
 
 function cardTexts(page: Page, view: 'login' | 'signup' | 'reset'): CardText[] {
   const card = page.getByTestId('auth-card')
-  const logo: CardText = {
-    name: 'logo',
-    locator: card.getByRole('heading', { level: 1 }),
-    gate: false,
-  }
   if (view === 'signup') {
     return [
-      logo,
       { name: 'body', locator: card.locator('h1 + p'), gate: true },
       { name: 'email-label', locator: page.locator('label[for="email"]'), gate: true },
       { name: 'username-label', locator: page.locator('label[for="username"]'), gate: true },
@@ -355,7 +348,6 @@ function cardTexts(page: Page, view: 'login' | 'signup' | 'reset'): CardText[] {
   }
   if (view === 'reset') {
     return [
-      logo,
       { name: 'title', locator: card.getByRole('heading', { level: 2 }), gate: true },
       { name: 'helper', locator: page.locator('#reset-help'), gate: true },
       { name: 'email-label', locator: page.locator('label[for="email"]'), gate: true },
@@ -363,7 +355,6 @@ function cardTexts(page: Page, view: 'login' | 'signup' | 'reset'): CardText[] {
     ]
   }
   return [
-    logo,
     { name: 'body', locator: card.locator('h1 + p'), gate: true },
     { name: 'email-label', locator: page.locator('label[for="email"]'), gate: true },
     { name: 'password-label', locator: page.locator('label[for="password"]'), gate: true },
@@ -372,86 +363,14 @@ function cardTexts(page: Page, view: 'login' | 'signup' | 'reset'): CardText[] {
   ]
 }
 
-async function applyPaint(locators: Locator[], style: Paint) {
-  for (const locator of locators) {
-    await locator.evaluate((element, next: Paint) => {
-      element.style.color = next.color ?? ''
-      element.style.webkitTextFillColor = next.webkitTextFillColor ?? ''
-      element.style.textShadow = next.textShadow ?? ''
-      element.style.backgroundImage = next.backgroundImage ?? ''
-    }, style)
-  }
-}
-
-async function clearPaint(locators: Locator[]) {
-  for (const locator of locators) {
-    await locator.evaluate((element) => {
-      element.style.color = ''
-      element.style.webkitTextFillColor = ''
-      element.style.textShadow = ''
-      element.style.backgroundImage = ''
-    })
-  }
-}
-
-/** Ring contrast of every readable text, from three shots of the card. */
-async function cardTextContrasts(
-  card: Locator,
-  samples: CardText[],
-): Promise<{ name: string, ratio: number, gate: boolean }[]> {
+async function visibleCardTexts(samples: CardText[]): Promise<CardText[]> {
   const visible: CardText[] = []
-  const boxes: { x: number, y: number, width: number, height: number }[] = []
   for (const sample of samples) {
     const box = await sample.locator.boundingBox()
     if (!box || box.width < 8 || box.height < 8) continue
     visible.push(sample)
-    boxes.push(box)
   }
-  if (visible.length === 0) return []
-
-  const colors = await Promise.all(visible.map((sample) => foreground(sample.locator)))
-  const locators = visible.map((sample) => sample.locator)
-  const rendered = await card.screenshot()
-  await applyPaint(locators, { textShadow: 'none' })
-  let ink: Buffer
-  try {
-    ink = await card.screenshot()
-  } finally {
-    await clearPaint(locators)
-  }
-  await applyPaint(locators, {
-    color: 'transparent',
-    webkitTextFillColor: 'transparent',
-    textShadow: 'none',
-    backgroundImage: 'none',
-  })
-  let bare: Buffer
-  try {
-    bare = await card.screenshot()
-  } finally {
-    await clearPaint(locators)
-  }
-
-  const cardBox = await card.boundingBox()
-  expect(cardBox).not.toBeNull()
-  const deviceScale = pngWidth(rendered) / cardBox!.width
-
-  return visible.map((sample, index) => {
-    const box = boxes[index]
-    const x = (box.x - cardBox!.x) * deviceScale
-    const y = (box.y - cardBox!.y) * deviceScale
-    const width = box.width * deviceScale
-    const height = box.height * deviceScale
-    const crop = (png: Buffer) => cropPng(png, x, y, width, height)
-    const cropped = crop(rendered)
-    const cssWidth = pngWidth(cropped) / deviceScale
-    const cssHeight = pngHeight(cropped) / deviceScale
-    return {
-      name: sample.name,
-      gate: sample.gate,
-      ratio: legibleTextContrast(cropped, crop(ink), crop(bare), cssWidth, cssHeight, colors[index]),
-    }
-  })
+  return visible
 }
 
 async function rasterColor(page: Page, color: string): Promise<string> {
@@ -466,14 +385,6 @@ async function rasterColor(page: Page, color: string): Promise<string> {
     context.fillRect(0, 0, 1, 1)
     return [...context.getImageData(0, 0, 1, 1).data].join(',')
   }, color)
-}
-
-function pngWidth(png: Buffer): number {
-  return png.readUInt32BE(16)
-}
-
-function pngHeight(png: Buffer): number {
-  return png.readUInt32BE(20)
 }
 
 async function expectNoBackdrop(link: Locator, accountLink: Locator) {
@@ -1096,8 +1007,18 @@ test.describe('recovery confirmation', () => {
             `${view} ${viewport.width} ${locale} ${paint.backgroundColor}`,
           ).toBe(await rasterColor(page, viewport.width < 768 ? mobileCard : desktopCard))
 
-          const samples = cardTexts(page, view)
-          const frames = await eachSceneFrame(page, () => cardTextContrasts(card, samples))
+          const samples = await visibleCardTexts(cardTexts(page, view))
+          const frames = await eachSceneFrame(page, async () => {
+            const measured: { name: string, ratio: number, gate: boolean }[] = []
+            for (const sample of samples) {
+              measured.push({
+                name: sample.name,
+                gate: sample.gate,
+                ratio: await linkContrast(sample.locator),
+              })
+            }
+            return measured
+          })
           const lowest = new Map<string, { ratio: number, gate: boolean }>()
           for (const frame of frames) {
             for (const sample of frame) {
@@ -1115,6 +1036,20 @@ test.describe('recovery confirmation', () => {
               expect(sample.ratio, where).toBeGreaterThanOrEqual(4.5)
             }
           }
+
+          // The logo's 1–3px ring is its own gold glow (`.dnd-title`, also
+          // used on the game page). The card token does not move it, and the
+          // same heading is on every view, so it is measured once.
+          if (view === 'login') {
+            const logo = card.getByRole('heading', { level: 1 })
+            try {
+              const ratio = await linkContrast(logo)
+              lines.push(`logo ${viewport.width}×${viewport.height} ${locale} ${ratio.toFixed(2)}:1`)
+            } catch (error) {
+              const message = error instanceof Error ? error.message : String(error)
+              lines.push(`logo ${viewport.width}×${viewport.height} ${locale} ${message}`)
+            }
+          }
         }
       }
     }
@@ -1128,12 +1063,18 @@ test.describe('recovery confirmation', () => {
   test('no shadow and a weak shadow miss 4.5:1 beside the letters', async ({ page }, testInfo) => {
     // On desktop the stone 1–3px from the letters already clears 4.5:1, so a
     // missing shadow cannot fail there. Mobile Chrome is the control.
+    // Below 768 the card itself is now dark enough to clear 4.5:1, so this
+    // control sits on the original translucent card. Otherwise removing the
+    // shadow would pass for the wrong reason.
     testInfo.skip(testInfo.project.name !== 'Mobile Chrome', 'the desktop stone already clears 4.5:1')
     await page.setViewportSize({ width: 375, height: 667 })
     await page.goto('/auth')
     await page.evaluate(() => document.fonts.ready)
     await page.addStyleTag({
       content: '.ember { animation: none !important; opacity: 0 !important; }',
+    })
+    await page.getByTestId('auth-card').evaluate((element) => {
+      element.style.backgroundColor = 'rgb(255 255 255 / 0.2)'
     })
     await page.mouse.move(0, 0)
 

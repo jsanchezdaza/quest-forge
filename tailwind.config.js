@@ -54,7 +54,10 @@ export default {
           darker: '#0a0a0a',
           card: '#1a1a1a',
           modal: '#262626',
-        }
+        },
+        // Below 768 the auth card uses this instead of white/20. 70% of
+        // near-black keeps the blur visible and clears 4.5:1 beside the type.
+        'auth-card-bg-mobile': 'rgb(10 10 10 / 0.7)',
       },
       fontFamily: {
         'pixel': ['Press Start 2P', 'monospace'],
