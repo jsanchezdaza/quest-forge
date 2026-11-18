@@ -801,6 +801,8 @@ test.describe('recovery confirmation', () => {
   })
 
   test('the login links have no backdrop, share one shadow, and are measured beside the letters', async ({ page }) => {
+    // Three screenshots per frame, including the 1280 video, do not fit the default 30s.
+    test.setTimeout(120_000)
     for (const viewport of [
       { width: 320, height: 568 },
       { width: 375, height: 667 },
