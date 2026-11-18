@@ -1,6 +1,6 @@
 import { test, expect, type Locator, type Page } from './setup'
 import tailwindConfig from '../../tailwind.config.js'
-import { legibleTextContrast, minimumContrast } from './pixelContrast'
+import { colorContrast, legibleTextContrast, minimumContrast, pngPixel } from './pixelContrast'
 
 /**
  * Request a recovery link (#36).
@@ -371,6 +371,65 @@ async function visibleCardTexts(samples: CardText[]): Promise<CardText[]> {
     visible.push(sample)
   }
   return visible
+}
+
+function pngSize(png: Buffer) {
+  return { width: png.readUInt32BE(16), height: png.readUInt32BE(20) }
+}
+
+function medianChannel(values: number[]) {
+  const sorted = [...values].sort((left, right) => left - right)
+  const middle = Math.floor(sorted.length / 2)
+  return sorted.length % 2 === 1 ? sorted[middle] : Math.round((sorted[middle - 1] + sorted[middle]) / 2)
+}
+
+function medianRgb(colors: [number, number, number][]): [number, number, number] {
+  return [
+    medianChannel(colors.map((color) => color[0])),
+    medianChannel(colors.map((color) => color[1])),
+    medianChannel(colors.map((color) => color[2])),
+  ]
+}
+
+/**
+ * Resting border against the card just outside it and the fill just inside.
+ * The sample is the middle of the top edge, away from the rounded corners.
+ */
+async function restingBorderContrast(page: Page, input: Locator) {
+  await input.scrollIntoViewIfNeeded()
+  const box = await input.boundingBox()
+  expect(box).not.toBeNull()
+  const borderTop = await input.evaluate((element) => Number.parseFloat(getComputedStyle(element).borderTopWidth))
+  const above = 6
+  const clip = {
+    x: Math.max(0, box!.x + box!.width / 2 - 4),
+    y: Math.max(0, box!.y - above),
+    width: 8,
+    height: above + borderTop + 8,
+  }
+  const png = await page.screenshot({ clip })
+  const size = pngSize(png)
+  const scale = size.width / clip.width
+  const yAt = (cssY: number) => Math.min(size.height - 1, Math.max(0, Math.round(cssY * scale)))
+  const sample = (cssY: number) => {
+    const y = yAt(cssY)
+    const colors: [number, number, number][] = []
+    for (let dx = -2; dx <= 2; dx += 1) {
+      const x = Math.min(size.width - 1, Math.max(0, Math.round(size.width / 2) + dx))
+      colors.push(pngPixel(png, x, y))
+    }
+    return medianRgb(colors)
+  }
+  const border = sample(above + borderTop / 2)
+  const card = sample(above - 2)
+  const fill = sample(above + borderTop + 3)
+  return {
+    againstCard: colorContrast(border, card),
+    againstFill: colorContrast(border, fill),
+    border,
+    card,
+    fill,
+  }
 }
 
 async function rasterColor(page: Page, color: string): Promise<string> {
@@ -1058,6 +1117,51 @@ test.describe('recovery confirmation', () => {
       body: Buffer.from(`${lines.join('\n')}\n`),
       contentType: 'text/plain',
     })
+  })
+
+  test('resting input borders clear 3:1 below 768', async ({ page }, testInfo) => {
+    // WCAG 1.4.11. The dark card and the input fill are nearly the same, so
+    // the 1px resting border is the field boundary. Focus and error borders
+    // are a different state.
+    const lines: string[] = []
+    const failures: string[] = []
+    for (const viewport of [
+      { width: 375, height: 667 },
+      { width: 320, height: 568 },
+    ]) {
+      for (const view of ['login', 'signup', 'reset'] as const) {
+        await page.setViewportSize(viewport)
+        await page.goto(view === 'login' ? '/auth' : `/auth?mode=${view}`)
+        await page.getByRole('button', { name: 'ES', exact: true }).click()
+        await page.evaluate(() => document.fonts.ready)
+        await page.addStyleTag({
+          content: '.ember { animation: none !important; opacity: 0 !important; }',
+        })
+        await page.mouse.move(0, 0)
+        const inputs = page.getByTestId('auth-card').locator('input')
+        const count = await inputs.count()
+        for (let index = 0; index < count; index += 1) {
+          const input = inputs.nth(index)
+          const id = await input.getAttribute('id')
+          const measured = await restingBorderContrast(page, input)
+          const where = [
+            `${view} ${id} ${viewport.width}×${viewport.height}`,
+            `card ${measured.againstCard.toFixed(2)}:1`,
+            `fill ${measured.againstFill.toFixed(2)}:1`,
+            `border ${measured.border.join(',')}`,
+            `beside ${measured.card.join(',')}`,
+            `fill ${measured.fill.join(',')}`,
+          ].join(' ')
+          lines.push(where)
+          if (measured.againstCard < 3 || measured.againstFill < 3) failures.push(where)
+        }
+      }
+    }
+    await testInfo.attach('input-border-contrast.txt', {
+      body: Buffer.from(`${lines.join('\n')}\n`),
+      contentType: 'text/plain',
+    })
+    expect(failures, lines.join('\n')).toEqual([])
   })
 
   test('no shadow and a weak shadow miss 4.5:1 beside the letters', async ({ page }, testInfo) => {

@@ -167,6 +167,20 @@ interface DecodedPng {
   pixels: Uint8ClampedArray
 }
 
+export function colorContrast(foreground: Rgb, background: Rgb): number {
+  return contrastRatio(foreground, background)
+}
+
+/** One device pixel of a PNG, for a border sitting on the card. */
+export function pngPixel(png: Buffer, x: number, y: number): Rgb {
+  const image = decodePng(png)
+  if (x < 0 || y < 0 || x >= image.width || y >= image.height) {
+    throw new Error(`pixel ${x},${y} is outside ${image.width}×${image.height}`)
+  }
+  const offset = (y * image.width + x) * 4
+  return [image.pixels[offset], image.pixels[offset + 1], image.pixels[offset + 2]]
+}
+
 function contrastRatio(foreground: Rgb, background: Rgb): number {
   const lighter = Math.max(luminance(foreground), luminance(background))
   const darker = Math.min(luminance(foreground), luminance(background))

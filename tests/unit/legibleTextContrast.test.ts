@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { deflateSync, crc32 } from 'node:zlib'
 import { test } from 'node:test'
-import { cropPng, legibleTextContrast } from '../e2e/pixelContrast.ts'
+import { colorContrast, cropPng, legibleTextContrast, pngPixel } from '../e2e/pixelContrast.ts'
 
 type Rgb = [number, number, number]
 
@@ -96,6 +96,15 @@ test('a ring with fewer than 100 pixels is not a measurement', () => {
     () => legibleTextContrast(rendered, ink, bare, width, height, GOLD),
     /not enough ring pixels/,
   )
+})
+
+test('colorContrast is 21:1 for black against white and 1:1 for one color', () => {
+  const blackOnWhite = colorContrast(BLACK, WHITE)
+  assert.ok(Math.abs(blackOnWhite - 21) < 0.05, `black on white measured ${blackOnWhite.toFixed(2)}:1`)
+  const same = colorContrast(STONE, STONE)
+  assert.ok(Math.abs(same - 1) < 0.001, `same color measured ${same.toFixed(2)}:1`)
+  const image = encodePng(2, 2, () => GOLD)
+  assert.deepEqual(pngPixel(image, 1, 0), GOLD)
 })
 
 test('cropPng keeps the ring inside the rectangle and drops the padding outside it', () => {
