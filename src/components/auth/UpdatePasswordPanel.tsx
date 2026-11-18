@@ -43,11 +43,9 @@ const titleClassName =
 const modeLinkClassName =
   'text-medieval-gold-light hover:underline focus-visible:underline font-pixel-body text-sm min-h-[44px] py-2'
 
-// Same shadow #57 can share once it lands. The shadow is not enough on the
-// static mobile scene, so the link also sits on the field-error wash.
+// Same shadow as #57's text-shadow-legible. That utility is not on main yet.
 const linkShadow = {
   textShadow: '0 0 4px rgb(0 0 0 / .9), 0 1px 2px rgb(0 0 0 / .8)',
-  backgroundColor: 'rgb(10 10 10 / 75%)',
 }
 
 const noticeTitleClassName =

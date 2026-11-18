@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { test, expect, type Locator, type Page } from './setup'
 import tailwindConfig from '../../tailwind.config.js'
-import { minimumContrast } from './pixelContrast'
+import { legibleTextContrast, minimumContrast } from './pixelContrast'
 
 /**
  * An expired, used, or unreachable recovery link (#38).
@@ -145,6 +145,30 @@ async function expectTextContrast(locator: Locator, label: string, inset = 0) {
   console.log(`contrast ${label} ${ratio.toFixed(2)}:1`)
   expect(ratio, `${label} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
   return ratio
+}
+
+/** Gold against the dark halo, not against the padding the halo does not cover. */
+async function expectLinkContrast(locator: Locator, label: string) {
+  const box = await locator.boundingBox()
+  expect(box, label).not.toBeNull()
+  const color = await foreground(locator)
+  const originalShadow = await locator.evaluate((element) => element.style.textShadow)
+  // The shadow is an inline style, so a screenshot stylesheet cannot replace it.
+  await locator.evaluate((element) => {
+    element.style.color = 'transparent'
+  })
+  const shadowPng = await locator.screenshot()
+  await locator.evaluate((element) => {
+    element.style.textShadow = 'none'
+  })
+  const barePng = await locator.screenshot()
+  await locator.evaluate((element, shadow) => {
+    element.style.color = ''
+    element.style.textShadow = shadow
+  }, originalShadow)
+  const ratio = legibleTextContrast(shadowPng, barePng, box!.width, box!.height, color)
+  console.log(`contrast ${label} ${ratio.toFixed(2)}:1`)
+  expect(ratio, `${label} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
 }
 
 async function hideEmbers(page: Page) {
@@ -380,7 +404,7 @@ test.describe('expired or unreachable recovery link', () => {
       const label = `${viewport.width}x${viewport.height}`
       await expectTextContrast(page.getByRole('heading', { level: 2, name: 'This link has expired' }), `${label} title`)
       await expectTextContrast(page.getByText(EXPIRED_BODY), `${label} body`)
-      await expectTextContrast(page.getByRole('button', { name: 'Back to sign in' }), `${label} link`)
+      await expectLinkContrast(page.getByRole('button', { name: 'Back to sign in' }), `${label} link`)
       const cta = page.getByRole('button', { name: 'Request a new link' })
       await cta.evaluate((element) => {
         element.style.boxShadow = 'none'
