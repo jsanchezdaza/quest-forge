@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { test, expect, type Locator, type Page } from './setup'
 import tailwindConfig from '../../tailwind.config.js'
-import { legibleTextContrast, minimumContrast } from './pixelContrast'
+import { minimumContrast, minimumRingContrastPng } from './pixelContrast'
 
 /**
  * An expired, used, or unreachable recovery link (#38).
@@ -12,6 +12,10 @@ import { legibleTextContrast, minimumContrast } from './pixelContrast'
 
 const EXPIRED_HASH =
   '/auth?mode=update-password#error=access_denied&error_code=otp_expired&error_description=Email%20link%20is%20invalid%20or%20has%20expired'
+// Same error in the query. The contrast test uses this form: with a route
+// installed, Playwright can apply a hash after the page has already read it.
+const EXPIRED_QUERY =
+  '/auth?mode=update-password&error=access_denied&error_code=otp_expired&error_description=Email%20link%20is%20invalid%20or%20has%20expired'
 const CODE_URL = '/auth?mode=update-password&code=recovery-code'
 const EXPIRED_BODY =
   'Reset links only work once and for a limited time. Request a new one and use the most recent email.'
@@ -142,39 +146,44 @@ async function expectTextContrast(locator: Locator, label: string, inset = 0) {
     ]
   }, inset)
   const ratio = minimumContrast(await locator.screenshot(), box!.width, textRects, await foreground(locator))
-  console.log(`contrast ${label} ${ratio.toFixed(2)}:1`)
   expect(ratio, `${label} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
   return ratio
 }
 
-/** Gold against the dark halo, not against the padding the halo does not cover. */
-async function expectLinkContrast(locator: Locator, label: string) {
+/**
+ * Worst contrast of the link color against the real pixels 1–3px outside
+ * the glyphs. The shadow core under the letters is not the background.
+ */
+async function measureLink(locator: Locator, label: string) {
   const box = await locator.boundingBox()
   expect(box, label).not.toBeNull()
   const color = await foreground(locator)
-  const originalShadow = await locator.evaluate((element) => element.style.textShadow)
-  // The shadow is an inline style, so a screenshot stylesheet cannot replace it.
-  await locator.evaluate((element) => {
-    element.style.color = 'transparent'
-  })
-  const shadowPng = await locator.screenshot()
+  const shadow = await locator.evaluate((element) => element.style.textShadow)
+  const real = await locator.screenshot()
   await locator.evaluate((element) => {
     element.style.textShadow = 'none'
   })
-  const barePng = await locator.screenshot()
-  await locator.evaluate((element, shadow) => {
+  const gold = await locator.screenshot()
+  await locator.evaluate((element) => {
+    element.style.color = 'transparent'
+  })
+  const clear = await locator.screenshot()
+  await locator.evaluate((element, stored) => {
     element.style.color = ''
-    element.style.textShadow = shadow
-  }, originalShadow)
-  const ratio = legibleTextContrast(shadowPng, barePng, box!.width, box!.height, color)
-  console.log(`contrast ${label} ${ratio.toFixed(2)}:1`)
-  expect(ratio, `${label} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
+    element.style.textShadow = stored
+  }, shadow)
+  return minimumRingContrastPng(real, gold, clear, box!.width, box!.height, color)
 }
 
 async function hideEmbers(page: Page) {
   await page.locator('.ember').evaluateAll((nodes) => {
     nodes.forEach((node) => {
       ;(node as HTMLElement).style.display = 'none'
+    })
+  })
+  await page.evaluate(() => {
+    document.querySelectorAll('video').forEach((video) => {
+      video.pause()
     })
   })
 }
@@ -404,7 +413,6 @@ test.describe('expired or unreachable recovery link', () => {
       const label = `${viewport.width}x${viewport.height}`
       await expectTextContrast(page.getByRole('heading', { level: 2, name: 'This link has expired' }), `${label} title`)
       await expectTextContrast(page.getByText(EXPIRED_BODY), `${label} body`)
-      await expectLinkContrast(page.getByRole('button', { name: 'Back to sign in' }), `${label} link`)
       const cta = page.getByRole('button', { name: 'Request a new link' })
       await cta.evaluate((element) => {
         element.style.boxShadow = 'none'
@@ -419,5 +427,87 @@ test.describe('expired or unreachable recovery link', () => {
       violation.nodes.map((node) => `${violation.id}: ${node.html}`)
     )
     expect(failures).toEqual([])
+  })
+
+  test('the link on each card clears 4.5:1 just outside the glyphs', async ({ page }, testInfo) => {
+    await seedVerifier(page)
+    await page.route('**/auth/v1/token**', (route) => route.abort('failed'))
+    const rows: Array<{
+      project: string
+      card: string
+      viewport: string
+      locale: string
+      ratio: number
+      samples: number
+      worst: [number, number, number]
+    }> = []
+    const cards = [
+      {
+        card: 'expired',
+        url: EXPIRED_QUERY,
+        heading: { en: 'This link has expired', es: 'Este enlace ha caducado' },
+        link: { en: 'Back to sign in', es: 'Volver a entrar' },
+      },
+      {
+        card: 'unreachable',
+        url: CODE_URL,
+        heading: { en: "We couldn't check your link", es: 'No hemos podido comprobar el enlace' },
+        link: { en: 'Request a new link', es: 'Pedir un enlace nuevo' },
+      },
+      {
+        card: 'invalid',
+        url: '/auth?mode=update-password',
+        heading: { en: "This link isn't valid", es: 'Este enlace no es válido' },
+        link: { en: 'Back to sign in', es: 'Volver a entrar' },
+      },
+    ] as const
+    const viewports = [
+      { locale: 'es' as const, width: 320, height: 568 },
+      { locale: 'es' as const, width: 375, height: 667 },
+      { locale: 'es' as const, width: 740, height: 360 },
+      { locale: 'es' as const, width: 1280, height: 720 },
+      { locale: 'en' as const, width: 375, height: 667 },
+    ]
+
+    // Language is set before the card loads. Reloading the expired card would
+    // drop the error the page already stripped and show the wrong state.
+    await page.addInitScript(() => {
+      localStorage.setItem('questforge.language', 'es')
+    })
+    let localeScript: 'en' | 'es' = 'es'
+    for (const viewport of viewports) {
+      if (viewport.locale !== localeScript) {
+        localeScript = viewport.locale
+        await page.addInitScript((locale) => {
+          localStorage.setItem('questforge.language', locale)
+        }, viewport.locale)
+      }
+      await page.setViewportSize({ width: viewport.width, height: viewport.height })
+      for (const card of cards) {
+        await page.goto(card.url)
+        await page.evaluate(() => document.fonts.ready)
+        await hideEmbers(page)
+        await expect(page.getByRole('heading', { level: 2, name: card.heading[viewport.locale] })).toBeVisible()
+        const label = `${card.card} ${viewport.locale} ${viewport.width}x${viewport.height}`
+        const measured = await measureLink(page.getByRole('button', { name: card.link[viewport.locale] }), label)
+        rows.push({
+          project: testInfo.project.name,
+          card: card.card,
+          viewport: `${viewport.width}x${viewport.height}`,
+          locale: viewport.locale,
+          ratio: Number(measured.ratio.toFixed(2)),
+          samples: measured.samples,
+          worst: measured.worst,
+        })
+      }
+    }
+
+    await testInfo.attach('link-contrast', {
+      body: JSON.stringify(rows, null, 2),
+      contentType: 'application/json',
+    })
+    testInfo.annotations.push({ type: 'link-contrast', description: JSON.stringify(rows) })
+    const short = rows.filter((row) => row.samples <= 80 || row.ratio < 4.5)
+    expect(short, JSON.stringify(rows, null, 2)).toEqual([])
   })
 })
