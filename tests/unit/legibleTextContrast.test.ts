@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { deflateSync, crc32 } from 'node:zlib'
 import { test } from 'node:test'
-import { legibleTextContrast } from '../e2e/pixelContrast.ts'
+import { cropPng, legibleTextContrast } from '../e2e/pixelContrast.ts'
 
 type Rgb = [number, number, number]
 
@@ -94,6 +94,27 @@ test('a ring with fewer than 100 pixels is not a measurement', () => {
   const rendered = paint(width, height, glyph, GOLD, () => BLACK)
   assert.throws(
     () => legibleTextContrast(rendered, ink, bare, width, height, GOLD),
+    /not enough ring pixels/,
+  )
+})
+
+test('cropPng keeps the ring inside the rectangle and drops the padding outside it', () => {
+  const width = 80
+  const height = 40
+  const glyph = (x: number, y: number) => x >= 20 && x < 60 && y >= 16 && y < 24
+  const near = (x: number, y: number) => {
+    const dx = x < 20 ? 20 - x : x >= 60 ? x - 59 : 0
+    const dy = y < 16 ? 16 - y : y >= 24 ? y - 23 : 0
+    return Math.max(dx, dy) <= 3
+  }
+  const ink = paint(width, height, glyph, GOLD, () => WHITE)
+  const bare = paint(width, height, () => false, GOLD, () => WHITE)
+  const rendered = paint(width, height, glyph, GOLD, (x, y) => (near(x, y) ? BLACK : WHITE))
+  const crop = (png: Buffer) => cropPng(png, 10, 8, 60, 24)
+  const ratio = legibleTextContrast(crop(rendered), crop(ink), crop(bare), 60, 24, GOLD)
+  assert.ok(ratio >= 4.5, `cropped ring measured ${ratio.toFixed(2)}:1`)
+  assert.throws(
+    () => legibleTextContrast(cropPng(rendered, 0, 0, 8, 8), cropPng(ink, 0, 0, 8, 8), cropPng(bare, 0, 0, 8, 8), 8, 8, GOLD),
     /not enough ring pixels/,
   )
 })

@@ -1,4 +1,4 @@
-import { inflateSync } from 'node:zlib'
+import { crc32, deflateSync, inflateSync } from 'node:zlib'
 
 type Rgb = [number, number, number]
 
@@ -250,4 +250,56 @@ function decodePng(buffer: Buffer): DecodedPng {
   }
 
   return { width, height, pixels }
+}
+
+/** Rectangle of `png`, in device pixels. Used to read several texts from one card shot. */
+export function cropPng(png: Buffer, x: number, y: number, width: number, height: number): Buffer {
+  const image = decodePng(png)
+  const left = Math.max(0, Math.min(image.width, Math.floor(x)))
+  const top = Math.max(0, Math.min(image.height, Math.floor(y)))
+  const right = Math.max(left, Math.min(image.width, Math.ceil(x + width)))
+  const bottom = Math.max(top, Math.min(image.height, Math.ceil(y + height)))
+  return encodeRgbPng(right - left, bottom - top, (pixelX, pixelY) => {
+    const offset = ((top + pixelY) * image.width + (left + pixelX)) * 4
+    return [image.pixels[offset], image.pixels[offset + 1], image.pixels[offset + 2]]
+  })
+}
+
+function encodeRgbPng(
+  width: number,
+  height: number,
+  paint: (x: number, y: number) => Rgb,
+): Buffer {
+  const stride = width * 3 + 1
+  const raw = Buffer.alloc(stride * height)
+  for (let y = 0; y < height; y += 1) {
+    const row = y * stride
+    raw[row] = 0
+    for (let x = 0; x < width; x += 1) {
+      const [red, green, blue] = paint(x, y)
+      const index = row + 1 + x * 3
+      raw[index] = red
+      raw[index + 1] = green
+      raw[index + 2] = blue
+    }
+  }
+  const header = Buffer.alloc(13)
+  header.writeUInt32BE(width, 0)
+  header.writeUInt32BE(height, 4)
+  header[8] = 8
+  header[9] = 2
+  const body = (type: string, data: Buffer) => {
+    const length = Buffer.alloc(4)
+    length.writeUInt32BE(data.length)
+    const chunk = Buffer.concat([Buffer.from(type), data])
+    const checksum = Buffer.alloc(4)
+    checksum.writeUInt32BE(crc32(chunk) >>> 0)
+    return Buffer.concat([length, chunk, checksum])
+  }
+  return Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    body('IHDR', header),
+    body('IDAT', deflateSync(raw)),
+    body('IEND', Buffer.alloc(0)),
+  ])
 }

@@ -1,6 +1,6 @@
 import { test, expect, type Locator, type Page } from './setup'
 import tailwindConfig from '../../tailwind.config.js'
-import { legibleTextContrast, minimumContrast } from './pixelContrast'
+import { cropPng, legibleTextContrast, minimumContrast } from './pixelContrast'
 
 /**
  * Request a recovery link (#36).
@@ -207,7 +207,12 @@ async function linkContrast(locator: Locator, textShadow?: string): Promise<numb
     // the glyph. The ring is read from the real render, text and shadow.
     const rendered = await locator.screenshot()
     const ink = await painted(locator, { textShadow: 'none' })
-    const bare = await painted(locator, { color: 'transparent', textShadow: 'none' })
+    const bare = await painted(locator, {
+      color: 'transparent',
+      webkitTextFillColor: 'transparent',
+      textShadow: 'none',
+      backgroundImage: 'none',
+    })
     return legibleTextContrast(rendered, ink, bare, box!.width, box!.height, color)
   } finally {
     if (textShadow !== undefined) {
@@ -218,20 +223,28 @@ async function linkContrast(locator: Locator, textShadow?: string): Promise<numb
   }
 }
 
-async function painted(
-  locator: Locator,
-  style: { color?: string, textShadow?: string },
-): Promise<Buffer> {
-  await locator.evaluate((element, next) => {
+interface Paint {
+  color?: string
+  textShadow?: string
+  webkitTextFillColor?: string
+  backgroundImage?: string
+}
+
+async function painted(locator: Locator, style: Paint): Promise<Buffer> {
+  await locator.evaluate((element, next: Paint) => {
     element.style.color = next.color ?? ''
+    element.style.webkitTextFillColor = next.webkitTextFillColor ?? ''
     element.style.textShadow = next.textShadow ?? ''
+    element.style.backgroundImage = next.backgroundImage ?? ''
   }, style)
   try {
     return await locator.screenshot()
   } finally {
     await locator.evaluate((element) => {
       element.style.color = ''
+      element.style.webkitTextFillColor = ''
       element.style.textShadow = ''
+      element.style.backgroundImage = ''
     })
   }
 }
@@ -251,6 +264,14 @@ async function sceneContrasts(
   locator: Locator,
   measure: (locator: Locator) => Promise<number> = textContrast,
 ): Promise<number[]> {
+  return eachSceneFrame(page, () => measure(locator))
+}
+
+/**
+ * One sample per static frame, or one per quarter-second of the desktop
+ * video. Embers are random, so they are hidden.
+ */
+async function eachSceneFrame<T>(page: Page, measure: () => Promise<T>): Promise<T[]> {
   await page.addStyleTag({
     content: '.ember { animation: none !important; opacity: 0 !important; }',
   })
@@ -277,10 +298,10 @@ async function sceneContrasts(
     await page.evaluate(() => new Promise((resolve) => {
       requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)))
     }))
-    return [await measure(locator)]
+    return [await measure()]
   }
 
-  const ratios: number[] = []
+  const frames: T[] = []
   for (let time = 0; time < duration - 0.02; time += 0.25) {
     await video.evaluate(async (element: HTMLVideoElement, target: number) => {
       element.pause()
@@ -302,9 +323,157 @@ async function sceneContrasts(
     await page.evaluate(() => new Promise((resolve) => {
       requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)))
     }))
-    ratios.push(await measure(locator))
+    frames.push(await measure())
   }
-  return ratios
+  return frames
+}
+
+interface CardText {
+  name: string
+  locator: Locator
+  /** Reading text. The decorative logo's ring is its own gold glow, so it is measured and not gated. */
+  gate: boolean
+}
+
+function cardTexts(page: Page, view: 'login' | 'signup' | 'reset'): CardText[] {
+  const card = page.getByTestId('auth-card')
+  const logo: CardText = {
+    name: 'logo',
+    locator: card.getByRole('heading', { level: 1 }),
+    gate: false,
+  }
+  if (view === 'signup') {
+    return [
+      logo,
+      { name: 'body', locator: card.locator('h1 + p'), gate: true },
+      { name: 'email-label', locator: page.locator('label[for="email"]'), gate: true },
+      { name: 'username-label', locator: page.locator('label[for="username"]'), gate: true },
+      { name: 'password-label', locator: page.locator('label[for="password"]'), gate: true },
+      { name: 'helper', locator: page.locator('#password-requirements li span').first(), gate: true },
+      { name: 'link', locator: page.getByRole('button', { name: /already have an account|ya tienes cuenta/i }), gate: true },
+    ]
+  }
+  if (view === 'reset') {
+    return [
+      logo,
+      { name: 'title', locator: card.getByRole('heading', { level: 2 }), gate: true },
+      { name: 'helper', locator: page.locator('#reset-help'), gate: true },
+      { name: 'email-label', locator: page.locator('label[for="email"]'), gate: true },
+      { name: 'link', locator: backToSignIn(page), gate: true },
+    ]
+  }
+  return [
+    logo,
+    { name: 'body', locator: card.locator('h1 + p'), gate: true },
+    { name: 'email-label', locator: page.locator('label[for="email"]'), gate: true },
+    { name: 'password-label', locator: page.locator('label[for="password"]'), gate: true },
+    { name: 'forgot', locator: forgotPassword(page), gate: true },
+    { name: 'sign-up', locator: page.getByRole('button', { name: /don't have an account|no tienes cuenta/i }), gate: true },
+  ]
+}
+
+async function applyPaint(locators: Locator[], style: Paint) {
+  for (const locator of locators) {
+    await locator.evaluate((element, next: Paint) => {
+      element.style.color = next.color ?? ''
+      element.style.webkitTextFillColor = next.webkitTextFillColor ?? ''
+      element.style.textShadow = next.textShadow ?? ''
+      element.style.backgroundImage = next.backgroundImage ?? ''
+    }, style)
+  }
+}
+
+async function clearPaint(locators: Locator[]) {
+  for (const locator of locators) {
+    await locator.evaluate((element) => {
+      element.style.color = ''
+      element.style.webkitTextFillColor = ''
+      element.style.textShadow = ''
+      element.style.backgroundImage = ''
+    })
+  }
+}
+
+/** Ring contrast of every readable text, from three shots of the card. */
+async function cardTextContrasts(
+  card: Locator,
+  samples: CardText[],
+): Promise<{ name: string, ratio: number, gate: boolean }[]> {
+  const visible: CardText[] = []
+  const boxes: { x: number, y: number, width: number, height: number }[] = []
+  for (const sample of samples) {
+    const box = await sample.locator.boundingBox()
+    if (!box || box.width < 8 || box.height < 8) continue
+    visible.push(sample)
+    boxes.push(box)
+  }
+  if (visible.length === 0) return []
+
+  const colors = await Promise.all(visible.map((sample) => foreground(sample.locator)))
+  const locators = visible.map((sample) => sample.locator)
+  const rendered = await card.screenshot()
+  await applyPaint(locators, { textShadow: 'none' })
+  let ink: Buffer
+  try {
+    ink = await card.screenshot()
+  } finally {
+    await clearPaint(locators)
+  }
+  await applyPaint(locators, {
+    color: 'transparent',
+    webkitTextFillColor: 'transparent',
+    textShadow: 'none',
+    backgroundImage: 'none',
+  })
+  let bare: Buffer
+  try {
+    bare = await card.screenshot()
+  } finally {
+    await clearPaint(locators)
+  }
+
+  const cardBox = await card.boundingBox()
+  expect(cardBox).not.toBeNull()
+  const deviceScale = pngWidth(rendered) / cardBox!.width
+
+  return visible.map((sample, index) => {
+    const box = boxes[index]
+    const x = (box.x - cardBox!.x) * deviceScale
+    const y = (box.y - cardBox!.y) * deviceScale
+    const width = box.width * deviceScale
+    const height = box.height * deviceScale
+    const crop = (png: Buffer) => cropPng(png, x, y, width, height)
+    const cropped = crop(rendered)
+    const cssWidth = pngWidth(cropped) / deviceScale
+    const cssHeight = pngHeight(cropped) / deviceScale
+    return {
+      name: sample.name,
+      gate: sample.gate,
+      ratio: legibleTextContrast(cropped, crop(ink), crop(bare), cssWidth, cssHeight, colors[index]),
+    }
+  })
+}
+
+async function rasterColor(page: Page, color: string): Promise<string> {
+  return page.evaluate((value) => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 1
+    canvas.height = 1
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('canvas is unavailable')
+    context.clearRect(0, 0, 1, 1)
+    context.fillStyle = value
+    context.fillRect(0, 0, 1, 1)
+    return [...context.getImageData(0, 0, 1, 1).data].join(',')
+  }, color)
+}
+
+function pngWidth(png: Buffer): number {
+  return png.readUInt32BE(16)
+}
+
+function pngHeight(png: Buffer): number {
+  return png.readUInt32BE(20)
 }
 
 async function expectNoBackdrop(link: Locator, accountLink: Locator) {
@@ -841,12 +1010,14 @@ test.describe('recovery confirmation', () => {
           expect(ratios.length).toBeGreaterThan(0)
           const lowest = Math.min(...ratios)
           const listed = ratios.map((ratio) => ratio.toFixed(2)).join(', ')
-          // The ring beside the letters is below 4.5:1 on Mobile Chrome.
-          // The shadow stays as specified; the ratio is the design decision.
-          expect(
-            Number.isFinite(lowest),
-            `${name} ${viewport.width} ${locale} ${lowest.toFixed(2)}:1 [${listed}]`,
-          ).toBe(true)
+          const where = `${name} ${viewport.width} ${locale} ${lowest.toFixed(2)}:1 [${listed}]`
+          expect(Number.isFinite(lowest), where).toBe(true)
+          // Below 768 the card background carries the ring to 4.5:1.
+          // At 1280 the card stays the translucent one, so a shortfall there
+          // is recorded and not painted over.
+          if (viewport.width < 768) {
+            expect(lowest, where).toBeGreaterThanOrEqual(4.5)
+          }
         }
       }
     }
@@ -879,6 +1050,79 @@ test.describe('recovery confirmation', () => {
       }
       await expectGoldenFocusRing(forgotPassword(page))
     }
+  })
+
+  test('card text clears 4.5:1 beside the letters below 768', async ({ page }, testInfo) => {
+    // Login, sign-up, and the reset request. The new-password screen is not
+    // on this branch (`update-password` stays sign-in until #37); it renders
+    // in this same card, so the mobile background covers it when it lands.
+    test.setTimeout(180_000)
+    const desktopCard = 'rgb(255 255 255 / 0.2)'
+    const mobileCard = 'rgb(10 10 10 / 0.7)'
+    const lines: string[] = []
+
+    for (const viewport of [
+      { width: 320, height: 568, locales: ['ES'] as const },
+      { width: 375, height: 667, locales: ['ES', 'EN'] as const },
+      { width: 740, height: 360, locales: ['ES'] as const },
+      { width: 1280, height: 720, locales: ['ES'] as const },
+    ]) {
+      for (const locale of viewport.locales) {
+        for (const view of ['login', 'signup', 'reset'] as const) {
+          await page.setViewportSize({ width: viewport.width, height: viewport.height })
+          await page.goto(view === 'login' ? '/auth' : `/auth?mode=${view}`)
+          await page.getByRole('button', { name: locale, exact: true }).click()
+          await page.evaluate(() => document.fonts.ready)
+          await page.mouse.move(0, 0)
+
+          const card = page.getByTestId('auth-card')
+          const paint = await card.evaluate((element) => {
+            const style = getComputedStyle(element)
+            return {
+              backgroundColor: style.backgroundColor,
+              backdropFilter: style.backdropFilter,
+              borderTopWidth: style.borderTopWidth,
+              borderTopColor: style.borderTopColor,
+            }
+          })
+          expect(paint.backdropFilter, `${viewport.width} blur`).toContain('blur')
+          expect(paint.borderTopWidth, `${viewport.width} border`).toBe('2px')
+          expect(
+            await rasterColor(page, paint.borderTopColor),
+            `${viewport.width} gold border`,
+          ).toBe(await rasterColor(page, 'rgb(212 175 55 / 0.4)'))
+          expect(
+            await rasterColor(page, paint.backgroundColor),
+            `${view} ${viewport.width} ${locale} ${paint.backgroundColor}`,
+          ).toBe(await rasterColor(page, viewport.width < 768 ? mobileCard : desktopCard))
+
+          const samples = cardTexts(page, view)
+          const frames = await eachSceneFrame(page, () => cardTextContrasts(card, samples))
+          const lowest = new Map<string, { ratio: number, gate: boolean }>()
+          for (const frame of frames) {
+            for (const sample of frame) {
+              const previous = lowest.get(sample.name)
+              if (!previous || sample.ratio < previous.ratio) {
+                lowest.set(sample.name, { ratio: sample.ratio, gate: sample.gate })
+              }
+            }
+          }
+          for (const [name, sample] of lowest) {
+            const where = `${view} ${name} ${viewport.width}×${viewport.height} ${locale} ${sample.ratio.toFixed(2)}:1`
+            lines.push(where)
+            expect(Number.isFinite(sample.ratio), where).toBe(true)
+            if (sample.gate && viewport.width < 768) {
+              expect(sample.ratio, where).toBeGreaterThanOrEqual(4.5)
+            }
+          }
+        }
+      }
+    }
+
+    await testInfo.attach('card-contrast.txt', {
+      body: Buffer.from(`${lines.join('\n')}\n`),
+      contentType: 'text/plain',
+    })
   })
 
   test('no shadow and a weak shadow miss 4.5:1 beside the letters', async ({ page }, testInfo) => {
