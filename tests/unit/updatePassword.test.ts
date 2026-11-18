@@ -61,10 +61,60 @@ test('a resolved recovery session opens the form and no session is an invalid li
 test('a late auth result does not leave the confirmation or the invalid link', () => {
   const done: UpdatePasswordState = { status: 'done' }
   const invalid: UpdatePasswordState = { status: 'invalid' }
+  const expired: UpdatePasswordState = { status: 'expired' }
+  const unreachable: UpdatePasswordState = { status: 'unreachable', retrying: false }
   const resolved = { type: 'resolved' as const, signedIn: false, email: '' }
   assert.deepEqual(updatePasswordReducer(done, resolved), done)
   assert.deepEqual(updatePasswordReducer(invalid, { type: 'resolved', signedIn: true, email: 'hero@example.com' }), invalid)
+  assert.deepEqual(updatePasswordReducer(expired, resolved), expired)
+  assert.deepEqual(updatePasswordReducer(unreachable, { type: 'resolved', signedIn: true, email: 'hero@example.com' }), unreachable)
   assert.deepEqual(updatePasswordReducer(saving, resolved), saving)
+})
+
+test('an expired redirect is not the generic invalid link, and a pending code is not either', () => {
+  const checking: UpdatePasswordState = { status: 'checking' }
+  assert.deepEqual(
+    beginUpdatePassword({ initializing: false, signedIn: false, email: '', arrival: 'expired' }),
+    { status: 'expired' },
+  )
+  assert.deepEqual(
+    beginUpdatePassword({ initializing: true, signedIn: false, email: '', arrival: 'expired' }),
+    { status: 'expired' },
+  )
+  assert.deepEqual(
+    beginUpdatePassword({ initializing: false, signedIn: true, email: 'hero@example.com', arrival: 'invalid' }),
+    { status: 'invalid' },
+  )
+  assert.deepEqual(
+    beginUpdatePassword({ initializing: false, signedIn: false, email: '', arrival: 'check' }),
+    checking,
+  )
+  assert.deepEqual(
+    updatePasswordReducer(checking, { type: 'resolved', signedIn: false, email: '', linkPending: true }),
+    checking,
+  )
+  assert.deepEqual(
+    updatePasswordReducer(checking, { type: 'checked', outcome: 'expired' }),
+    { status: 'expired' },
+  )
+  assert.deepEqual(
+    updatePasswordReducer(checking, { type: 'checked', outcome: 'session', email: 'hero@example.com' }),
+    form(),
+  )
+})
+
+test('a check that runs long or fails the network can be tried again with the same link', () => {
+  const checking: UpdatePasswordState = { status: 'checking' }
+  const idle: UpdatePasswordState = { status: 'unreachable', retrying: false }
+  const retrying: UpdatePasswordState = { status: 'unreachable', retrying: true }
+  assert.deepEqual(updatePasswordReducer(checking, { type: 'timed-out' }), idle)
+  assert.deepEqual(updatePasswordReducer(checking, { type: 'checked', outcome: 'unreachable' }), idle)
+  assert.deepEqual(updatePasswordReducer(idle, { type: 'retry' }), retrying)
+  assert.deepEqual(updatePasswordReducer(retrying, { type: 'retry' }), retrying)
+  assert.deepEqual(updatePasswordReducer(retrying, { type: 'timed-out' }), idle)
+  assert.deepEqual(updatePasswordReducer(retrying, { type: 'checked', outcome: 'expired' }), { status: 'expired' })
+  assert.deepEqual(updatePasswordReducer(idle, { type: 'checked', outcome: 'session', email: 'hero@example.com' }), idle)
+  assert.deepEqual(updatePasswordReducer(form(), { type: 'timed-out' }), form())
 })
 
 test('submit stays on the form until the new password meets the sign-up rules', () => {
@@ -82,6 +132,8 @@ test('the typed password is dropped once the card leaves the form', () => {
   assert.equal(retainedPassword('checking', 'abcd1234'), 'abcd1234')
   assert.equal(retainedPassword('done', 'abcd1234'), '')
   assert.equal(retainedPassword('invalid', 'secret'), '')
+  assert.equal(retainedPassword('expired', 'secret'), '')
+  assert.equal(retainedPassword('unreachable', 'secret'), '')
 })
 
 test('a saved password replaces the form with the confirmation', () => {
