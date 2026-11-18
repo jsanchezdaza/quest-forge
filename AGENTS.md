@@ -21,7 +21,7 @@ Playwright loads `tests/e2e/setup.ts`, which supplies mock `VITE_SUPABASE_*` val
 
 Query the UI with `getByRole` and `getByLabel`, as the auth specs do. `tests/e2e/auth-a11y.spec.ts` runs `@axe-core/playwright` for contrast (`wcag143`) and ARIA (`cat.aria`) and must stay green.
 
-`playwright.config.ts` defines desktop Chromium (`chromium`, Desktop Chrome) and `Mobile Chrome` (Pixel 5), plus Firefox, WebKit, Mobile Safari, and Tablet. CI (`.github/workflows/ci.yml`, 20-minute timeout) runs every spec under `tests/e2e/` on `chromium` and `Mobile Chrome`. Run one file with `pnpm exec playwright test tests/e2e/auth.spec.ts --project=chromium`.
+`playwright.config.ts` defines desktop Chromium (`chromium`, Desktop Chrome) and `Mobile Chrome` (Pixel 5), plus Firefox, WebKit, Mobile Safari, and Tablet. CI (`.github/workflows/ci.yml`) runs every spec under `tests/e2e/` on `chromium` and `Mobile Chrome` in 3 parallel Playwright shards (about 5 minutes), with a single required `e2e` gate job. Run one file with `pnpm exec playwright test tests/e2e/auth.spec.ts --project=chromium`.
 
 ## Commits
 
@@ -42,7 +42,7 @@ Use pnpm only (Node >= 24, pnpm >= 11, lockfile `pnpm-lock.yaml`). Install with 
 3. `pnpm lint` (ESLint on `src/**/*.{ts,tsx}`, `--max-warnings 0`)
 4. `pnpm build` (`tsc && vite build`: app typecheck, then the production bundle)
 
-`pnpm test:e2e` is separate. CI lints, builds, and runs the auth end-to-end specs above. It does not run `pnpm test:unit`.
+`pnpm test:e2e` is separate. CI (`.github/workflows/ci.yml`) runs `pnpm run test:unit`, lint, build, and every Playwright spec under `tests/e2e/` on `chromium` and `Mobile Chrome`.
 
 Stack in this repo: React 19, TypeScript, Vite, React Router v7, Zustand, Tailwind CSS, and Supabase Auth. Stores in `src/store/`: `authStore.ts` (session and profile), `gameStore.ts` (session, scenes, mutations), `languageStore.ts` (`en` or `es`). Components subscribe to them directly. Supabase client and schema types are in `src/lib/supabase.ts`. `src/App.tsx` sends signed-out users to `/auth` and signed-in users to `/game`.
 
@@ -52,8 +52,42 @@ Optional narrative goes from `src/lib/openrouter.ts` through `api/openrouter.ts`
 
 ## Definition of done
 
-Lint, typecheck, unit tests, and the relevant end-to-end specs pass locally (`pnpm check` and `pnpm test:e2e`, or the specs and projects you changed, including `auth-a11y.spec.ts` when the auth UI changes). Open a pull request against `main` with `Closes #N`. Leave it unmerged. The repo owner reviews and merges.
+Lint, typecheck, unit tests, and the relevant end-to-end specs pass locally (`pnpm check` and `pnpm test:e2e`, or the specs and projects you changed, including `auth-a11y.spec.ts` when the auth UI changes). Open a pull request against `main` and leave it unmerged. Coding agents never merge and never close issues. Pull requests use only `Refs #N`, never `Closes #N`. The product manager closes the issue after she checks the acceptance criteria, never automatically. Manual steps or QA can keep an issue open.
 
 ## Product
 
 User stories come from the product manager. Design comes from the product designer. When an acceptance criterion is ambiguous, state the assumption in the pull request description and implement that. Stay inside the issue.
+
+## Pre-PR checklist
+
+The implementing agent passes this before marking the pull request ready, and copies it into the pull request body as a checked list:
+
+- Issue acceptance criteria reviewed one by one.
+- Any new end-to-end spec runs in CI, and the `e2e` job is green on the head.
+- The diff touches only what the story asks. Flag any change to shared components or styles in the pull request body.
+- For a UI change: text contrast is at least 4.5:1, and touch targets are at least 44px.
+- The pull request body uses only `Refs #N`, never `Closes #N`.
+
+## Screenshots
+
+Any UI change includes this set, saved under `/workspace/qf/<pr-number>/` and attached or linked in the pull request:
+
+- ES: 320x568, 375x667, 740x360 (landscape), and 1280x720.
+- EN: 375x667.
+- Error, submitting, and focus states, where they exist.
+
+## Team workflow
+
+This section is the source of truth for how the team ships a story.
+
+- The product manager (Kiki) writes user stories as GitHub issues with acceptance criteria and sets their order.
+- The product designer (Sophie) gives design guidance before a story with UI is implemented. She reviews screenshots, not code, and gives a visual OK before merge when a pull request changes anything visual. The fast path below is the exception.
+- The repo owner (Javi) approves the story order in issue #40 once. No per-story go-ahead is needed.
+- The dev assistant (Calcifer) briefs coding agents, who implement with test-driven development and open the pull request unmerged. The dev assistant batches all feedback into a single round back to the implementing agent. Bot-to-bot messages that require the other to act are sent with priority.
+- Every pull request goes to both the code reviewer and the designer, including fast-path ones. Code review and visual review happen on the same head at the same time.
+- The code reviewer (Jiji) reviews every pull request and every new head, reporting either "no blockers" or a list of blockers. The code reviewer publishes reviews without blockers directly, and asks the repo owner only when there are blockers or the pull request touches auth, data, Supabase, or security. The code reviewer never approves or merges.
+- Merge (squash): only the dev assistant merges, once CI is green, the reviewer reports no blockers on the final head, and, for visual changes, the designer gave her visual OK. Coding agents never merge.
+- Pull requests touching auth logic, data, Supabase, or security are the exception: only the repo owner merges them, after his explicit yes.
+- Small visual tweak fast path: a small visual tweak is CSS only, with no new copy, no new components, and no logic. Tailwind utility class changes that only affect styling count as CSS only. The dev assistant decides whether a change qualifies; when in doubt, use the full flow. It never applies to pull requests touching auth logic, data, Supabase, or security. CSS-only small visual tweaks on auth screens (such as the login page) may use the fast path; changes to auth logic still need the repo owner's yes. The dev assistant merges it once CI is green, without code review or a pre-merge design review. The pull request still goes to both. Post-merge screenshots are sent to the designer automatically; she checks them after merge, and any follow-up goes in a new small pull request.
+- If the code reviewer finds a blocker after a fast-path merge, the code reviewer reports it to the dev assistant, who fixes it in a new small pull request right away, or reverts if production is broken.
+- After every merge, the product manager checks the acceptance criteria and either closes the issue or comments what is missing. The issue is never closed automatically. Manual steps or QA can keep it open.
