@@ -1157,6 +1157,40 @@ test.describe('recovery confirmation', () => {
         }
       }
     }
+    await page.setViewportSize({ width: 375, height: 667 })
+    await page.goto('/auth')
+    await page.getByRole('button', { name: 'ES', exact: true }).click()
+    await page.evaluate(() => document.fonts.ready)
+    await page.addStyleTag({ content: '#email { transition: none !important; }' })
+    const email = page.locator('#email')
+    await email.evaluate((element) => element.focus({ focusVisible: true }))
+    const focused = await email.evaluate((element) => getComputedStyle(element).borderTopColor)
+    expect(await rasterColor(page, focused), `focused border ${focused}`).toBe(await rasterColor(page, 'rgb(212 175 55)'))
+    await email.blur()
+    const invalid = await email.evaluate((element) => getComputedStyle(element).borderTopColor)
+    const red = await page.evaluate(() => {
+      const probe = document.createElement('div')
+      probe.className = 'border border-red-500'
+      document.body.appendChild(probe)
+      const color = getComputedStyle(probe).borderTopColor
+      probe.remove()
+      return color
+    })
+    expect(invalid, 'error border stays border-red-500').toBe(red)
+    await page.setViewportSize({ width: 1280, height: 720 })
+    await email.fill('ada@example.com')
+    await email.blur()
+    const desktop = await email.evaluate((element) => getComputedStyle(element).borderTopColor)
+    const resting = await page.evaluate(() => {
+      const probe = document.createElement('div')
+      probe.className = 'border border-medieval-gold/30'
+      document.body.appendChild(probe)
+      const color = getComputedStyle(probe).borderTopColor
+      probe.remove()
+      return color
+    })
+    expect(desktop, 'desktop border stays border-medieval-gold/30').toBe(resting)
+
     await testInfo.attach('input-border-contrast.txt', {
       body: Buffer.from(`${lines.join('\n')}\n`),
       contentType: 'text/plain',

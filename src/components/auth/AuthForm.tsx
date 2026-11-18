@@ -29,6 +29,9 @@ interface AuthFormProps {
 const authLabelClassName =
   'block text-xs font-pixel-body text-gray-200 uppercase tracking-wide'
 
+const restingInputBorderClassName =
+  'max-sm:not-focus-visible:not-aria-invalid:border-auth-input-border-mobile'
+
 const modeLinkClassName =
   'text-medieval-gold-light hover:underline focus-visible:underline font-pixel-body text-sm min-h-[44px] py-2 disabled:opacity-50 disabled:cursor-not-allowed'
 
@@ -245,6 +248,7 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
                 label={t('form.emailLabel')}
                 placeholder={t('form.emailPlaceholder')}
                 labelClassName={authLabelClassName}
+                className={restingInputBorderClassName}
                 error={fieldMessage('email')}
                 required={VALIDATION_RULES.EMAIL_REQUIRED}
                 aria-describedby={mode === 'reset' ? RESET_HELP_ID : undefined}
@@ -262,6 +266,7 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
                   label={t('form.usernameLabel')}
                   placeholder={t('form.usernamePlaceholder')}
                   labelClassName={authLabelClassName}
+                  className={restingInputBorderClassName}
                   error={fieldMessage('username')}
                   required={VALIDATION_RULES.USERNAME_REQUIRED}
                   minLength={VALIDATION_RULES.USERNAME_MIN_LENGTH}
@@ -281,6 +286,7 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
                       label={t('form.passwordLabel')}
                       placeholder={t('form.passwordPlaceholder')}
                       labelClassName={authLabelClassName}
+                      className={restingInputBorderClassName}
                       error={fieldMessage('password')}
                       required={true}
                     />
@@ -303,6 +309,7 @@ export default function AuthForm({ mode, onToggleMode, onForgotPassword }: AuthF
                     label={t('form.passwordLabel')}
                     placeholder={t('form.passwordPlaceholder')}
                     labelClassName={authLabelClassName}
+                    className={restingInputBorderClassName}
                     error={fieldMessage('password')}
                     required={true}
                     minLength={VALIDATION_RULES.PASSWORD_MIN_LENGTH}
