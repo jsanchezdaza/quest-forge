@@ -71,7 +71,7 @@ async function fieldErrorContrast(error: Locator): Promise<number> {
     }))
   })
   const png = await error.screenshot()
-  return minimumContrast(png, box!.width, textRects, foreground)
+  return minimumContrast(png, box!.width, box!.height, textRects, foreground)
 }
 
 test.describe('auth field validation', () => {
@@ -371,5 +371,79 @@ test.describe('auth field validation', () => {
 
     await switchToSignUp(page).click()
     await expect(fieldError(page, 'email')).toHaveText('')
+  })
+
+  test('login field errors stay inside the field and the card and clear 4.5:1', async ({ page }) => {
+    const card = page.getByTestId('auth-card')
+    const forgot = page.getByRole('button', { name: /forgot your password|olvidaste tu contraseña/i })
+
+    for (const viewport of [
+      { width: 320, height: 568 },
+      { width: 375, height: 667 },
+      { width: 390, height: 844 },
+    ]) {
+      for (const locale of [
+        { button: 'EN', email: 'Enter your email.', password: 'Enter your password.' },
+        { button: 'ES', email: 'Introduce tu correo.', password: 'Introduce tu contraseña.' },
+      ] as const) {
+        await page.setViewportSize(viewport)
+        await page.goto('/auth')
+        await page.getByRole('button', { name: locale.button, exact: true }).click()
+        await page.evaluate(() => document.fonts.ready)
+        await emailField(page).focus()
+        await emailField(page).blur()
+        await passwordField(page).focus()
+        await passwordField(page).blur()
+        await page.mouse.move(0, 0)
+
+        const label = `${viewport.width} ${locale.button}`
+        const cardBox = await card.boundingBox()
+        const linkBox = await forgot.boundingBox()
+        expect(cardBox, label).not.toBeNull()
+        expect(linkBox, label).not.toBeNull()
+
+        for (const field of [
+          { id: 'email', message: locale.email },
+          { id: 'password', message: locale.password },
+        ]) {
+          const input = page.locator(`#${field.id}`)
+          const error = fieldError(page, field.id)
+          await expect(error).toHaveText(field.message)
+          await expect(input).toHaveAttribute('aria-invalid', 'true')
+          await expect(input).toHaveAttribute('aria-describedby', `${field.id}-error`)
+          await expectGap(input, error, LABEL_GAP)
+
+          const type = await error.evaluate((element) => {
+            const style = getComputedStyle(element)
+            return {
+              fontSize: style.fontSize,
+              lineHeight: style.lineHeight,
+              colorClass: element.classList.contains('text-red-200'),
+            }
+          })
+          expect(type).toEqual({ fontSize: '14px', lineHeight: '20px', colorClass: true })
+
+          const inputBox = await input.boundingBox()
+          const errorBox = await error.boundingBox()
+          expect(inputBox, label).not.toBeNull()
+          expect(errorBox, label).not.toBeNull()
+          const place = `${label} ${field.id} error ${errorBox!.x.toFixed(1)}..${(errorBox!.x + errorBox!.width).toFixed(1)} input ${inputBox!.x.toFixed(1)}..${(inputBox!.x + inputBox!.width).toFixed(1)} card ${cardBox!.x.toFixed(1)}..${(cardBox!.x + cardBox!.width).toFixed(1)}`
+          expect(errorBox!.x, place).toBeGreaterThanOrEqual(inputBox!.x - 1)
+          expect(errorBox!.x + errorBox!.width, place).toBeLessThanOrEqual(inputBox!.x + inputBox!.width + 1)
+          expect(errorBox!.x, place).toBeGreaterThanOrEqual(cardBox!.x)
+          expect(errorBox!.x + errorBox!.width, place).toBeLessThanOrEqual(cardBox!.x + cardBox!.width)
+          if (field.id === 'password') {
+            const overlapsLink = errorBox!.y < linkBox!.y + linkBox!.height
+              && errorBox!.y + errorBox!.height > linkBox!.y
+              && errorBox!.x < linkBox!.x + linkBox!.width
+              && errorBox!.x + errorBox!.width > linkBox!.x
+            expect(overlapsLink, `${place} link ${linkBox!.x.toFixed(1)},${linkBox!.y.toFixed(1)} ${linkBox!.width.toFixed(1)}x${linkBox!.height.toFixed(1)}`).toBe(false)
+          }
+
+          const ratio = await fieldErrorContrast(error)
+          expect(ratio, `${place} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
+        }
+      }
+    }
   })
 })

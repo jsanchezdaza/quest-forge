@@ -277,6 +277,11 @@
   }
 }
 
+/* Dark halo so the two gold login links stay readable on the stone. */
+@utility text-shadow-legible {
+  text-shadow: 0 0 4px rgb(0 0 0 / .9), 0 1px 2px rgb(0 0 0 / .8);
+}
+
 /*
   One keyboard focus ring for every control on the auth screen: fields, buttons,
   links, the language selector, and a show-password button in a field slot.
@@ -300,8 +305,6 @@
 */
 .forgot-password-link {
   line-height: 1.25rem;
-  /* Gold on the video misses 4.5:1. The same dark wash as a field error. */
-  background-color: rgb(10 10 10 / 75%);
   padding-right: 0.375rem;
   padding-left: 0.375rem;
 }

@@ -1,6 +1,6 @@
 import { test, expect, type Locator, type Page } from './setup'
 import tailwindConfig from '../../tailwind.config.js'
-import { minimumContrast } from './pixelContrast'
+import { colorContrast, legibleTextContrast, minimumContrast, pngPixel } from './pixelContrast'
 
 /**
  * Request a recovery link (#36).
@@ -15,6 +15,7 @@ const CONFIRMATION_ES =
   'Si existe una cuenta con ese correo, te hemos enviado un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.'
 
 const medievalGold = tailwindConfig.theme.extend.colors.medieval.gold
+const medievalGoldLight = tailwindConfig.theme.extend.colors.medieval['gold-light']
 
 function hexToCssRgb(hex: string): string {
   const value = Number.parseInt(hex.slice(1), 16)
@@ -22,8 +23,11 @@ function hexToCssRgb(hex: string): string {
 }
 
 const goldenRingColor = hexToCssRgb(medievalGold)
+const goldLight = hexToCssRgb(medievalGoldLight)
 const inkBlack = hexToCssRgb(tailwindConfig.theme.extend.colors.medieval.inkblack)
 const goldenRingShadow = `${inkBlack} 0px 0px 0px 2px, ${inkBlack} 0px 0px 0px 5px`
+const transparent = 'rgba(0, 0, 0, 0)'
+const legibleTextShadow = 'rgba(0, 0, 0, 0.9) 0px 0px 4px, rgba(0, 0, 0, 0.8) 0px 1px 2px'
 
 const emailField = (page: Page) => page.getByLabel(/email|correo/i)
 const passwordField = (page: Page) =>
@@ -172,9 +176,9 @@ async function foreground(locator: Locator): Promise<[number, number, number]> {
   })
 }
 
-async function expectTextContrast(locator: Locator, label: string) {
+async function textContrast(locator: Locator): Promise<number> {
   const box = await locator.boundingBox()
-  expect(box, label).not.toBeNull()
+  expect(box).not.toBeNull()
   const textRects = await locator.evaluate((element) => {
     const host = element.getBoundingClientRect()
     const range = document.createRange()
@@ -186,8 +190,309 @@ async function expectTextContrast(locator: Locator, label: string) {
       height: rect.height,
     }))
   })
-  const ratio = minimumContrast(await locator.screenshot(), box!.width, textRects, await foreground(locator))
+  return minimumContrast(await locator.screenshot(), box!.width, box!.height, textRects, await foreground(locator))
+}
+
+async function linkContrast(locator: Locator, textShadow?: string): Promise<number> {
+  const box = await locator.boundingBox()
+  expect(box).not.toBeNull()
+  const color = await foreground(locator)
+  if (textShadow !== undefined) {
+    await locator.evaluate((element, shadow) => {
+      element.style.textShadow = shadow
+    }, textShadow)
+  }
+  try {
+    // Gold text with no shadow, against transparent text with no shadow, is
+    // the glyph. The ring is read from the real render, text and shadow.
+    const rendered = await locator.screenshot()
+    const ink = await painted(locator, { textShadow: 'none' })
+    const bare = await painted(locator, {
+      color: 'transparent',
+      webkitTextFillColor: 'transparent',
+      textShadow: 'none',
+      backgroundImage: 'none',
+    })
+    return legibleTextContrast(rendered, ink, bare, box!.width, box!.height, color)
+  } finally {
+    if (textShadow !== undefined) {
+      await locator.evaluate((element) => {
+        element.style.textShadow = ''
+      })
+    }
+  }
+}
+
+interface Paint {
+  color?: string
+  textShadow?: string
+  webkitTextFillColor?: string
+  backgroundImage?: string
+}
+
+async function painted(locator: Locator, style: Paint): Promise<Buffer> {
+  await locator.evaluate((element, next: Paint) => {
+    element.style.color = next.color ?? ''
+    element.style.webkitTextFillColor = next.webkitTextFillColor ?? ''
+    element.style.textShadow = next.textShadow ?? ''
+    element.style.backgroundImage = next.backgroundImage ?? ''
+  }, style)
+  try {
+    return await locator.screenshot()
+  } finally {
+    await locator.evaluate((element) => {
+      element.style.color = ''
+      element.style.webkitTextFillColor = ''
+      element.style.textShadow = ''
+      element.style.backgroundImage = ''
+    })
+  }
+}
+
+async function expectTextContrast(locator: Locator, label: string) {
+  const ratio = await textContrast(locator)
   expect(ratio, `${label} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
+}
+
+/**
+ * Lowest contrast of the link against the scene behind it.
+ * Embers are random, so they are hidden and the desktop video is sampled
+ * across its loop. The static image is one shot.
+ */
+async function sceneContrasts(
+  page: Page,
+  locator: Locator,
+  measure: (locator: Locator) => Promise<number> = textContrast,
+): Promise<number[]> {
+  return eachSceneFrame(page, () => measure(locator))
+}
+
+/**
+ * One sample per static frame, or one per quarter-second of the desktop
+ * video. Embers are random, so they are hidden.
+ */
+async function eachSceneFrame<T>(page: Page, measure: () => Promise<T>): Promise<T[]> {
+  await page.addStyleTag({
+    content: '.ember { animation: none !important; opacity: 0 !important; }',
+  })
+  const video = page.locator('video.auth-video')
+  const duration = await video.evaluate(async (element: HTMLVideoElement) => {
+    const box = element.getBoundingClientRect()
+    const shown = getComputedStyle(element).display !== 'none' && box.width > 0 && box.height > 0
+    if (!shown) return 0
+    if (element.readyState < 1 || !Number.isFinite(element.duration)) {
+      await new Promise<void>((resolve, reject) => {
+        const timer = window.setTimeout(() => reject(new Error('auth video did not load')), 5000)
+        element.addEventListener('loadedmetadata', () => {
+          window.clearTimeout(timer)
+          resolve()
+        }, { once: true })
+      })
+    }
+    if (!Number.isFinite(element.duration) || element.duration <= 0) {
+      throw new Error('auth video has no duration')
+    }
+    return element.duration
+  })
+  if (duration <= 0) {
+    await page.evaluate(() => new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)))
+    }))
+    return [await measure()]
+  }
+
+  const frames: T[] = []
+  for (let time = 0; time < duration - 0.02; time += 0.25) {
+    await video.evaluate(async (element: HTMLVideoElement, target: number) => {
+      element.pause()
+      const ready = () => element.readyState >= 2 && Math.abs(element.currentTime - target) < 0.03
+      if (ready()) return
+      await new Promise<void>((resolve) => {
+        const finish = () => {
+          if (element.readyState >= 2) resolve()
+          else element.addEventListener('loadeddata', () => resolve(), { once: true })
+        }
+        if (Math.abs(element.currentTime - target) < 0.03) {
+          finish()
+          return
+        }
+        element.addEventListener('seeked', () => finish(), { once: true })
+        element.currentTime = target
+      })
+    }, time)
+    await page.evaluate(() => new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)))
+    }))
+    frames.push(await measure())
+  }
+  return frames
+}
+
+interface CardText {
+  name: string
+  locator: Locator
+  gate: boolean
+}
+
+function cardTexts(page: Page, view: 'login' | 'signup' | 'reset'): CardText[] {
+  const card = page.getByTestId('auth-card')
+  if (view === 'signup') {
+    return [
+      { name: 'body', locator: card.locator('h1 + p'), gate: true },
+      { name: 'email-label', locator: page.locator('label[for="email"]'), gate: true },
+      { name: 'username-label', locator: page.locator('label[for="username"]'), gate: true },
+      { name: 'password-label', locator: page.locator('label[for="password"]'), gate: true },
+      { name: 'helper', locator: page.locator('#password-requirements li span').first(), gate: true },
+      { name: 'link', locator: page.getByRole('button', { name: /already have an account|ya tienes cuenta/i }), gate: true },
+    ]
+  }
+  if (view === 'reset') {
+    return [
+      { name: 'title', locator: card.getByRole('heading', { level: 2 }), gate: true },
+      { name: 'helper', locator: page.locator('#reset-help'), gate: true },
+      { name: 'email-label', locator: page.locator('label[for="email"]'), gate: true },
+      { name: 'link', locator: backToSignIn(page), gate: true },
+    ]
+  }
+  return [
+    { name: 'body', locator: card.locator('h1 + p'), gate: true },
+    { name: 'email-label', locator: page.locator('label[for="email"]'), gate: true },
+    { name: 'password-label', locator: page.locator('label[for="password"]'), gate: true },
+    { name: 'forgot', locator: forgotPassword(page), gate: true },
+    { name: 'sign-up', locator: page.getByRole('button', { name: /don't have an account|no tienes cuenta/i }), gate: true },
+  ]
+}
+
+async function visibleCardTexts(samples: CardText[]): Promise<CardText[]> {
+  const visible: CardText[] = []
+  for (const sample of samples) {
+    const box = await sample.locator.boundingBox()
+    if (!box || box.width < 8 || box.height < 8) continue
+    visible.push(sample)
+  }
+  return visible
+}
+
+function pngSize(png: Buffer) {
+  return { width: png.readUInt32BE(16), height: png.readUInt32BE(20) }
+}
+
+function medianChannel(values: number[]) {
+  const sorted = [...values].sort((left, right) => left - right)
+  const middle = Math.floor(sorted.length / 2)
+  return sorted.length % 2 === 1 ? sorted[middle] : Math.round((sorted[middle - 1] + sorted[middle]) / 2)
+}
+
+function medianRgb(colors: [number, number, number][]): [number, number, number] {
+  return [
+    medianChannel(colors.map((color) => color[0])),
+    medianChannel(colors.map((color) => color[1])),
+    medianChannel(colors.map((color) => color[2])),
+  ]
+}
+
+/**
+ * Resting border against the card just outside it and the fill just inside.
+ * The sample is the middle of the top edge, away from the rounded corners.
+ */
+async function restingBorderContrast(page: Page, input: Locator) {
+  await input.scrollIntoViewIfNeeded()
+  const box = await input.boundingBox()
+  expect(box).not.toBeNull()
+  const borderTop = await input.evaluate((element) => Number.parseFloat(getComputedStyle(element).borderTopWidth))
+  const above = 6
+  const clip = {
+    x: Math.max(0, box!.x + box!.width / 2 - 4),
+    y: Math.max(0, box!.y - above),
+    width: 8,
+    height: above + borderTop + 8,
+  }
+  const png = await page.screenshot({ clip })
+  const size = pngSize(png)
+  const scale = size.width / clip.width
+  const yAt = (cssY: number) => Math.min(size.height - 1, Math.max(0, Math.round(cssY * scale)))
+  const sample = (y: number) => {
+    const colors: [number, number, number][] = []
+    for (let dx = -2; dx <= 2; dx += 1) {
+      const x = Math.min(size.width - 1, Math.max(0, Math.round(size.width / 2) + dx))
+      colors.push(pngPixel(png, x, y))
+    }
+    return medianRgb(colors)
+  }
+  // A 1px border lands on a different device row at DPR 1 than at DPR 2.75.
+  // The gold row is the one whose red and green stand above its blue.
+  let borderY = 0
+  let best = -1
+  for (let y = 0; y < size.height; y += 1) {
+    const color = sample(y)
+    const score = color[0] + color[1] - 2 * color[2]
+    if (score > best) {
+      best = score
+      borderY = y
+    }
+  }
+  const border = sample(borderY)
+  const card = sample(yAt(above - 2))
+  const fill = sample(yAt(above + borderTop + 3))
+  return {
+    againstCard: colorContrast(border, card),
+    againstFill: colorContrast(border, fill),
+    border,
+    card,
+    fill,
+  }
+}
+
+async function rasterColor(page: Page, color: string): Promise<string> {
+  return page.evaluate((value) => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 1
+    canvas.height = 1
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('canvas is unavailable')
+    context.clearRect(0, 0, 1, 1)
+    context.fillStyle = value
+    context.fillRect(0, 0, 1, 1)
+    return [...context.getImageData(0, 0, 1, 1).data].join(',')
+  }, color)
+}
+
+async function expectNoBackdrop(link: Locator, accountLink: Locator) {
+  const paint = await link.evaluate((element) => {
+    const style = getComputedStyle(element)
+    return {
+      backgroundColor: style.backgroundColor,
+      backgroundImage: style.backgroundImage,
+      boxShadow: style.boxShadow,
+      textShadow: style.textShadow,
+      color: style.color,
+      textDecorationLine: style.textDecorationLine,
+      textUnderlineOffset: style.textUnderlineOffset,
+      beforeBackground: getComputedStyle(element, '::before').backgroundColor,
+      afterBackground: getComputedStyle(element, '::after').backgroundColor,
+    }
+  })
+  const accountPaint = await accountLink.evaluate((element) => {
+    const style = getComputedStyle(element)
+    return {
+      backgroundColor: style.backgroundColor,
+      textShadow: style.textShadow,
+      color: style.color,
+    }
+  })
+
+  expect(paint.backgroundColor).toBe(transparent)
+  expect(paint.backgroundColor).toBe(accountPaint.backgroundColor)
+  expect(paint.backgroundImage).toBe('none')
+  expect(paint.beforeBackground).toBe(transparent)
+  expect(paint.afterBackground).toBe(transparent)
+  expect(paint.boxShadow).toBe('none')
+  expect(paint.textShadow).toBe(legibleTextShadow)
+  expect(accountPaint.textShadow).toBe(legibleTextShadow)
+  expect(paint.color).toBe(goldLight)
+  expect(accountPaint.color).toBe(goldLight)
+  expect(paint.textDecorationLine).toBe('underline')
+  expect(paint.textUnderlineOffset).toBe('2px')
 }
 
 test.describe('forgot-password link', () => {
@@ -645,12 +950,382 @@ test.describe('recovery confirmation', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'Check your email' })).toBeVisible()
   })
 
-  test('the link and the confirmation clear 4.5:1 on the card', async ({ page }) => {
+  test('the login links have no backdrop, share one shadow, and are measured beside the letters', async ({ page }, testInfo) => {
+    // Desktop widths sample the video. 1024 sits between the 768 card change and 1280.
+    test.setTimeout(240_000)
+    const lines: string[] = []
+    const shortfalls: string[] = []
+    for (const viewport of [
+      { width: 320, height: 568 },
+      { width: 375, height: 667 },
+      { width: 740, height: 360 },
+      { width: 1024, height: 768 },
+      { width: 1280, height: 720 },
+    ]) {
+      for (const locale of ['EN', 'ES'] as const) {
+        await page.setViewportSize(viewport)
+        await page.goto('/auth')
+        await page.getByRole('button', { name: locale, exact: true }).click()
+        await page.evaluate(() => document.fonts.ready)
+        await page.mouse.move(0, 0)
+
+        const link = forgotPassword(page)
+        const accountLink = page.getByRole('button', { name: /don't have an account|no tienes cuenta/i })
+        await expect(link).toBeVisible()
+        await expectNoBackdrop(link, accountLink)
+
+        if (viewport.width < 480) {
+          const box = await link.boundingBox()
+          expect(box).not.toBeNull()
+          expect(box!.width).toBeGreaterThanOrEqual(44)
+          expect(box!.height).toBeGreaterThanOrEqual(44)
+        }
+        if (await page.evaluate(() => window.matchMedia('(pointer: coarse)').matches)) {
+          const hit = await hitBox(link)
+          expect(hit.width).toBeGreaterThanOrEqual(44)
+          expect(hit.height).toBeGreaterThanOrEqual(44)
+        }
+
+        for (const [name, control] of [
+          ['forgot-password', link],
+          ['sign-up', accountLink],
+        ] as const) {
+          const ratios = await sceneContrasts(page, control, linkContrast)
+          expect(ratios.length).toBeGreaterThan(0)
+          const lowest = Math.min(...ratios)
+          const listed = ratios.map((ratio) => ratio.toFixed(2)).join(', ')
+          const where = `${name} ${viewport.width}×${viewport.height} ${locale} ${lowest.toFixed(2)}:1 [${listed}]`
+          lines.push(where)
+          expect(Number.isFinite(lowest), where).toBe(true)
+          // Below 768 the dark card carries both links to 4.5:1. From 768px
+          // up the translucent card is accepted as-is, including a
+          // forgot-password link under 4.5:1. Those ratios are recorded.
+          if (viewport.width < 768 && lowest < 4.5) shortfalls.push(where)
+        }
+      }
+    }
+    await testInfo.attach('login-link-contrast.txt', {
+      body: Buffer.from(`${lines.join('\n')}\n`),
+      contentType: 'text/plain',
+    })
+    expect(shortfalls, lines.join('\n')).toEqual([])
+
+    await page.setViewportSize({ width: 375, height: 667 })
+    await page.goto('/auth?mode=signup')
+    const signInLink = page.getByRole('button', { name: /already have an account|ya tienes cuenta/i })
+    await expect(signInLink).toBeVisible()
+    expect(await signInLink.evaluate((element) => getComputedStyle(element).textShadow)).toBe('none')
+
+    for (const viewport of [
+      { width: 375, height: 667 },
+      { width: 1280, height: 720 },
+    ]) {
+      await page.setViewportSize(viewport)
+      await page.goto('/auth')
+      await page.getByRole('button', { name: 'ES', exact: true }).click()
+      await page.evaluate(() => document.fonts.ready)
+      await resetTabStart(page)
+      for (const control of [
+        page.getByRole('button', { name: 'EN', exact: true }),
+        page.getByRole('button', { name: 'ES', exact: true }),
+        emailField(page),
+        passwordField(page),
+        showPasswordButton(page),
+        forgotPassword(page),
+      ]) {
+        await page.keyboard.press('Tab')
+        await expect(control, String(viewport.width)).toBeFocused()
+      }
+      await expectGoldenFocusRing(forgotPassword(page))
+    }
+  })
+
+  test('the new-password field error stays inside the field and clears 4.5:1', async ({ page }) => {
+    // UpdatePasswordPanel passes `error` to PasswordInput, so the shared
+    // field-error wash renders here too. It has to stay inside the input,
+    // the same way the login errors do, and clear 4.5:1 beside the letters.
+    await page.addInitScript(() => {
+      const session = {
+        user: { id: 'recovery-user', email: 'hero@example.com' },
+        profile: {
+          id: 'recovery-user',
+          username: 'Hero',
+          created_at: '2024-01-01T00:00:00.000Z',
+        },
+        access_token: 'recovery-access-token',
+        refresh_token: 'recovery-refresh-token',
+        expires_at: Math.floor(Date.now() / 1000) + 60 * 60,
+        token_type: 'bearer',
+      }
+      localStorage.setItem('sb-mock-auth-token', JSON.stringify(session))
+      ;(window as Window & { mockPasswordRecovery?: boolean }).mockPasswordRecovery = true
+    })
+    await page.route('**/auth/v1/user**', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ id: 'recovery-user' }),
+      }),
+    )
+
+    for (const viewport of [
+      { width: 320, height: 568 },
+      { width: 375, height: 667 },
+      { width: 390, height: 844 },
+    ]) {
+      for (const locale of [
+        { button: 'EN', message: 'Enter your password.' },
+        { button: 'ES', message: 'Introduce tu contraseña.' },
+      ] as const) {
+        await page.setViewportSize(viewport)
+        await page.goto('/auth?mode=update-password')
+        await page.getByRole('button', { name: locale.button, exact: true }).click()
+        await page.evaluate(() => document.fonts.ready)
+        await page.getByRole('button', { name: /^(save password|guardar contraseña)$/i }).click()
+        await page.mouse.move(0, 0)
+
+        const label = `update-password ${viewport.width}×${viewport.height} ${locale.button}`
+        const card = page.getByTestId('auth-card')
+        const input = page.locator('#password')
+        const error = page.locator('#password-error')
+        await expect(error, label).toHaveText(locale.message)
+        await expect(input, label).toHaveAttribute('aria-invalid', 'true')
+
+        const cardBox = await card.boundingBox()
+        const inputBox = await input.boundingBox()
+        const errorBox = await error.boundingBox()
+        expect(cardBox, label).not.toBeNull()
+        expect(inputBox, label).not.toBeNull()
+        expect(errorBox, label).not.toBeNull()
+        const place = `${label} error ${errorBox!.x.toFixed(1)}..${(errorBox!.x + errorBox!.width).toFixed(1)} input ${inputBox!.x.toFixed(1)}..${(inputBox!.x + inputBox!.width).toFixed(1)}`
+        expect(errorBox!.x, place).toBeGreaterThanOrEqual(inputBox!.x - 1)
+        expect(errorBox!.x + errorBox!.width, place).toBeLessThanOrEqual(inputBox!.x + inputBox!.width + 1)
+        expect(errorBox!.x, place).toBeGreaterThanOrEqual(cardBox!.x)
+        expect(errorBox!.x + errorBox!.width, place).toBeLessThanOrEqual(cardBox!.x + cardBox!.width)
+
+        const wash = await error.evaluate((element) => getComputedStyle(element).backgroundColor)
+        const expectedWash = await page.evaluate(() => {
+          const probe = document.createElement('div')
+          probe.className = 'bg-background-darker/75'
+          document.body.appendChild(probe)
+          const color = getComputedStyle(probe).backgroundColor
+          probe.remove()
+          return color
+        })
+        expect(wash, `${label} wash`).toBe(expectedWash)
+
+        const ratio = await linkContrast(error)
+        expect(ratio, `${label} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
+      }
+    }
+  })
+
+  test('card text clears 4.5:1 beside the letters below 768', async ({ page }, testInfo) => {
+    // Login, sign-up, and the reset request. The new-password field error is
+    // the test above: it uses the same wash, now that the panel passes `error`.
+    test.setTimeout(180_000)
+    const desktopCard = 'rgb(255 255 255 / 0.2)'
+    const mobileCard = 'rgb(10 10 10 / 0.7)'
+    const lines: string[] = []
+
+    for (const viewport of [
+      { width: 320, height: 568, locales: ['ES'] as const },
+      { width: 375, height: 667, locales: ['ES', 'EN'] as const },
+      { width: 740, height: 360, locales: ['ES'] as const },
+      { width: 1280, height: 720, locales: ['ES'] as const },
+    ]) {
+      for (const locale of viewport.locales) {
+        for (const view of ['login', 'signup', 'reset'] as const) {
+          await page.setViewportSize({ width: viewport.width, height: viewport.height })
+          await page.goto(view === 'login' ? '/auth' : `/auth?mode=${view}`)
+          await page.getByRole('button', { name: locale, exact: true }).click()
+          await page.evaluate(() => document.fonts.ready)
+          await page.mouse.move(0, 0)
+
+          const card = page.getByTestId('auth-card')
+          const paint = await card.evaluate((element) => {
+            const style = getComputedStyle(element)
+            return {
+              backgroundColor: style.backgroundColor,
+              backdropFilter: style.backdropFilter,
+              borderTopWidth: style.borderTopWidth,
+              borderTopColor: style.borderTopColor,
+            }
+          })
+          expect(paint.backdropFilter, `${viewport.width} blur`).toContain('blur')
+          expect(paint.borderTopWidth, `${viewport.width} border`).toBe('2px')
+          expect(
+            await rasterColor(page, paint.borderTopColor),
+            `${viewport.width} gold border`,
+          ).toBe(await rasterColor(page, 'rgb(212 175 55 / 0.4)'))
+          expect(
+            await rasterColor(page, paint.backgroundColor),
+            `${view} ${viewport.width} ${locale} ${paint.backgroundColor}`,
+          ).toBe(await rasterColor(page, viewport.width < 768 ? mobileCard : desktopCard))
+
+          const samples = await visibleCardTexts(cardTexts(page, view))
+          const frames = await eachSceneFrame(page, async () => {
+            const measured: { name: string, ratio: number, gate: boolean }[] = []
+            for (const sample of samples) {
+              measured.push({
+                name: sample.name,
+                gate: sample.gate,
+                ratio: await linkContrast(sample.locator),
+              })
+            }
+            return measured
+          })
+          const lowest = new Map<string, { ratio: number, gate: boolean }>()
+          for (const frame of frames) {
+            for (const sample of frame) {
+              const previous = lowest.get(sample.name)
+              if (!previous || sample.ratio < previous.ratio) {
+                lowest.set(sample.name, { ratio: sample.ratio, gate: sample.gate })
+              }
+            }
+          }
+          for (const [name, sample] of lowest) {
+            const where = `${view} ${name} ${viewport.width}×${viewport.height} ${locale} ${sample.ratio.toFixed(2)}:1`
+            lines.push(where)
+            expect(Number.isFinite(sample.ratio), where).toBe(true)
+            if (sample.gate && viewport.width < 768) {
+              expect(sample.ratio, where).toBeGreaterThanOrEqual(4.5)
+            }
+          }
+
+          // The logo's 1–3px ring is its own gold glow (`.dnd-title`, also
+          // used on the game page). The card token does not move it, and the
+          // same heading is on every view, so it is measured once.
+          if (view === 'login') {
+            const logo = card.getByRole('heading', { level: 1 })
+            try {
+              const ratio = await linkContrast(logo)
+              lines.push(`logo ${viewport.width}×${viewport.height} ${locale} ${ratio.toFixed(2)}:1`)
+            } catch (error) {
+              const message = error instanceof Error ? error.message : String(error)
+              lines.push(`logo ${viewport.width}×${viewport.height} ${locale} ${message}`)
+            }
+          }
+        }
+      }
+    }
+
+    await testInfo.attach('card-contrast.txt', {
+      body: Buffer.from(`${lines.join('\n')}\n`),
+      contentType: 'text/plain',
+    })
+  })
+
+  test('resting input borders clear 3:1 below 768', async ({ page }, testInfo) => {
+    // WCAG 1.4.11. The dark card and the input fill are nearly the same, so
+    // the 1px resting border is the field boundary. Focus and error borders
+    // are a different state.
+    const lines: string[] = []
+    const failures: string[] = []
+    for (const viewport of [
+      { width: 375, height: 667 },
+      { width: 320, height: 568 },
+    ]) {
+      for (const view of ['login', 'signup', 'reset'] as const) {
+        await page.setViewportSize(viewport)
+        await page.goto(view === 'login' ? '/auth' : `/auth?mode=${view}`)
+        await page.getByRole('button', { name: 'ES', exact: true }).click()
+        await page.evaluate(() => document.fonts.ready)
+        await page.addStyleTag({
+          content: '.ember { animation: none !important; opacity: 0 !important; }',
+        })
+        await page.mouse.move(0, 0)
+        const inputs = page.getByTestId('auth-card').locator('input')
+        const count = await inputs.count()
+        for (let index = 0; index < count; index += 1) {
+          const input = inputs.nth(index)
+          const id = await input.getAttribute('id')
+          const measured = await restingBorderContrast(page, input)
+          const where = [
+            `${view} ${id} ${viewport.width}×${viewport.height}`,
+            `card ${measured.againstCard.toFixed(2)}:1`,
+            `fill ${measured.againstFill.toFixed(2)}:1`,
+            `border ${measured.border.join(',')}`,
+            `beside ${measured.card.join(',')}`,
+            `fill ${measured.fill.join(',')}`,
+          ].join(' ')
+          lines.push(where)
+          if (measured.againstCard < 3 || measured.againstFill < 3) failures.push(where)
+        }
+      }
+    }
+    await page.setViewportSize({ width: 375, height: 667 })
+    await page.goto('/auth')
+    await page.getByRole('button', { name: 'ES', exact: true }).click()
+    await page.evaluate(() => document.fonts.ready)
+    await page.addStyleTag({ content: '#email { transition: none !important; }' })
+    const email = page.locator('#email')
+    await email.evaluate((element) => element.focus({ focusVisible: true }))
+    const focused = await email.evaluate((element) => getComputedStyle(element).borderTopColor)
+    expect(await rasterColor(page, focused), `focused border ${focused}`).toBe(await rasterColor(page, 'rgb(212 175 55)'))
+    await email.blur()
+    const invalid = await email.evaluate((element) => getComputedStyle(element).borderTopColor)
+    const red = await page.evaluate(() => {
+      const probe = document.createElement('div')
+      probe.className = 'border border-red-500'
+      document.body.appendChild(probe)
+      const color = getComputedStyle(probe).borderTopColor
+      probe.remove()
+      return color
+    })
+    expect(invalid, 'error border stays border-red-500').toBe(red)
     await page.setViewportSize({ width: 1280, height: 720 })
+    await email.fill('ada@example.com')
+    await email.blur()
+    const desktop = await email.evaluate((element) => getComputedStyle(element).borderTopColor)
+    const resting = await page.evaluate(() => {
+      const probe = document.createElement('div')
+      probe.className = 'border border-medieval-gold/30'
+      document.body.appendChild(probe)
+      const color = getComputedStyle(probe).borderTopColor
+      probe.remove()
+      return color
+    })
+    expect(desktop, 'desktop border stays border-medieval-gold/30').toBe(resting)
+
+    await testInfo.attach('input-border-contrast.txt', {
+      body: Buffer.from(`${lines.join('\n')}\n`),
+      contentType: 'text/plain',
+    })
+    expect(failures, lines.join('\n')).toEqual([])
+  })
+
+  test('no shadow and a weak shadow miss 4.5:1 beside the letters', async ({ page }, testInfo) => {
+    // On desktop the stone 1–3px from the letters already clears 4.5:1, so a
+    // missing shadow cannot fail there. Mobile Chrome is the control.
+    // Below 768 the card itself is now dark enough to clear 4.5:1, so this
+    // control sits on the original translucent card. Otherwise removing the
+    // shadow would pass for the wrong reason.
+    testInfo.skip(testInfo.project.name !== 'Mobile Chrome', 'the desktop stone already clears 4.5:1')
+    await page.setViewportSize({ width: 375, height: 667 })
     await page.goto('/auth')
     await page.evaluate(() => document.fonts.ready)
-    await expectTextContrast(forgotPassword(page), 'forgot password')
+    await page.addStyleTag({
+      content: '.ember { animation: none !important; opacity: 0 !important; }',
+    })
+    await page.getByTestId('auth-card').evaluate((element) => {
+      element.style.backgroundColor = 'rgb(255 255 255 / 0.2)'
+    })
+    await page.mouse.move(0, 0)
 
+    const controls = [
+      ['forgot-password', forgotPassword(page)],
+      ['sign-up', page.getByRole('button', { name: /don't have an account|no tienes cuenta/i })],
+    ] as const
+    for (const shadow of ['none', '0 0 2px rgb(0 0 0 / .3)'] as const) {
+      for (const [name, control] of controls) {
+        const ratio = await linkContrast(control, shadow)
+        expect(ratio, `${name} ${shadow} ${ratio.toFixed(2)}:1`).toBeLessThan(4.5)
+      }
+    }
+  })
+
+  test('the confirmation clears 4.5:1 on the card', async ({ page }) => {
     await page.route('**/auth/v1/recover**', (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }),
     )

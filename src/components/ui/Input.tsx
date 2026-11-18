@@ -81,12 +81,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         <p
           id={errorId}
           className={[
-            // 6px of wash into the card padding. A line that fills a 320px card
-            // otherwise has no background pixels beside the glyphs.
-            'min-h-5 -mx-1.5 px-1.5 text-left text-sm leading-5 text-red-200',
-            // A light red still misses 4.5:1 on the brightest part of the card,
-            // so the message sits on a dark wash. 75% keeps that ratio when a
-            // classic scrollbar narrows the card. The empty slot stays clear.
+            // The wash stays inside the field. A negative margin let it run
+            // past the input into the card padding, beside the forgot-password link.
+            'min-h-5 text-left text-sm leading-5 text-red-200',
+            // Light red misses 4.5:1 on the brightest part of the card.
+            // The empty slot stays clear.
             hasError ? 'bg-background-darker/75' : '',
           ].filter(Boolean).join(' ')}
           aria-hidden={hasError ? undefined : true}

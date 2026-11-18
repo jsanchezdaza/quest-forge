@@ -1,4 +1,4 @@
-import { inflateSync } from 'node:zlib'
+import { crc32, deflateSync, inflateSync } from 'node:zlib'
 
 type Rgb = [number, number, number]
 
@@ -18,14 +18,15 @@ interface Rect {
 export function minimumContrast(
   png: Buffer,
   elementWidth: number,
+  elementHeight: number,
   textRects: Rect[],
   foreground: Rgb,
 ): number {
   const image = decodePng(png)
   const scale = image.width / elementWidth
   // A fractional device pixel makes the screenshot a little larger than the
-  // element, so the outer CSS pixel can be the scene beside it.
-  const elementHeight = image.height / scale
+  // element, so the outer CSS pixel can be the scene beside it. Inset from
+  // the CSS box, not the inflated screenshot, or the extra row stays in.
   let lowest = Number.POSITIVE_INFINITY
   let samples = 0
 
@@ -56,10 +57,128 @@ export function minimumContrast(
   return lowest
 }
 
+const MIN_RING_SAMPLES = 100
+const GLYPH_CHANNEL_DELTA = 12
+
+/**
+ * Lowest contrast of `foreground` against the background 1–3 CSS pixels
+ * outside the glyph.
+ *
+ * `inkPng` is the link drawn in its text color with no shadow. `barePng` is
+ * the same link with the text transparent and no shadow. Pixels that differ
+ * are the glyph, including its antialiased edge. `renderedPng` is the real
+ * link, text and shadow together. The sample is the ring just outside that
+ * mask. The dark pixels under the letters, and the empty padding farther
+ * than 3px out, are not part of it.
+ */
+export function legibleTextContrast(
+  renderedPng: Buffer,
+  inkPng: Buffer,
+  barePng: Buffer,
+  elementWidth: number,
+  elementHeight: number,
+  foreground: Rgb,
+): number {
+  const rendered = decodePng(renderedPng)
+  const ink = decodePng(inkPng)
+  const bare = decodePng(barePng)
+  if (
+    ink.width !== rendered.width || ink.height !== rendered.height
+    || bare.width !== rendered.width || bare.height !== rendered.height
+  ) {
+    throw new Error('link screenshots differ in size')
+  }
+  const scale = rendered.width / elementWidth
+  const glyph = new Uint8Array(rendered.width * rendered.height)
+  for (let index = 0; index < glyph.length; index += 1) {
+    const offset = index * 4
+    const differs = Math.abs(ink.pixels[offset] - bare.pixels[offset]) >= GLYPH_CHANNEL_DELTA
+      || Math.abs(ink.pixels[offset + 1] - bare.pixels[offset + 1]) >= GLYPH_CHANNEL_DELTA
+      || Math.abs(ink.pixels[offset + 2] - bare.pixels[offset + 2]) >= GLYPH_CHANNEL_DELTA
+    if (differs) glyph[index] = 1
+  }
+
+  const distance = chebyshevDistance(glyph, rendered.width, rendered.height)
+  let lowest = Number.POSITIVE_INFINITY
+  let samples = 0
+
+  for (let y = 0; y < rendered.height; y += 1) {
+    for (let x = 0; x < rendered.width; x += 1) {
+      const cssX = x / scale
+      const cssY = y / scale
+      if (cssX < 1 || cssY < 1 || cssX > elementWidth - 1 || cssY > elementHeight - 1) continue
+      const cssDistance = distance[y * rendered.width + x] / scale
+      if (cssDistance < 1 || cssDistance > 3) continue
+      const offset = (y * rendered.width + x) * 4
+      const ratio = contrastRatio(foreground, [
+        rendered.pixels[offset],
+        rendered.pixels[offset + 1],
+        rendered.pixels[offset + 2],
+      ])
+      samples += 1
+      if (ratio < lowest) lowest = ratio
+    }
+  }
+
+  if (samples < MIN_RING_SAMPLES) {
+    throw new Error(`not enough ring pixels beside the text (${samples})`)
+  }
+  return lowest
+}
+
+/** Device-pixel Chebyshev distance to the nearest glyph pixel. */
+function chebyshevDistance(glyph: Uint8Array, width: number, height: number): Int32Array {
+  const distance = new Int32Array(width * height)
+  distance.fill(1_000_000)
+  for (let index = 0; index < glyph.length; index += 1) {
+    if (glyph[index] === 1) distance[index] = 0
+  }
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const index = y * width + x
+      let nearest = distance[index]
+      if (x > 0) nearest = Math.min(nearest, distance[index - 1] + 1)
+      if (y > 0) nearest = Math.min(nearest, distance[index - width] + 1)
+      if (x > 0 && y > 0) nearest = Math.min(nearest, distance[index - width - 1] + 1)
+      if (x + 1 < width && y > 0) nearest = Math.min(nearest, distance[index - width + 1] + 1)
+      distance[index] = nearest
+    }
+  }
+
+  for (let y = height - 1; y >= 0; y -= 1) {
+    for (let x = width - 1; x >= 0; x -= 1) {
+      const index = y * width + x
+      let nearest = distance[index]
+      if (x + 1 < width) nearest = Math.min(nearest, distance[index + 1] + 1)
+      if (y + 1 < height) nearest = Math.min(nearest, distance[index + width] + 1)
+      if (x + 1 < width && y + 1 < height) nearest = Math.min(nearest, distance[index + width + 1] + 1)
+      if (x > 0 && y + 1 < height) nearest = Math.min(nearest, distance[index + width - 1] + 1)
+      distance[index] = nearest
+    }
+  }
+
+  return distance
+}
+
 interface DecodedPng {
   width: number
   height: number
   pixels: Uint8ClampedArray
+}
+
+export function colorContrast(foreground: Rgb, background: Rgb): number {
+  return contrastRatio(foreground, background)
+}
+
+/** One device pixel of a PNG, for a border sitting on the card. */
+export function pngPixel(png: Buffer, x: number, y: number): Rgb {
+  const image = decodePng(png)
+  if (x < 0 || y < 0 || x >= image.width || y >= image.height) {
+    throw new Error(`pixel ${x},${y} is outside ${image.width}×${image.height}`)
+  }
+  const offset = (y * image.width + x) * 4
+  return [image.pixels[offset], image.pixels[offset + 1], image.pixels[offset + 2]]
 }
 
 function contrastRatio(foreground: Rgb, background: Rgb): number {
@@ -145,4 +264,56 @@ function decodePng(buffer: Buffer): DecodedPng {
   }
 
   return { width, height, pixels }
+}
+
+/** Rectangle of `png`, in device pixels. Used to read several texts from one card shot. */
+export function cropPng(png: Buffer, x: number, y: number, width: number, height: number): Buffer {
+  const image = decodePng(png)
+  const left = Math.max(0, Math.min(image.width, Math.floor(x)))
+  const top = Math.max(0, Math.min(image.height, Math.floor(y)))
+  const right = Math.max(left, Math.min(image.width, Math.ceil(x + width)))
+  const bottom = Math.max(top, Math.min(image.height, Math.ceil(y + height)))
+  return encodeRgbPng(right - left, bottom - top, (pixelX, pixelY) => {
+    const offset = ((top + pixelY) * image.width + (left + pixelX)) * 4
+    return [image.pixels[offset], image.pixels[offset + 1], image.pixels[offset + 2]]
+  })
+}
+
+function encodeRgbPng(
+  width: number,
+  height: number,
+  paint: (x: number, y: number) => Rgb,
+): Buffer {
+  const stride = width * 3 + 1
+  const raw = Buffer.alloc(stride * height)
+  for (let y = 0; y < height; y += 1) {
+    const row = y * stride
+    raw[row] = 0
+    for (let x = 0; x < width; x += 1) {
+      const [red, green, blue] = paint(x, y)
+      const index = row + 1 + x * 3
+      raw[index] = red
+      raw[index + 1] = green
+      raw[index + 2] = blue
+    }
+  }
+  const header = Buffer.alloc(13)
+  header.writeUInt32BE(width, 0)
+  header.writeUInt32BE(height, 4)
+  header[8] = 8
+  header[9] = 2
+  const body = (type: string, data: Buffer) => {
+    const length = Buffer.alloc(4)
+    length.writeUInt32BE(data.length)
+    const chunk = Buffer.concat([Buffer.from(type), data])
+    const checksum = Buffer.alloc(4)
+    checksum.writeUInt32BE(crc32(chunk) >>> 0)
+    return Buffer.concat([length, chunk, checksum])
+  }
+  return Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    body('IHDR', header),
+    body('IDAT', deflateSync(raw)),
+    body('IEND', Buffer.alloc(0)),
+  ])
 }

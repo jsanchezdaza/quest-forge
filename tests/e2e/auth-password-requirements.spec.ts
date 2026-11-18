@@ -66,7 +66,7 @@ async function requirementContrast(list: Locator): Promise<number> {
     )
   })
   const png = await list.screenshot()
-  return minimumContrast(png, box!.width, textRects, foreground)
+  return minimumContrast(png, box!.width, box!.height, textRects, foreground)
 }
 
 async function openSignUp(page: Page) {
@@ -344,7 +344,7 @@ test.describe('password requirements', () => {
     await expectContrast('1280px')
   })
 
-  test('the error text lines up with the field and the checklist wash matches it', async ({ page }) => {
+  test('the error wash lines up with the field and the checklist wash stays 6px wider', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 900 })
     await openSignUp(page)
     const username = page.getByLabel(/username|nombre de usuario/i)
@@ -364,9 +364,11 @@ test.describe('password requirements', () => {
       range.selectNodeContents(element)
       return range.getBoundingClientRect().left
     })
-    // The wash extends 6px past the field. The glyphs stay on the field's left edge.
+    // The error wash stays inside the field. The checklist wash still runs 6px into the card padding.
     expect(Math.abs(textLeft - inputBox!.x)).toBeLessThanOrEqual(1)
-    expect(Math.abs(errorBox!.x - listBox!.x)).toBeLessThanOrEqual(1)
-    expect(Math.abs((errorBox!.x + errorBox!.width) - (listBox!.x + listBox!.width))).toBeLessThanOrEqual(1)
+    expect(Math.abs(errorBox!.x - inputBox!.x)).toBeLessThanOrEqual(1)
+    expect(Math.abs((errorBox!.x + errorBox!.width) - (inputBox!.x + inputBox!.width))).toBeLessThanOrEqual(1)
+    expect(Math.abs(listBox!.x - (inputBox!.x - 6))).toBeLessThanOrEqual(1)
+    expect(Math.abs((listBox!.x + listBox!.width) - (inputBox!.x + inputBox!.width + 6))).toBeLessThanOrEqual(1)
   })
 })
