@@ -13,15 +13,15 @@ Reuse the components, stores, utilities, and file layout already in the tree. Ty
 Write a failing test, make it pass, then refactor. Cover every acceptance criterion:
 
 - Domain and API behavior: `pnpm test:unit` (`node --test api/*.test.ts tests/unit/*.test.ts`). Handler tests sit next to `api/`; other unit tests live in `tests/unit/`.
-- User-facing behavior: Playwright specs in `tests/e2e/`.
+- User-facing behavior: Playwright specs in `tests/e2e/`. Coding agents write these specs and do not run them locally.
 
 Keep tests deterministic. Mock dates and clocks. Do not hard-code the current year.
 
 Playwright loads `tests/e2e/setup.ts`, which supplies mock `VITE_SUPABASE_*` values when unset and sets `window.mockSupabaseAuth`. Production code reads that flag only through `src/lib/testMode.ts` (auth init, sign-out, and game-session loads). Specs must run without real Supabase credentials. Stub a specific Auth HTTP result in the spec that needs it, as `auth-a11y.spec.ts` does.
 
-Query the UI with `getByRole` and `getByLabel`, as the auth specs do. `tests/e2e/auth-a11y.spec.ts` runs `@axe-core/playwright` for contrast (`wcag143`) and ARIA (`cat.aria`) and must stay green.
+Query the UI with `getByRole` and `getByLabel`, as the auth specs do. `tests/e2e/auth-a11y.spec.ts` runs `@axe-core/playwright` for contrast (`wcag143`) and ARIA (`cat.aria`) and must stay green in CI.
 
-`playwright.config.ts` defines desktop Chromium (`chromium`, Desktop Chrome) and `Mobile Chrome` (Pixel 5), plus Firefox, WebKit, Mobile Safari, and Tablet. CI (`.github/workflows/ci.yml`) runs every spec under `tests/e2e/` on `chromium` and `Mobile Chrome` in 3 parallel Playwright shards (about 5 minutes), with a single required `e2e` gate job. Run one file with `pnpm exec playwright test tests/e2e/auth.spec.ts --project=chromium`.
+`playwright.config.ts` defines desktop Chromium (`chromium`, Desktop Chrome) and `Mobile Chrome` (Pixel 5), plus Firefox, WebKit, Mobile Safari, and Tablet. CI (`.github/workflows/ci.yml`) runs every spec under `tests/e2e/` on `chromium` and `Mobile Chrome` in 3 parallel Playwright shards (about 5 minutes), with a single required `e2e` gate job. Coding agents do not run Playwright locally, including a single file.
 
 ## Commits
 
@@ -42,7 +42,7 @@ Use pnpm only (Node >= 24, pnpm >= 11, lockfile `pnpm-lock.yaml`). Install with 
 3. `pnpm lint` (ESLint on `src/**/*.{ts,tsx}`, `--max-warnings 0`)
 4. `pnpm build` (`tsc && vite build`: app typecheck, then the production bundle)
 
-`pnpm test:e2e` is separate. CI (`.github/workflows/ci.yml`) runs `pnpm run test:unit`, lint, build, and every Playwright spec under `tests/e2e/` on `chromium` and `Mobile Chrome`.
+Coding agents do not run `pnpm test:e2e` locally. CI (`.github/workflows/ci.yml`) runs `pnpm run test:unit`, lint, build, and the full Playwright suite under `tests/e2e/` on `chromium` and `Mobile Chrome` (sharded).
 
 Stack in this repo: React 19, TypeScript, Vite, React Router v7, Zustand, Tailwind CSS, and Supabase Auth. Stores in `src/store/`: `authStore.ts` (session and profile), `gameStore.ts` (session, scenes, mutations), `languageStore.ts` (`en` or `es`). Components subscribe to them directly. Supabase client and schema types are in `src/lib/supabase.ts`. `src/App.tsx` sends signed-out users to `/auth` and signed-in users to `/game`.
 
@@ -52,7 +52,7 @@ Optional narrative goes from `src/lib/openrouter.ts` through `api/openrouter.ts`
 
 ## Definition of done
 
-Lint, typecheck, unit tests, and the relevant end-to-end specs pass locally (`pnpm check` and `pnpm test:e2e`, or the specs and projects you changed, including `auth-a11y.spec.ts` when the auth UI changes). Open a pull request against `main` and leave it unmerged. Coding agents never merge and never close issues. Pull requests use only `Refs #N`, never `Closes #N`. The product manager closes the issue after she checks the acceptance criteria, never automatically. Manual steps or QA can keep an issue open.
+Before opening or updating a pull request, coding agents run unit tests, lint, and typecheck locally (`pnpm check`). They do not run Playwright end-to-end specs locally. GitHub CI runs the full end-to-end suite (sharded) and must be green on the head before review or merge. Agents push once per round and check the final CI result once; they do not keep re-waking to watch individual CI jobs. Open a pull request against `main` and leave it unmerged. Coding agents never merge and never close issues. Pull requests use only `Refs #N`, never `Closes #N`. The product manager closes the issue after she checks the acceptance criteria, never automatically. Manual steps or QA can keep an issue open.
 
 ## Product
 
@@ -63,6 +63,7 @@ User stories come from the product manager. Design comes from the product design
 The implementing agent passes this before marking the pull request ready, and copies it into the pull request body as a checked list:
 
 - Issue acceptance criteria reviewed one by one.
+- Unit tests, lint, and typecheck pass locally (`pnpm check`). Playwright end-to-end specs are not run locally.
 - Any new end-to-end spec runs in CI, and the `e2e` job is green on the head.
 - The diff touches only what the story asks. Flag any change to shared components or styles in the pull request body.
 - For a UI change: text contrast is at least 4.5:1, and touch targets are at least 44px.
