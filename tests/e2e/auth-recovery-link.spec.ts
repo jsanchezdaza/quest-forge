@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { test, expect, type Locator, type Page } from './setup'
 import tailwindConfig from '../../tailwind.config.js'
-import { minimumContrast, minimumRingContrastPng } from './pixelContrast'
+import { colorContrast, legibleTextContrast, pngPixel } from './pixelContrast'
 
 /**
  * An expired, used, or unreachable recovery link (#38).
@@ -123,69 +123,119 @@ async function foreground(locator: Locator): Promise<[number, number, number]> {
   })
 }
 
-async function expectTextContrast(locator: Locator, label: string, inset = 0) {
-  const box = await locator.boundingBox()
-  expect(box, label).not.toBeNull()
-  const textRects = await locator.evaluate((element, edge) => {
-    const host = element.getBoundingClientRect()
-    const range = document.createRange()
-    range.selectNodeContents(element)
-    const rects = [...range.getClientRects()].map((rect) => ({
-      x: rect.x - host.x,
-      y: rect.y - host.y,
-      width: rect.width,
-      height: rect.height,
-    }))
-    if (edge <= 0) return rects
-    return [
-      ...rects,
-      { x: 0, y: 0, width: host.width, height: edge },
-      { x: 0, y: host.height - edge, width: host.width, height: edge },
-      { x: 0, y: 0, width: edge, height: host.height },
-      { x: host.width - edge, y: 0, width: edge, height: host.height },
-    ]
-  }, inset)
-  const ratio = minimumContrast(await locator.screenshot(), box!.width, textRects, await foreground(locator))
-  expect(ratio, `${label} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
-  return ratio
+interface Paint {
+  color?: string
+  textShadow?: string
+  webkitTextFillColor?: string
+  backgroundImage?: string
 }
 
-/**
- * Worst contrast of the link color against the real pixels 1–3px outside
- * the glyphs. The shadow core under the letters is not the background.
- */
-async function measureLink(locator: Locator, label: string) {
-  const box = await locator.boundingBox()
-  expect(box, label).not.toBeNull()
-  const color = await foreground(locator)
-  const shadow = await locator.evaluate((element) => element.style.textShadow)
-  const real = await locator.screenshot()
-  await locator.evaluate((element) => {
-    element.style.textShadow = 'none'
-  })
-  const gold = await locator.screenshot()
-  await locator.evaluate((element) => {
-    element.style.color = 'transparent'
-  })
-  const clear = await locator.screenshot()
-  await locator.evaluate((element, stored) => {
-    element.style.color = ''
-    element.style.textShadow = stored
-  }, shadow)
-  return minimumRingContrastPng(real, gold, clear, box!.width, box!.height, color)
+async function painted(locator: Locator, style: Paint): Promise<Buffer> {
+  await locator.evaluate((element, next: Paint) => {
+    element.style.color = next.color ?? ''
+    element.style.webkitTextFillColor = next.webkitTextFillColor ?? ''
+    element.style.textShadow = next.textShadow ?? ''
+    element.style.backgroundImage = next.backgroundImage ?? ''
+  }, style)
+  try {
+    return await locator.screenshot()
+  } finally {
+    await locator.evaluate((element) => {
+      element.style.color = ''
+      element.style.webkitTextFillColor = ''
+      element.style.textShadow = ''
+      element.style.backgroundImage = ''
+    })
+  }
 }
 
-async function hideEmbers(page: Page) {
-  await page.locator('.ember').evaluateAll((nodes) => {
-    nodes.forEach((node) => {
-      ;(node as HTMLElement).style.display = 'none'
-    })
+/** Ring contrast, the same three shots as the login links. */
+async function linkContrast(locator: Locator): Promise<number> {
+  const box = await locator.boundingBox()
+  expect(box).not.toBeNull()
+  const rendered = await locator.screenshot()
+  const ink = await painted(locator, { textShadow: 'none' })
+  const bare = await painted(locator, {
+    color: 'transparent',
+    webkitTextFillColor: 'transparent',
+    textShadow: 'none',
+    backgroundImage: 'none',
   })
-  await page.evaluate(() => {
-    document.querySelectorAll('video').forEach((video) => {
-      video.pause()
-    })
-  })
+  return legibleTextContrast(rendered, ink, bare, box!.width, box!.height, await foreground(locator))
+}
+
+function pngSize(png: Buffer) {
+  return { width: png.readUInt32BE(16), height: png.readUInt32BE(20) }
+}
+
+function medianChannel(values: number[]) {
+  const sorted = [...values].sort((left, right) => left - right)
+  const middle = Math.floor(sorted.length / 2)
+  return sorted.length % 2 === 1 ? sorted[middle] : Math.round((sorted[middle - 1] + sorted[middle]) / 2)
+}
+
+function medianRgb(colors: [number, number, number][]): [number, number, number] {
+  return [
+    medianChannel(colors.map((color) => color[0])),
+    medianChannel(colors.map((color) => color[1])),
+    medianChannel(colors.map((color) => color[2])),
+  ]
+}
+
+/** Resting border against the card just outside it and the fill just inside. */
+async function restingBorderContrast(page: Page, input: Locator) {
+  await input.scrollIntoViewIfNeeded()
+  const box = await input.boundingBox()
+  expect(box).not.toBeNull()
+  const borderTop = await input.evaluate((element) => Number.parseFloat(getComputedStyle(element).borderTopWidth))
+  const above = 6
+  const clip = {
+    x: Math.max(0, box!.x + box!.width / 2 - 4),
+    y: Math.max(0, box!.y - above),
+    width: 8,
+    height: above + borderTop + 8,
+  }
+  const png = await page.screenshot({ clip })
+  const size = pngSize(png)
+  const scale = size.width / clip.width
+  const yAt = (cssY: number) => Math.min(size.height - 1, Math.max(0, Math.round(cssY * scale)))
+  const sample = (y: number) => {
+    const colors: [number, number, number][] = []
+    for (let dx = -2; dx <= 2; dx += 1) {
+      const x = Math.min(size.width - 1, Math.max(0, Math.round(size.width / 2) + dx))
+      colors.push(pngPixel(png, x, y))
+    }
+    return medianRgb(colors)
+  }
+  let borderY = 0
+  let best = -1
+  for (let y = 0; y < size.height; y += 1) {
+    const color = sample(y)
+    const score = color[0] + color[1] - 2 * color[2]
+    if (score > best) {
+      best = score
+      borderY = y
+    }
+  }
+  const border = sample(borderY)
+  return {
+    againstCard: colorContrast(border, sample(yAt(above - 2))),
+    againstFill: colorContrast(border, sample(yAt(above + borderTop + 3))),
+  }
+}
+
+async function rasterColor(page: Page, color: string): Promise<string> {
+  return page.evaluate((value) => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 1
+    canvas.height = 1
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('canvas is unavailable')
+    context.clearRect(0, 0, 1, 1)
+    context.fillStyle = value
+    context.fillRect(0, 0, 1, 1)
+    return [...context.getImageData(0, 0, 1, 1).data].join(',')
+  }, color)
 }
 
 test.describe('expired or unreachable recovery link', () => {
@@ -401,113 +451,170 @@ test.describe('expired or unreachable recovery link', () => {
     await expectCtaFits(page.getByRole('button', { name: 'Reintentar' }))
   })
 
-  test('expired copy clears 4.5:1 over the scene at 375 and 1280', async ({ page }) => {
-    for (const viewport of [
-      { width: 375, height: 667 },
-      { width: 1280, height: 720 },
-    ]) {
-      await page.setViewportSize(viewport)
-      await page.goto(EXPIRED_HASH)
-      await page.evaluate(() => document.fonts.ready)
-      await hideEmbers(page)
-      const label = `${viewport.width}x${viewport.height}`
-      await expectTextContrast(page.getByRole('heading', { level: 2, name: 'This link has expired' }), `${label} title`)
-      await expectTextContrast(page.getByText(EXPIRED_BODY), `${label} body`)
-      const cta = page.getByRole('button', { name: 'Request a new link' })
-      await cta.evaluate((element) => {
-        element.style.boxShadow = 'none'
-      })
-      // Rounded corners are transparent, so the shot includes the dark card.
-      // Skip that rim and read the gold fill behind the label.
-      await expectTextContrast(cta, `${label} cta`, 12)
-    }
-
-    const results = await new AxeBuilder({ page }).withTags(['cat.aria', 'wcag143']).analyze()
-    const failures = results.violations.flatMap((violation) =>
-      violation.nodes.map((node) => `${violation.id}: ${node.html}`)
-    )
-    expect(failures).toEqual([])
-  })
-
-  test('the link on each card clears 4.5:1 just outside the glyphs', async ({ page }, testInfo) => {
+  test('card text clears 4.5:1 beside the letters below 768', async ({ page }, testInfo) => {
+    test.setTimeout(180_000)
     await seedVerifier(page)
     await page.route('**/auth/v1/token**', (route) => route.abort('failed'))
-    const rows: Array<{
-      project: string
-      card: string
-      viewport: string
-      locale: string
-      ratio: number
-      samples: number
-      worst: [number, number, number]
-    }> = []
-    const cards = [
-      {
-        card: 'expired',
-        url: EXPIRED_QUERY,
-        heading: { en: 'This link has expired', es: 'Este enlace ha caducado' },
-        link: { en: 'Back to sign in', es: 'Volver a entrar' },
-      },
-      {
-        card: 'unreachable',
-        url: CODE_URL,
-        heading: { en: "We couldn't check your link", es: 'No hemos podido comprobar el enlace' },
-        link: { en: 'Request a new link', es: 'Pedir un enlace nuevo' },
-      },
-      {
-        card: 'invalid',
-        url: '/auth?mode=update-password',
-        heading: { en: "This link isn't valid", es: 'Este enlace no es válido' },
-        link: { en: 'Back to sign in', es: 'Volver a entrar' },
-      },
-    ] as const
+    const lines: string[] = []
+    const short: string[] = []
     const viewports = [
-      { locale: 'es' as const, width: 320, height: 568 },
-      { locale: 'es' as const, width: 375, height: 667 },
-      { locale: 'es' as const, width: 740, height: 360 },
-      { locale: 'es' as const, width: 1280, height: 720 },
-      { locale: 'en' as const, width: 375, height: 667 },
+      { locale: 'ES' as const, width: 320, height: 568 },
+      { locale: 'ES' as const, width: 375, height: 667 },
+      { locale: 'ES' as const, width: 740, height: 360 },
+      { locale: 'EN' as const, width: 375, height: 667 },
+    ]
+    const states = [
+      {
+        name: 'expired',
+        heading: /this link has expired|este enlace ha caducado/i,
+        open: (current: Page) => current.goto(EXPIRED_QUERY),
+      },
+      {
+        name: 'timeout',
+        heading: /couldn't check your link|no hemos podido comprobar el enlace/i,
+        open: (current: Page) => current.goto(CODE_URL),
+      },
     ]
 
-    // Language is set before the card loads. Reloading the expired card would
-    // drop the error the page already stripped and show the wrong state.
-    await page.addInitScript(() => {
-      localStorage.setItem('questforge.language', 'es')
-    })
-    let localeScript: 'en' | 'es' = 'es'
     for (const viewport of viewports) {
-      if (viewport.locale !== localeScript) {
-        localeScript = viewport.locale
-        await page.addInitScript((locale) => {
-          localStorage.setItem('questforge.language', locale)
-        }, viewport.locale)
-      }
       await page.setViewportSize({ width: viewport.width, height: viewport.height })
-      for (const card of cards) {
-        await page.goto(card.url)
+      for (const state of states) {
+        await state.open(page)
+        await page.getByRole('button', { name: viewport.locale, exact: true }).click()
         await page.evaluate(() => document.fonts.ready)
-        await hideEmbers(page)
-        await expect(page.getByRole('heading', { level: 2, name: card.heading[viewport.locale] })).toBeVisible()
-        const label = `${card.card} ${viewport.locale} ${viewport.width}x${viewport.height}`
-        const measured = await measureLink(page.getByRole('button', { name: card.link[viewport.locale] }), label)
-        rows.push({
-          project: testInfo.project.name,
-          card: card.card,
-          viewport: `${viewport.width}x${viewport.height}`,
-          locale: viewport.locale,
-          ratio: Number(measured.ratio.toFixed(2)),
-          samples: measured.samples,
-          worst: measured.worst,
+        await page.addStyleTag({
+          content: '.ember { animation: none !important; opacity: 0 !important; }',
         })
+        await expect(page.getByRole('heading', { level: 2, name: state.heading })).toBeVisible()
+        await page.evaluate(() => {
+          const active = document.activeElement
+          if (active instanceof HTMLElement) active.blur()
+        })
+        await page.mouse.move(0, 0)
+        const card = page.getByTestId('auth-card')
+        const texts = [
+          card.getByRole('heading', { level: 2 }),
+          card.locator('h2 + p, h2 ~ p').first(),
+          ...await card.getByRole('button').all(),
+        ]
+        for (const locator of texts) {
+          const box = await locator.boundingBox()
+          if (!box || box.width < 8 || box.height < 8) continue
+          const name = (await locator.innerText()).replace(/\s+/g, ' ').trim()
+          const ratio = await linkContrast(locator)
+          const where = `${state.name} ${name} ${viewport.width}×${viewport.height} ${viewport.locale} ${ratio.toFixed(2)}:1`
+          lines.push(where)
+          if (ratio < 4.5) short.push(where)
+        }
       }
     }
 
-    await testInfo.attach('link-contrast', {
-      body: JSON.stringify(rows, null, 2),
+    await installRecoverySession(page)
+    await page.route('**/auth/v1/user**', (route) => route.fulfill({
+      status: 200,
       contentType: 'application/json',
+      body: JSON.stringify({ id: 'recovery-user', email: 'hero@example.com' }),
+    }))
+    for (const viewport of viewports) {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height })
+      await page.goto('/auth?mode=update-password')
+      await page.getByRole('button', { name: viewport.locale, exact: true }).click()
+      await page.evaluate(() => document.fonts.ready)
+      await page.addStyleTag({
+        content: '.ember { animation: none !important; opacity: 0 !important; }',
+      })
+      await page.getByLabel(/new password|contraseña nueva/i).fill('abcd1234')
+      await page.getByRole('button', { name: /save password|guardar contraseña/i }).click()
+      await expect(page.getByRole('heading', { level: 2, name: /password updated|contraseña actualizada/i })).toBeVisible()
+      await page.evaluate(() => {
+        const active = document.activeElement
+        if (active instanceof HTMLElement) active.blur()
+      })
+      await page.mouse.move(0, 0)
+      const card = page.getByTestId('auth-card')
+      const texts = [
+        card.getByRole('heading', { level: 2 }),
+        card.locator('h2 + p, h2 ~ p').first(),
+        ...await card.getByRole('button').all(),
+      ]
+      for (const locator of texts) {
+        const box = await locator.boundingBox()
+        if (!box || box.width < 8 || box.height < 8) continue
+        const name = (await locator.innerText()).replace(/\s+/g, ' ').trim()
+        const ratio = await linkContrast(locator)
+        const where = `saved ${name} ${viewport.width}×${viewport.height} ${viewport.locale} ${ratio.toFixed(2)}:1`
+        lines.push(where)
+        if (ratio < 4.5) short.push(where)
+      }
+    }
+
+    await testInfo.attach('recovery-card-contrast.txt', {
+      body: Buffer.from(`${lines.join('\n')}\n`),
+      contentType: 'text/plain',
     })
-    testInfo.annotations.push({ type: 'link-contrast', description: JSON.stringify(rows) })
-    const short = rows.filter((row) => row.samples <= 80 || row.ratio < 4.5)
-    expect(short, JSON.stringify(rows, null, 2)).toEqual([])
+    testInfo.annotations.push({ type: 'recovery-card-contrast', description: lines.join('\n') })
+    expect(short, lines.join('\n')).toEqual([])
+
+    const results = await new AxeBuilder({ page }).withTags(['cat.aria', 'wcag143']).analyze()
+    const axe = results.violations.flatMap((violation) =>
+      violation.nodes.map((node) => `${violation.id}: ${node.html}`)
+    )
+    expect(axe).toEqual([])
+  })
+
+  test('the new-password field resting border clears 3:1 below 768', async ({ page }, testInfo) => {
+    await installRecoverySession(page)
+    const lines: string[] = []
+    const short: string[] = []
+    for (const viewport of [
+      { width: 320, height: 568 },
+      { width: 375, height: 667 },
+      { width: 740, height: 360 },
+    ]) {
+      await page.setViewportSize(viewport)
+      await page.goto('/auth?mode=update-password')
+      await page.getByRole('button', { name: 'ES', exact: true }).click()
+      await page.evaluate(() => document.fonts.ready)
+      await page.addStyleTag({
+        content: '.ember { animation: none !important; opacity: 0 !important; } #password { transition: none !important; }',
+      })
+      await page.mouse.move(0, 0)
+      const input = page.locator('#password')
+      const measured = await restingBorderContrast(page, input)
+      const where = [
+        `password ${viewport.width}×${viewport.height}`,
+        `card ${measured.againstCard.toFixed(2)}:1`,
+        `fill ${measured.againstFill.toFixed(2)}:1`,
+      ].join(' ')
+      lines.push(where)
+      if (measured.againstCard < 3 || measured.againstFill < 3) short.push(where)
+    }
+
+    await page.setViewportSize({ width: 375, height: 667 })
+    await page.goto('/auth?mode=update-password')
+    const password = page.locator('#password')
+    await password.evaluate((element) => element.focus({ focusVisible: true }))
+    const focused = await password.evaluate((element) => getComputedStyle(element).borderTopColor)
+    expect(await rasterColor(page, focused), `focused border ${focused}`).toBe(await rasterColor(page, 'rgb(212 175 55)'))
+
+    await page.setViewportSize({ width: 1280, height: 720 })
+    await password.blur()
+    const desktop = await password.evaluate((element) => getComputedStyle(element).borderTopColor)
+    const resting = await page.evaluate(() => {
+      const probe = document.createElement('div')
+      probe.className = 'border border-medieval-gold/30'
+      document.body.appendChild(probe)
+      const color = getComputedStyle(probe).borderTopColor
+      probe.remove()
+      return color
+    })
+    expect(desktop, 'desktop border stays border-medieval-gold/30').toBe(resting)
+
+    await testInfo.attach('recovery-input-border.txt', {
+      body: Buffer.from(`${lines.join('\n')}\n`),
+      contentType: 'text/plain',
+    })
+    testInfo.annotations.push({ type: 'recovery-input-border', description: lines.join('\n') })
+    expect(short, lines.join('\n')).toEqual([])
   })
 })

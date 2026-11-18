@@ -41,12 +41,11 @@ const titleClassName =
   'mt-1 font-pixel-body text-sm font-semibold normal-case tracking-normal text-gray-300 text-balance sm:mt-0'
 
 const modeLinkClassName =
-  'text-medieval-gold-light hover:underline focus-visible:underline font-pixel-body text-sm min-h-[44px] py-2'
+  'text-shadow-legible text-medieval-gold-light hover:underline focus-visible:underline font-pixel-body text-sm min-h-[44px] py-2'
 
-// Same shadow as #57's text-shadow-legible. That utility is not on main yet.
-const linkShadow = {
-  textShadow: '0 0 4px rgb(0 0 0 / .9), 0 1px 2px rgb(0 0 0 / .8)',
-}
+// Resting field border below 768. Same token as the login fields.
+const restingInputBorderClassName =
+  'max-sm:not-focus-visible:not-aria-invalid:border-auth-input-border-mobile'
 
 const noticeTitleClassName =
   'font-pixel-body text-base font-normal normal-case tracking-normal text-gray-100 text-balance'
@@ -332,6 +331,7 @@ export default function UpdatePasswordPanel({
           label={t('auth.updatePasswordLabel')}
           placeholder={t('form.passwordPlaceholder')}
           labelClassName={labelClassName}
+          className={restingInputBorderClassName}
           error={errorText}
           required
           aria-describedby={REQUIREMENTS_ID}
@@ -392,7 +392,7 @@ function RecoveryNotice({
         {primary}
       </Button>
       <div className="mt-4 text-center">
-        <button type="button" onClick={onSecondary} className={modeLinkClassName} style={linkShadow}>
+        <button type="button" onClick={onSecondary} className={modeLinkClassName}>
           {secondary}
         </button>
       </div>
