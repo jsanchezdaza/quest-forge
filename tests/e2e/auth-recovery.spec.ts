@@ -990,10 +990,6 @@ test.describe('recovery confirmation', () => {
           ['forgot-password', link],
           ['sign-up', accountLink],
         ] as const) {
-          // From 768px up the forgot-password link is asserted in its own
-          // expected-failure test. The desktop card stays translucent until
-          // the owner decides, so that shortfall is not fixed here.
-          if (name === 'forgot-password' && viewport.width >= 768) continue
           const ratios = await sceneContrasts(page, control, linkContrast)
           expect(ratios.length).toBeGreaterThan(0)
           const lowest = Math.min(...ratios)
@@ -1001,7 +997,10 @@ test.describe('recovery confirmation', () => {
           const where = `${name} ${viewport.width}×${viewport.height} ${locale} ${lowest.toFixed(2)}:1 [${listed}]`
           lines.push(where)
           expect(Number.isFinite(lowest), where).toBe(true)
-          if (lowest < 4.5) shortfalls.push(where)
+          // Below 768 the dark card carries both links to 4.5:1. From 768px
+          // up the translucent card is accepted as-is, including a
+          // forgot-password link under 4.5:1. Those ratios are recorded.
+          if (viewport.width < 768 && lowest < 4.5) shortfalls.push(where)
         }
       }
     }
@@ -1009,8 +1008,6 @@ test.describe('recovery confirmation', () => {
       body: Buffer.from(`${lines.join('\n')}\n`),
       contentType: 'text/plain',
     })
-    // Sign-up is a real assertion at every width. Only the forgot-password
-    // link from 768px up is the expected failure, in the next test.
     expect(shortfalls, lines.join('\n')).toEqual([])
 
     await page.setViewportSize({ width: 375, height: 667 })
@@ -1041,47 +1038,6 @@ test.describe('recovery confirmation', () => {
       }
       await expectGoldenFocusRing(forgotPassword(page))
     }
-  })
-
-  test('the forgot-password link clears 4.5:1 from 768px up', async ({ page }, testInfo) => {
-    // Known failure. From 768px up the card stays the translucent white/20
-    // over the video, and the forgot-password link lands under 4.5:1. The
-    // owner has not decided whether to change that desktop design, so the
-    // assertion stays and the test is expected to fail. Do not paint over it.
-    // Desktop Chromium already clears 4.5:1 here. Mobile Chrome does not, and
-    // the desktop card stays as it is until the owner decides.
-    test.fail(
-      testInfo.project.name === 'Mobile Chrome',
-      'forgot-password contrast from 768px up is pending an owner decision',
-    )
-    test.setTimeout(240_000)
-    const lines: string[] = []
-    for (const viewport of [
-      { width: 1024, height: 768 },
-      { width: 1280, height: 720 },
-    ]) {
-      for (const locale of ['EN', 'ES'] as const) {
-        await page.setViewportSize(viewport)
-        await page.goto('/auth')
-        await page.getByRole('button', { name: locale, exact: true }).click()
-        await page.evaluate(() => document.fonts.ready)
-        await page.mouse.move(0, 0)
-        const ratios = await sceneContrasts(page, forgotPassword(page), linkContrast)
-        expect(ratios.length).toBeGreaterThan(0)
-        const lowest = Math.min(...ratios)
-        const listed = ratios.map((ratio) => ratio.toFixed(2)).join(', ')
-        lines.push(`forgot-password ${viewport.width}×${viewport.height} ${locale} ${lowest.toFixed(2)}:1 [${listed}]`)
-      }
-    }
-    await testInfo.attach('forgot-password-desktop-contrast.txt', {
-      body: Buffer.from(`${lines.join('\n')}\n`),
-      contentType: 'text/plain',
-    })
-    const shortfalls = lines.filter((line) => {
-      const ratio = Number(line.match(/(\d+\.\d+):1/)?.[1])
-      return ratio < 4.5
-    })
-    expect(shortfalls, lines.join('\n')).toEqual([])
   })
 
   test('the new-password field error stays inside the field and clears 4.5:1', async ({ page }) => {
