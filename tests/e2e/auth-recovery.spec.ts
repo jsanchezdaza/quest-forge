@@ -411,8 +411,7 @@ async function restingBorderContrast(page: Page, input: Locator) {
   const size = pngSize(png)
   const scale = size.width / clip.width
   const yAt = (cssY: number) => Math.min(size.height - 1, Math.max(0, Math.round(cssY * scale)))
-  const sample = (cssY: number) => {
-    const y = yAt(cssY)
+  const sample = (y: number) => {
     const colors: [number, number, number][] = []
     for (let dx = -2; dx <= 2; dx += 1) {
       const x = Math.min(size.width - 1, Math.max(0, Math.round(size.width / 2) + dx))
@@ -420,9 +419,21 @@ async function restingBorderContrast(page: Page, input: Locator) {
     }
     return medianRgb(colors)
   }
-  const border = sample(above + borderTop / 2)
-  const card = sample(above - 2)
-  const fill = sample(above + borderTop + 3)
+  // A 1px border lands on a different device row at DPR 1 than at DPR 2.75.
+  // The gold row is the one whose red and green stand above its blue.
+  let borderY = 0
+  let best = -1
+  for (let y = 0; y < size.height; y += 1) {
+    const color = sample(y)
+    const score = color[0] + color[1] - 2 * color[2]
+    if (score > best) {
+      best = score
+      borderY = y
+    }
+  }
+  const border = sample(borderY)
+  const card = sample(yAt(above - 2))
+  const fill = sample(yAt(above + borderTop + 3))
   return {
     againstCard: colorContrast(border, card),
     againstFill: colorContrast(border, fill),
@@ -939,13 +950,16 @@ test.describe('recovery confirmation', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'Check your email' })).toBeVisible()
   })
 
-  test('the login links have no backdrop, share one shadow, and are measured beside the letters', async ({ page }) => {
-    // Three screenshots per frame, including the 1280 video, do not fit the default 30s.
-    test.setTimeout(120_000)
+  test('the login links have no backdrop, share one shadow, and are measured beside the letters', async ({ page }, testInfo) => {
+    // Desktop widths sample the video. 1024 sits between the 768 card change and 1280.
+    test.setTimeout(240_000)
+    const lines: string[] = []
+    const shortfalls: string[] = []
     for (const viewport of [
       { width: 320, height: 568 },
       { width: 375, height: 667 },
       { width: 740, height: 360 },
+      { width: 1024, height: 768 },
       { width: 1280, height: 720 },
     ]) {
       for (const locale of ['EN', 'ES'] as const) {
@@ -976,21 +990,28 @@ test.describe('recovery confirmation', () => {
           ['forgot-password', link],
           ['sign-up', accountLink],
         ] as const) {
+          // From 768px up the forgot-password link is asserted in its own
+          // expected-failure test. The desktop card stays translucent until
+          // the owner decides, so that shortfall is not fixed here.
+          if (name === 'forgot-password' && viewport.width >= 768) continue
           const ratios = await sceneContrasts(page, control, linkContrast)
           expect(ratios.length).toBeGreaterThan(0)
           const lowest = Math.min(...ratios)
           const listed = ratios.map((ratio) => ratio.toFixed(2)).join(', ')
-          const where = `${name} ${viewport.width} ${locale} ${lowest.toFixed(2)}:1 [${listed}]`
+          const where = `${name} ${viewport.width}×${viewport.height} ${locale} ${lowest.toFixed(2)}:1 [${listed}]`
+          lines.push(where)
           expect(Number.isFinite(lowest), where).toBe(true)
-          // Below 768 the card background carries the ring to 4.5:1.
-          // At 1280 the card stays the translucent one, so a shortfall there
-          // is recorded and not painted over.
-          if (viewport.width < 768) {
-            expect(lowest, where).toBeGreaterThanOrEqual(4.5)
-          }
+          if (lowest < 4.5) shortfalls.push(where)
         }
       }
     }
+    await testInfo.attach('login-link-contrast.txt', {
+      body: Buffer.from(`${lines.join('\n')}\n`),
+      contentType: 'text/plain',
+    })
+    // Sign-up is a real assertion at every width. Only the forgot-password
+    // link from 768px up is the expected failure, in the next test.
+    expect(shortfalls, lines.join('\n')).toEqual([])
 
     await page.setViewportSize({ width: 375, height: 667 })
     await page.goto('/auth?mode=signup')
@@ -1022,10 +1043,130 @@ test.describe('recovery confirmation', () => {
     }
   })
 
+  test('the forgot-password link clears 4.5:1 from 768px up', async ({ page }, testInfo) => {
+    // Known failure. From 768px up the card stays the translucent white/20
+    // over the video, and the forgot-password link lands under 4.5:1. The
+    // owner has not decided whether to change that desktop design, so the
+    // assertion stays and the test is expected to fail. Do not paint over it.
+    // Desktop Chromium already clears 4.5:1 here. Mobile Chrome does not, and
+    // the desktop card stays as it is until the owner decides.
+    test.fail(
+      testInfo.project.name === 'Mobile Chrome',
+      'forgot-password contrast from 768px up is pending an owner decision',
+    )
+    test.setTimeout(240_000)
+    const lines: string[] = []
+    for (const viewport of [
+      { width: 1024, height: 768 },
+      { width: 1280, height: 720 },
+    ]) {
+      for (const locale of ['EN', 'ES'] as const) {
+        await page.setViewportSize(viewport)
+        await page.goto('/auth')
+        await page.getByRole('button', { name: locale, exact: true }).click()
+        await page.evaluate(() => document.fonts.ready)
+        await page.mouse.move(0, 0)
+        const ratios = await sceneContrasts(page, forgotPassword(page), linkContrast)
+        expect(ratios.length).toBeGreaterThan(0)
+        const lowest = Math.min(...ratios)
+        const listed = ratios.map((ratio) => ratio.toFixed(2)).join(', ')
+        lines.push(`forgot-password ${viewport.width}×${viewport.height} ${locale} ${lowest.toFixed(2)}:1 [${listed}]`)
+      }
+    }
+    await testInfo.attach('forgot-password-desktop-contrast.txt', {
+      body: Buffer.from(`${lines.join('\n')}\n`),
+      contentType: 'text/plain',
+    })
+    const shortfalls = lines.filter((line) => {
+      const ratio = Number(line.match(/(\d+\.\d+):1/)?.[1])
+      return ratio < 4.5
+    })
+    expect(shortfalls, lines.join('\n')).toEqual([])
+  })
+
+  test('the new-password field error stays inside the field and clears 4.5:1', async ({ page }) => {
+    // UpdatePasswordPanel passes `error` to PasswordInput, so the shared
+    // field-error wash renders here too. It has to stay inside the input,
+    // the same way the login errors do, and clear 4.5:1 beside the letters.
+    await page.addInitScript(() => {
+      const session = {
+        user: { id: 'recovery-user', email: 'hero@example.com' },
+        profile: {
+          id: 'recovery-user',
+          username: 'Hero',
+          created_at: '2024-01-01T00:00:00.000Z',
+        },
+        access_token: 'recovery-access-token',
+        refresh_token: 'recovery-refresh-token',
+        expires_at: Math.floor(Date.now() / 1000) + 60 * 60,
+        token_type: 'bearer',
+      }
+      localStorage.setItem('sb-mock-auth-token', JSON.stringify(session))
+      ;(window as Window & { mockPasswordRecovery?: boolean }).mockPasswordRecovery = true
+    })
+    await page.route('**/auth/v1/user**', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ id: 'recovery-user' }),
+      }),
+    )
+
+    for (const viewport of [
+      { width: 320, height: 568 },
+      { width: 375, height: 667 },
+      { width: 390, height: 844 },
+    ]) {
+      for (const locale of [
+        { button: 'EN', message: 'Enter your password.' },
+        { button: 'ES', message: 'Introduce tu contraseña.' },
+      ] as const) {
+        await page.setViewportSize(viewport)
+        await page.goto('/auth?mode=update-password')
+        await page.getByRole('button', { name: locale.button, exact: true }).click()
+        await page.evaluate(() => document.fonts.ready)
+        await page.getByRole('button', { name: /^(save password|guardar contraseña)$/i }).click()
+        await page.mouse.move(0, 0)
+
+        const label = `update-password ${viewport.width}×${viewport.height} ${locale.button}`
+        const card = page.getByTestId('auth-card')
+        const input = page.locator('#password')
+        const error = page.locator('#password-error')
+        await expect(error, label).toHaveText(locale.message)
+        await expect(input, label).toHaveAttribute('aria-invalid', 'true')
+
+        const cardBox = await card.boundingBox()
+        const inputBox = await input.boundingBox()
+        const errorBox = await error.boundingBox()
+        expect(cardBox, label).not.toBeNull()
+        expect(inputBox, label).not.toBeNull()
+        expect(errorBox, label).not.toBeNull()
+        const place = `${label} error ${errorBox!.x.toFixed(1)}..${(errorBox!.x + errorBox!.width).toFixed(1)} input ${inputBox!.x.toFixed(1)}..${(inputBox!.x + inputBox!.width).toFixed(1)}`
+        expect(errorBox!.x, place).toBeGreaterThanOrEqual(inputBox!.x - 1)
+        expect(errorBox!.x + errorBox!.width, place).toBeLessThanOrEqual(inputBox!.x + inputBox!.width + 1)
+        expect(errorBox!.x, place).toBeGreaterThanOrEqual(cardBox!.x)
+        expect(errorBox!.x + errorBox!.width, place).toBeLessThanOrEqual(cardBox!.x + cardBox!.width)
+
+        const wash = await error.evaluate((element) => getComputedStyle(element).backgroundColor)
+        const expectedWash = await page.evaluate(() => {
+          const probe = document.createElement('div')
+          probe.className = 'bg-background-darker/75'
+          document.body.appendChild(probe)
+          const color = getComputedStyle(probe).backgroundColor
+          probe.remove()
+          return color
+        })
+        expect(wash, `${label} wash`).toBe(expectedWash)
+
+        const ratio = await linkContrast(error)
+        expect(ratio, `${label} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
+      }
+    }
+  })
+
   test('card text clears 4.5:1 beside the letters below 768', async ({ page }, testInfo) => {
-    // Login, sign-up, and the reset request. The new-password screen is not
-    // on this branch (`update-password` stays sign-in until #37); it renders
-    // in this same card, so the mobile background covers it when it lands.
+    // Login, sign-up, and the reset request. The new-password field error is
+    // the test above: it uses the same wash, now that the panel passes `error`.
     test.setTimeout(180_000)
     const desktopCard = 'rgb(255 255 255 / 0.2)'
     const mobileCard = 'rgb(10 10 10 / 0.7)'
