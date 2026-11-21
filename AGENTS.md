@@ -52,7 +52,7 @@ Optional narrative goes from `src/lib/openrouter.ts` through `api/openrouter.ts`
 
 ## Definition of done
 
-Before opening or updating a pull request, coding agents run unit tests, lint, and typecheck locally (`pnpm check`). They do not run Playwright end-to-end specs locally. GitHub CI runs the full end-to-end suite (sharded) and must be green on the head before review or merge. Agents push once per round and check the final CI result once; they do not keep re-waking to watch individual CI jobs. Open a pull request against `main` and leave it unmerged. Coding agents never merge and never close issues. Pull requests use only `Refs #N`, never `Closes #N`. Kiki closes only `User Story` issues, after she checks the acceptance criteria. The dev assistant closes `Technical Task` issues at merge. An issue is never closed automatically. Manual steps or QA can keep an issue open.
+Before opening or updating a pull request, coding agents run unit tests, lint, and typecheck locally (`pnpm check`). They do not run Playwright end-to-end specs locally. GitHub CI runs the full end-to-end suite (sharded) and must be green on the head before review or merge. Agents push once per round and check the final CI result once; they do not keep re-waking to watch individual CI jobs. Open a pull request against `main` and leave it unmerged. Coding agents never merge and never close issues. Pull requests use only `Refs #N`, never `Closes #N`. Kiki closes a `User Story`-only issue after she checks the acceptance criteria, and closes a `User Story` + `UX` issue after both checks pass. Sophie closes a `UX`-only issue after she checks the design. The dev assistant closes a `Technical Task` manually after merge. An issue is never closed automatically. Manual steps or QA can keep an issue open.
 
 ## Product
 
@@ -88,11 +88,13 @@ This section is the source of truth for how the team ships a story.
 - The code reviewer (Jiji) reviews every pull request and every new head for code quality only: architecture, simplicity, no over-engineering, XP practices, refactoring, bugs, security, and tests. Jiji does not review design or acceptance criteria. The code reviewer reports either "no blockers" or a list of blockers, publishes reviews without blockers directly, and asks the repo owner only when there are blockers or the pull request touches auth, data, Supabase, or security. The code reviewer never approves or merges.
 - Merge (squash): only the dev assistant merges, once CI is green and Jiji reports no blockers on the final head. Coding agents never merge.
 - Pull requests touching auth logic, data, Supabase, or security are the exception: only the repo owner merges them, after his explicit yes.
-- Kiki sets the review labels when she creates the issue: `User Story`, `UX`, `Technical Task`, or more than one of them.
-- An issue with none of these labels goes back to Kiki to be labeled before work starts.
+- Kiki sets the review labels when she creates the issue: `User Story`, `UX`, `Technical Task`, or `User Story` with `UX`.
+- The dev assistant checks the issue labels before starting work. An issue with no label, or with `Technical Task` combined with `User Story` or `UX`, goes back to Kiki to fix the labels before work starts.
 - Kiki and Sophie do not review the pull request before merge. Sophie may still give design guidance before implementation.
-- After a `User Story` merges, the dev assistant notifies Kiki. She checks the acceptance criteria and either closes the issue or comments what is missing.
-- After a `UX` issue merges, the dev assistant notifies Sophie to check the design. She reviews screenshots, not code. If the issue is also `User Story`, both are notified.
-- A `Technical Task` needs only Jiji's pre-merge review. The dev assistant closes the issue at merge.
+- `User Story` only: after merge, the dev assistant notifies Kiki. She checks the acceptance criteria and either closes the issue or comments what is missing.
+- `UX` only: after merge, the dev assistant notifies Sophie. She checks the design and either closes the issue or comments what is missing. She reviews screenshots, not code.
+- `User Story` + `UX`: both are notified. Kiki closes the issue after both checks pass.
+- A `Technical Task` needs only Jiji's pre-merge review. The dev assistant closes the issue manually after merge. The pull request uses `Refs #N`, never `Closes #N`.
+- A pull request without an issue needs only Jiji's pre-merge review.
 - Anything that fails post-merge review is iterated in a new pull request.
 - The issue is never closed automatically. Manual steps or QA can keep an issue open.
