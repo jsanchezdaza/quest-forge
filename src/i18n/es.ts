@@ -1,17 +1,12 @@
 import type { en } from './en'
 
-// Spanish translations. Typed as `typeof en` so a missing or extra key is a
-// compile-time error, keeping both dictionaries in sync.
 export const es: typeof en = {
-  // App
   'app.title': 'QUEST FORGE',
   'app.initializing': 'Iniciando Quest Forge...',
 
-  // Language selector
   'language.en': 'EN',
   'language.es': 'ES',
 
-  // Auth
   'auth.signInButton': 'Entrar',
   'auth.signUpButton': 'Crear cuenta',
   'auth.welcomeReturning': 'Bienvenido de nuevo, aventurero',
@@ -65,7 +60,6 @@ export const es: typeof en = {
   'auth.updatePasswordTryAgain': 'Reintentar',
   'auth.updatePasswordRetrying': 'Comprobando…',
 
-  // Forms
   'form.emailLabel': 'Correo',
   'form.emailPlaceholder': 'tu@ejemplo.com',
   'form.usernameLabel': 'Nombre de usuario',
@@ -79,12 +73,10 @@ export const es: typeof en = {
   'form.backstoryLabel': 'Historia (opcional)',
   'form.backstoryPlaceholder': 'Escribe la historia de tu personaje o genera una con IA...',
 
-  // Shared UI
   'ui.loading': 'Cargando...',
   'ui.cancel': 'Cancelar',
   'ui.confirmChanges': 'Confirmar cambios',
 
-  // Game
   'game.loadingAdventure': 'Cargando tu aventura...',
   'game.welcome': 'BIENVENIDO, {username}',
   'game.newCharacter': 'Nuevo personaje',
@@ -121,7 +113,6 @@ export const es: typeof en = {
   'game.statusBadlyWounded': 'Malherido',
   'game.statusUnconscious': 'Inconsciente',
 
-  // Character creation
   'character.chooseClass': 'Elige tu clase',
   'character.nameRequiredGenerate': 'Primero introduce el nombre del personaje',
   'character.nameRequiredSubmit': 'El nombre del personaje es obligatorio',
@@ -131,7 +122,6 @@ export const es: typeof en = {
   'character.generateWithAI': 'Generar con IA',
   'character.configureAI': 'Configura la clave de API de OpenRouter para habilitar la generación de historia con IA',
 
-  // Character classes
   'class.warrior.name': 'Guerrero',
   'class.warrior.desc': 'Un poderoso luchador hábil con el combate y las armas',
   'class.warrior.stats': 'Fuerza y Constitución altas',
@@ -151,7 +141,6 @@ export const es: typeof en = {
   'class.paladin.desc': 'Un guerrero sagrado, campeón de la justicia y la luz',
   'class.paladin.stats': 'Fuerza y Carisma altos',
 
-  // Stats / attributes
   'stat.strength': 'Fuerza',
   'stat.dexterity': 'Destreza',
   'stat.intelligence': 'Inteligencia',
@@ -159,11 +148,9 @@ export const es: typeof en = {
   'stat.constitution': 'Constitución',
   'stat.charisma': 'Carisma',
 
-  // Footer
   'footer.copyright': '© {year} Quest Forge. Todos los derechos reservados.',
   'footer.author': 'Autor: ',
 
-  // Auth failure messages, keyed from Supabase error codes in lib/authErrors.ts
   'error.loginFailed.message': 'Correo o contraseña incorrectos. Revisa tus credenciales e inténtalo de nuevo.',
   'error.emailNotConfirmed.message': 'Revisa tu correo y haz clic en el enlace de confirmación antes de iniciar sesión.',
   'error.userAlreadyExists.message': 'Ya existe una cuenta con este correo. Inicia sesión en su lugar.',
@@ -175,7 +162,6 @@ export const es: typeof en = {
   'error.connectionIssue.message': 'No se pudo conectar con el servidor. Comprueba tu conexión a internet e inténtalo de nuevo.',
   'error.authError.message': 'Se produjo un error inesperado. Inténtalo de nuevo.',
 
-  // Static narrative (fallback when AI is unavailable)
   'narrative.initial':
     '¡Bienvenido, {name}! Eres {desc}, de pie a las afueras de la pequeña aldea de Millhaven. Nubes oscuras se acumulan en el horizonte y los rumores hablan de sucesos extraños en el bosque cercano. Los aldeanos te miran con esperanza en los ojos, pues saben que está a punto de comenzar una aventura de gran importancia.\n\n¿Qué camino elegirás para empezar tu gesta?',
   'narrative.desc.warrior': 'un poderoso guerrero con espada y escudo',
@@ -206,11 +192,8 @@ export const es: typeof en = {
   'narrative.choices.default.1': 'Continuar tu aventura',
   'narrative.choices.default.2': 'Descansar y planear tu siguiente paso',
   'narrative.choices.default.3': 'Buscar consejo entre los lugareños',
-  // Keywords used to map a chosen action to a static scene (must appear in the
-  // matching choice texts above, in the same language).
   'narrative.keyword.forest': 'bosque',
   'narrative.keyword.tavern': 'taberna',
   'narrative.keyword.market': 'mercado',
-  // Instruction appended to AI prompts so generated text matches the UI language.
   'narrative.aiLanguageInstruction': 'Escribe tu respuesta en español.',
 }

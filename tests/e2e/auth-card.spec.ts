@@ -1,24 +1,10 @@
 import { test, expect, type Locator, type Page } from './setup'
 
-/**
- * Auth card spacing (#31).
- *
- * The card is 420px wide on a desktop viewport. On a narrow viewport it fills
- * the width inside the outer padding: the auth panel's 16px page padding and
- * the wrapper's 16px (`px-4`). Padding is 32px from the `sm` breakpoint up
- * and 20px below it. Fields are 20px apart, and each label sits 8px above
- * its input. Each field keeps a one-line error slot 8px under the input, so
- * the 20px gap is measured from that slot to the next label. Sign-up's
- * password field keeps that slot, then the requirements list 8px below it.
- * The 20px gap to the button is measured from the list.
- */
-
 const DESKTOP_CARD_WIDTH = 420
 const FIELD_GAP = 20
 const LABEL_GAP = 8
 const DESKTOP_PADDING = 32
 const MOBILE_PADDING = 20
-/** Page padding (`p-4`) plus the card wrapper's `px-4`. */
 const MOBILE_SIDE_INSET = 16 + 16
 
 const emailField = (page: Page) => page.getByLabel(/email|correo/i)
@@ -39,8 +25,6 @@ async function showMode(page: Page, mode: 'sign-in' | 'sign-up') {
   if (mode === 'sign-up') {
     await switchToSignUp(page).click()
     await expect(usernameField(page)).toBeVisible()
-    // The click leaves the pointer where the toggle was. Sign-up grows the form
-    // and the submit button slides under that pointer, which scales it.
     await page.mouse.move(0, 0)
   }
 }
@@ -50,7 +34,6 @@ async function expectGap(above: Locator, below: Locator, expected: number) {
   const bottom = await below.boundingBox()
   expect(top).not.toBeNull()
   expect(bottom).not.toBeNull()
-  // Flex gaps land on a half pixel in Firefox.
   const gap = bottom!.y - (top!.y + top!.height)
   expect(Math.abs(gap - expected)).toBeLessThanOrEqual(0.5)
 }
@@ -95,7 +78,6 @@ async function expectFieldSpacing(page: Page, mode: 'sign-in' | 'sign-up') {
     const forgot = page.getByRole('button', { name: /forgot your password/i })
     const inFlow = await forgot.evaluate((element) => getComputedStyle(element).position !== 'absolute')
     if (inFlow) {
-      // The portrait row belongs to the password field, flush with its error slot.
       await expectGap(aboveSubmit, forgot, 0)
       await expectGap(forgot, submit, FIELD_GAP)
       return

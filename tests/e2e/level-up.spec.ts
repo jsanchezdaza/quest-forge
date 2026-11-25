@@ -1,4 +1,4 @@
-import { test, expect } from './setup'
+import { test, expect, type TestHooks } from './setup'
 
 test.describe('Character Level Up and Progression', () => {
   test('should display level up modal when pendingLevelUp is true', async ({ page }) => {
@@ -40,8 +40,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [mockScene]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [mockScene]
     })
 
     await page.goto('/game')
@@ -73,8 +73,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -105,8 +105,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -143,8 +143,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -177,8 +177,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -211,15 +211,13 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
     await page.waitForSelector('text="Level Up!"', { timeout: 5000 })
 
-    // The six "+" buttons live only in the level-up modal, in stat order
-    // (strength first), so the first one is strength's.
     const plusButton = page.locator('button:has-text("+")').first()
     await plusButton.click()
 
@@ -253,20 +251,18 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
     await page.waitForSelector('text="Level Up!"', { timeout: 5000 })
 
-    // The six "+" buttons live only in the level-up modal, in stat order
-    // (strength first), so the first one is strength's.
     const plusButton = page.locator('button:has-text("+")').first()
 
-    await plusButton.click() // Point 1
-    await plusButton.click() // Point 2
-    await plusButton.click() // Point 3
+    await plusButton.click()
+    await plusButton.click()
+    await plusButton.click()
 
     await expect(page.locator('text=/You have 0 attribute points/i')).toBeVisible()
   })
@@ -294,15 +290,13 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
     await page.waitForSelector('text="Level Up!"', { timeout: 5000 })
 
-    // The six "+" buttons live only in the level-up modal, in stat order
-    // (strength first), so the first one is strength's.
     const plusButton = page.locator('button:has-text("+")').first()
 
     await plusButton.click()
@@ -336,8 +330,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -369,8 +363,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -403,8 +397,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -436,14 +430,14 @@ test.describe('Character Level Up and Progression', () => {
           currentScene: 10,
           inventory: [],
           pendingLevelUp: true,
-          levelsGained: 2, // Gained 2 levels
+          levelsGained: 2,
           stats: { strength: 15, dexterity: 10, intelligence: 10, wisdom: 10, constitution: 14, charisma: 10 }
         }
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -475,8 +469,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')

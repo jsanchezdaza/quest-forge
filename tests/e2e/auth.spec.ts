@@ -2,7 +2,6 @@ import { test, expect, type Page } from './setup'
 import { VALIDATION_RULES } from '../../src/constants/validation'
 
 const emailField = (page: Page) => page.getByLabel(/email|correo/i)
-// Exact name so the "Show password" button is not treated as the field.
 const passwordField = (page: Page) =>
   page.getByRole('textbox', { name: /^(password|contraseña)$/i })
 const usernameField = (page: Page) => page.getByLabel(/username|nombre de usuario/i)
@@ -246,7 +245,6 @@ test.describe('screen fit and copyright', () => {
       { width: 1920, height: 1080 },
     ] as const
     const overflows: string[] = []
-    // Sign-up keeps the 44px footer target on a coarse pointer, so 1280×720 may scroll there.
     const finePointer = await page.evaluate(() => window.matchMedia('(pointer: fine)').matches)
 
     for (const viewport of viewports) {
@@ -310,7 +308,6 @@ test.describe('screen fit and copyright', () => {
     await open(1280, 720, 'signin')
     expect(await panelPadding()).toEqual(full)
     expect(await footerPadding()).toEqual(full)
-    // The short-desktop footer is sign-up only. Sign-in keeps the 44px target.
     expect(await linkMinHeight()).toBe('44px')
 
     const fine = await page.evaluate(() => window.matchMedia('(pointer: fine)').matches)

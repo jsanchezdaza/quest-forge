@@ -1,14 +1,3 @@
-/**
- * What the recovery redirect told us, before any network check.
- *
- * GoTrue uses one public error for both cases. `verifyTokenHash` returns
- * `otp_expired` and "Email link is invalid or has expired" when the token row
- * is missing (it was already used) and, with the same code and sentence, when
- * `Mailer.OtpExp` has passed. The internal note differs; the redirect does not
- * (`prepErrorRedirectURL` copies `err.ErrorCode` and `err.Message`).
- * `flow_state_not_found` is also an unknown PKCE code, so it is not proof the
- * password was changed.
- */
 export const RECOVERY_CHECK_TIMEOUT_MS = 10_000
 
 const FLOW_ID = /^[a-zA-Z0-9_-]{8,64}$/
@@ -76,7 +65,6 @@ export function classifyRecoveryFailure(error: unknown): RecoveryFailure {
   return 'invalid'
 }
 
-/** The PKCE verifier, without the `/recovery` marker auth-js appends. */
 export function readStoredVerifier(raw: string | null): string | null {
   if (!raw) return null
   let value = raw
@@ -90,11 +78,6 @@ export function readStoredVerifier(raw: string | null): string | null {
   return verifier || null
 }
 
-/**
- * Raw storage entry for this browser's code verifier. A flow id reads only
- * its own slot, matching auth-js: falling back to another flow's verifier
- * would burn the code.
- */
 export function recoveryVerifierRaw(
   read: (key: string) => string | null,
   supabaseUrl: string,
@@ -107,11 +90,6 @@ export function recoveryVerifierRaw(
   return read(key)
 }
 
-/**
- * Where the address bar should go once the check has a result.
- * `null` means leave it alone: a retry still needs the code.
- * A saved password drops the recovery URL so a reload does not run it again.
- */
 export function nextRecoveryLocation(
   href: string,
   status: 'expired' | 'unreachable' | 'checking' | 'form' | 'done',
@@ -131,6 +109,14 @@ export function armRecoveryCheckTimeout(
 ): () => void {
   const id = setTimeout(onTimeout, delayMs)
   return () => clearTimeout(id)
+}
+
+async function jsonBodyOrNull(response: Response): Promise<unknown> {
+  try {
+    return await response.json()
+  } catch {
+    return null
+  }
 }
 
 export async function postRecoveryCode(input: {
@@ -159,12 +145,7 @@ export async function postRecoveryCode(input: {
     return { status: 'unreachable' }
   }
 
-  let body: unknown = null
-  try {
-    body = await response.json()
-  } catch {
-    // A non-JSON error page is classified from the status alone.
-  }
+  const body = await jsonBodyOrNull(response)
   if (!response.ok) {
     const failure = classifyRecoveryFailure({
       status: response.status,

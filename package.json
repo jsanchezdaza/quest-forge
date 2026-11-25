@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings 0",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" \"api/**/*.{ts,tsx}\" \"tests/**/*.{ts,tsx}\" \"eslint/**/*.js\" \"*.config.js\" \"*.config.ts\" --max-warnings 0",
     "preview": "vite preview",
     "test:e2e": "playwright test",
     "test:unit": "node --test api/*.test.ts tests/unit/*.test.ts",

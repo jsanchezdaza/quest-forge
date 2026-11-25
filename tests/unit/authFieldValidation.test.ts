@@ -10,14 +10,13 @@ import {
 
 const { PASSWORD_MIN_LENGTH, USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH } = VALIDATION_RULES
 
-test('email is required, including whitespace, and otherwise follows the HTML email format', () => {
+test('email is required, including whitespace, and otherwise follows HTML email grammar, including a dotless domain', () => {
   assert.equal(authFieldError('email', '', 'signin'), 'auth.emailRequired')
   assert.equal(authFieldError('email', '   ', 'signup'), 'auth.emailRequired')
   assert.equal(authFieldError('email', 'not-an-email', 'signin'), 'auth.emailInvalid')
   assert.equal(authFieldError('email', 'a@', 'signin'), 'auth.emailInvalid')
   assert.equal(authFieldError('email', '@example.com', 'signin'), 'auth.emailInvalid')
   assert.equal(authFieldError('email', 'a@b.', 'signin'), 'auth.emailInvalid')
-  // Same grammar as input type="email": a dot in the domain is not required.
   assert.equal(authFieldError('email', 'a@b', 'signin'), null)
   assert.equal(authFieldError('email', '  user+tag@example.co.uk  ', 'signup'), null)
 })
@@ -83,34 +82,33 @@ test('a new password needs 8 characters, a letter, and a number', () => {
   assert.equal(authFieldError('password', 'abcd1234', 'signup'), null)
 })
 
-test('new-password length counts UTF-16 code units, and letters and digits are ASCII', () => {
-  // 😀 is one code point and two UTF-16 code units. a + 1 + three emoji = 8 code units.
-  const emojiPassword = 'a1😀😀😀'
-  assert.equal(emojiPassword.length, 8)
-  assert.equal([...emojiPassword].length, 5)
-  assert.deepEqual(passwordRequirementStatus(emojiPassword), {
+test('new-password length counts UTF-16 code units and untrimmed whitespace, and letters and digits are ASCII', () => {
+  const eightCodeUnitsFromFiveCodePoints = 'a1😀😀😀'
+  assert.equal(eightCodeUnitsFromFiveCodePoints.length, 8)
+  assert.equal([...eightCodeUnitsFromFiveCodePoints].length, 5)
+  assert.deepEqual(passwordRequirementStatus(eightCodeUnitsFromFiveCodePoints), {
     minLength: true,
     letter: true,
     number: true,
   })
-  assert.equal(authFieldError('password', emojiPassword, 'signup'), null)
+  assert.equal(authFieldError('password', eightCodeUnitsFromFiveCodePoints, 'signup'), null)
 
-  // Accented letters are not ASCII A–Z.
-  assert.equal('ááááááá1'.length, 8)
-  assert.deepEqual(passwordRequirementStatus('ááááááá1'), {
+  const eightAccentedLetters = 'ááááááá1'
+  assert.equal(eightAccentedLetters.length, 8)
+  assert.deepEqual(passwordRequirementStatus(eightAccentedLetters), {
     minLength: true,
     letter: false,
     number: true,
   })
-  assert.equal(authFieldError('password', 'ááááááá1', 'signup'), 'auth.passwordNeedsLetter')
+  assert.equal(authFieldError('password', eightAccentedLetters, 'signup'), 'auth.passwordNeedsLetter')
 
-  // Whitespace is not trimmed. It counts toward length and is neither a letter nor a digit.
-  assert.deepEqual(passwordRequirementStatus('        '), {
+  const eightSpaces = '        '
+  assert.deepEqual(passwordRequirementStatus(eightSpaces), {
     minLength: true,
     letter: false,
     number: false,
   })
-  assert.equal(authFieldError('password', '        ', 'signup'), 'auth.passwordNeedsLetter')
+  assert.equal(authFieldError('password', eightSpaces, 'signup'), 'auth.passwordNeedsLetter')
   assert.equal(authFieldError('password', '   ', 'signup'), 'auth.passwordTooShort')
   assert.equal(authFieldError('password', 'abcdef 1', 'signup'), null)
   assert.equal(authFieldError('password', ' ', 'signin'), null)

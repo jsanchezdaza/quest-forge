@@ -2,10 +2,6 @@ interface SectionDividerProps {
   className?: string
 }
 
-/**
- * Decorative divider: a thin gold line with a centered diamond, used under
- * section titles to match the medieval theme.
- */
 export default function SectionDivider({ className = '' }: SectionDividerProps) {
   return (
     <div className={`flex items-center gap-2 text-medieval-gold/40 ${className}`} aria-hidden="true">

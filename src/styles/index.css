@@ -30,12 +30,10 @@
   h3 { @apply text-lg sm:text-xl md:text-2xl; }
   h4, h5, h6 { @apply text-base sm:text-lg md:text-xl; }
 
-  /* D&D title class - Minecraft Dungeons style with pixel texture */
   .dnd-title {
     @apply font-dnd uppercase tracking-wider;
     font-weight: 900;
     font-variation-settings: 'wght' 900;
-    /* Ultra-pixelated rendering */
     -webkit-font-smoothing: none;
     -moz-osx-font-smoothing: unset;
     font-smooth: never;
@@ -43,7 +41,6 @@
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
-    /* Minecraft Dungeons style shadow with depth */
     text-shadow: 
       0 0 10px rgba(212, 175, 55, 0.8),
       0 0 20px rgba(212, 175, 55, 0.5),
@@ -52,9 +49,7 @@
       4px 4px 0px #4b380b,
       5px 5px 0px #2b2006,
       6px 6px 8px rgba(0, 0, 0, 0.6);
-    /* Enhanced brick/block pattern with high contrast */
     background: 
-      /* Dark mortar lines (horizontal) - much thicker */
       repeating-linear-gradient(
         0deg,
         #f4d03f 0px,
@@ -66,7 +61,6 @@
         #2b2006 20px,
         #2b2006 24px
       ),
-      /* Dark mortar lines (vertical) - offset brick pattern */
       repeating-linear-gradient(
         90deg,
         #f4d03f 0px,
@@ -82,19 +76,15 @@
         #2b2006 44px,
         #2b2006 48px
       ),
-      /* Bright golden base */
       linear-gradient(0deg, #f4d03f 0%, #ffeb3b 50%, #f4d03f 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     background-size: 100% 24px, 48px 100%, 100% 100%;
-    /* Slight 3D transform */
     transform: perspective(500px) rotateX(15deg);
-    /* Enhanced contrast to make brick texture pop */
     filter: contrast(1.5) saturate(1.3) brightness(1.1);
   }
 
-  /* Responsive background images - balanced overlay */
   .app-background {
     background-image:
       url('/images/backgrounds/background-desktop.png'),
@@ -106,14 +96,12 @@
     background-blend-mode: overlay;
   }
 
-  /* Game page background - JPEG version */
   .app-background.game-background {
     background-image: 
       url('/images/backgrounds/background-desktop.png'),
       linear-gradient(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.08));
   }
 
-  /* Mobile game page background */
   @media (max-width: 768px) {
     .app-background.game-background {
       background-image: 
@@ -122,7 +110,6 @@
     }
   }
 
-  /* Mobile background */
   @media (max-width: 768px) {
     .app-background {
       background-image:
@@ -155,16 +142,11 @@
     @apply bg-medieval-gold rounded-full hover:bg-medieval-darkgold;
   }
 
-  /* Embers and the corner glow can paint past the viewport. Clip sideways
-     scroll on the auth screen only, so the game page and browser zoom are
-     left alone. */
   html.auth-screen,
   html.auth-screen body {
     overflow-x: clip;
   }
 
-  /* A touch scrollbar gutter shrinks the card and does not help a finger.
-     A mouse keeps the visible scrollbar. */
   @media (pointer: coarse) {
     html.auth-screen {
       scrollbar-width: none;
@@ -200,7 +182,6 @@
     }
   }
 
-  /* Rising embers for the auth background - GPU-friendly (transform + opacity only) */
   .ember {
     position: absolute;
     bottom: -8px;
@@ -231,40 +212,36 @@
     }
   }
 
-  /* Animated video background for the auth screen (desktop) */
   .auth-video-stage {
     position: absolute;
     inset: 0;
   }
 
-  /* Anchored top-left and slightly zoomed to push the bottom-right generator
-     watermark toward the cropped edge. */
   .auth-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: 0% 0%;
-    transform: scale(1.07);
-    transform-origin: 0% 0%;
     display: block;
   }
 
-  /* Darkening tint to keep the form readable, matching the static-image overlay */
+  .auth-video-crop-watermark {
+    object-position: 0% 0%;
+    transform: scale(1.07);
+    transform-origin: 0% 0%;
+  }
+
   .auth-video-tint {
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0.22);
   }
 
-  /* Mobile falls back to the static PNG in `.app-background` */
   @media (max-width: 768px) {
     .auth-video-bg {
       display: none;
     }
   }
 
-  /* Respect users who prefer reduced motion: drop embers and the video (falls back
-     to the static PNG background) */
   @media (prefers-reduced-motion: reduce) {
     .ember-layer,
     .auth-video-bg {
@@ -277,18 +254,10 @@
   }
 }
 
-/* Dark halo so the two gold login links stay readable on the stone. */
 @utility text-shadow-legible {
   text-shadow: 0 0 4px rgb(0 0 0 / .9), 0 1px 2px rgb(0 0 0 / .8);
 }
 
-/*
-  One keyboard focus ring for every control on the auth screen: fields, buttons,
-  links, the language selector, and a show-password button in a field slot.
-  Medieval gold (#d4af37) sits between two ink-black bands so the gold meets
-  3:1 against its own edges, including on the translucent card and the gold
-  button. Outside @layer so it wins over Tailwind's outline and ring.
-*/
 .focus-ring :focus-visible {
   outline: 2px solid #d4af37;
   outline-offset: 2px;
@@ -297,12 +266,6 @@
     0 0 0 5px #1a1a1a;
 }
 
-/*
-  Forgot-password sits on the password label's baseline from 480px up and
-  takes no extra height. Below that its 44px row follows the password
-  field's reserved error slot. A coarse pointer grows the hit area without
-  moving either layout.
-*/
 .forgot-password-link {
   line-height: 1.25rem;
   padding-right: 0.375rem;

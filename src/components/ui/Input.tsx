@@ -4,17 +4,13 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
   helperText?: string
-  /** Replaces the default label classes. The auth form uses this to keep its current label styling. */
   labelClassName?: string
-  /** Trailing control inside the field, such as a show-password button. */
   endAdornment?: ReactNode
-  /**
-   * Content under the control, such as the password checklist. The error
-   * line stays reserved above it whenever `error` is provided, including
-   * when that string is empty. A longer message grows the line.
-   */
   details?: ReactNode
 }
+
+const fieldErrorTextClassName = 'min-h-5 text-left text-sm leading-5 text-red-200'
+const fieldErrorWashClassName = 'bg-background-darker/75'
 
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   {
@@ -81,12 +77,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         <p
           id={errorId}
           className={[
-            // The wash stays inside the field. A negative margin let it run
-            // past the input into the card padding, beside the forgot-password link.
-            'min-h-5 text-left text-sm leading-5 text-red-200',
-            // Light red misses 4.5:1 on the brightest part of the card.
-            // The empty slot stays clear.
-            hasError ? 'bg-background-darker/75' : '',
+            fieldErrorTextClassName,
+            hasError ? fieldErrorWashClassName : '',
           ].filter(Boolean).join(' ')}
           aria-hidden={hasError ? undefined : true}
         >

@@ -3,17 +3,11 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  // Don't throw error, let the app handle it gracefully
-}
-
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseAnonKey || 'placeholder-key',
   {
     auth: {
-      // The update-password page exchanges a recovery code itself. Leaving it
-      // in the URL lets a failed or slow check try again with the same link.
       detectSessionInUrl: false,
     },
   },

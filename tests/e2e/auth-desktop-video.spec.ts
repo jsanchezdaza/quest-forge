@@ -1,11 +1,6 @@
 import { test, expect, type Page } from './setup'
 import { AUTH_VIDEO_PLAYBACK_RATE } from '../../src/components/ui/AuthVideoBackground'
 
-/**
- * The desktop auth video is not downloaded on a phone (#60).
- * From 768px it still loads, at the rate from #51.
- */
-
 const DESKTOP_VIDEO = 'background-animated-desktop.mp4'
 
 function recordVideoRequests(page: Page): string[] {
@@ -16,8 +11,8 @@ function recordVideoRequests(page: Page): string[] {
   return urls
 }
 
-test.describe('desktop auth video stays off a phone', () => {
-  test('a phone does not request the desktop background video', async ({ page }) => {
+test.describe('the desktop auth video is not downloaded on a phone and still loads from 768px', () => {
+  test('a phone keeps the static png and does not request the desktop video', async ({ page }) => {
     const urls = recordVideoRequests(page)
     await page.setViewportSize({ width: 393, height: 851 })
     await page.goto('/auth', { waitUntil: 'load' })

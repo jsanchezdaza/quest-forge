@@ -3,7 +3,7 @@ import { useAuthStore } from './store/authStore'
 import { LoadingSpinner } from './components/ui'
 import { useTranslation } from './i18n'
 import { parseAuthMode } from './lib/authMode'
-import { isUpdatePasswordSearch, shouldRedirectSignedInToGame } from './lib/updatePassword'
+import { shouldRedirectSignedInToGame, showFullScreenInitializing } from './lib/updatePassword'
 import AuthPage from './pages/AuthPage'
 import GamePage from './pages/GamePage'
 
@@ -23,9 +23,7 @@ function App() {
   const { user, initializing } = useAuthStore()
   const { t } = useTranslation()
 
-  // The recovery card shows its own checking state. The full-screen spinner
-  // would replace that card, so this arrival skips it.
-  if (initializing && !isUpdatePasswordSearch(window.location.search)) {
+  if (showFullScreenInitializing(initializing, window.location.search)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" text={t('app.initializing')} />

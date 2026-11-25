@@ -33,27 +33,38 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(function 
     else if (ref) ref.current = node
   }
 
-  const remember = (input: HTMLInputElement | null) => {
+  const rememberCaret = (input: HTMLInputElement | null) => {
     if (!input || input.selectionStart === null || input.selectionEnd === null) return
     selectionRef.current = { start: input.selectionStart, end: input.selectionEnd }
   }
 
+  const rememberCaretIfStillFocused = (input: HTMLInputElement | null) => {
+    if (input && document.activeElement === input) rememberCaret(input)
+  }
+
+  const restoreCaretAfterTypeChange = (
+    input: HTMLInputElement,
+    caret: { start: number; end: number },
+  ) => {
+    window.setTimeout(() => input.setSelectionRange(caret.start, caret.end), 0)
+  }
+
+  const keepCaretFromJumping = (event: { preventDefault: () => void }) => {
+    event.preventDefault()
+  }
+
   const handleBlur: FocusEventHandler<HTMLInputElement> = (event) => {
-    remember(event.currentTarget)
+    rememberCaret(event.currentTarget)
     onBlur?.(event)
   }
 
   const toggle = () => {
     const input = inputRef.current
-    // After the field blurs, its caret may already have collapsed. Keep the
-    // range captured on blur instead of reading that collapsed caret.
-    if (input && document.activeElement === input) remember(input)
+    rememberCaretIfStillFocused(input)
     const saved = selectionRef.current
     setVisible((current) => !current)
     if (!input || !saved) return
-    // Changing the input type resets the caret after this event. Put it back
-    // once the browser has finished that reset.
-    window.setTimeout(() => input.setSelectionRange(saved.start, saved.end), 0)
+    restoreCaretAfterTypeChange(input, saved)
   }
 
   const toggleLabel = visible ? t('form.hidePassword') : t('form.showPassword')
@@ -74,9 +85,8 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(function 
           aria-pressed={visible}
           aria-label={toggleLabel}
           onPointerDown={(event) => {
-            remember(inputRef.current)
-            // Keep focus in the field so the caret does not jump.
-            event.preventDefault()
+            rememberCaret(inputRef.current)
+            keepCaretFromJumping(event)
           }}
           onClick={toggle}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded text-medieval-gold hover:text-white"

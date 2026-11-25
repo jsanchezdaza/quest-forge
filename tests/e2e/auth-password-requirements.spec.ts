@@ -1,14 +1,6 @@
 import { test, expect, type Locator, type Page } from './setup'
 import { minimumContrast } from './pixelContrast'
 
-/**
- * Password requirements on sign-up (#34).
- *
- * The checklist is visible before typing. Each row updates as the player
- * types, without a live announcement and without red error styling until
- * blur or submit. Sign-in does not show it.
- */
-
 const LABEL_GAP = 8
 const ROW_GAP = 4
 const FIELD_GAP = 20
@@ -32,7 +24,6 @@ async function expectGap(above: Locator, below: Locator, expected: number) {
   const bottom = await below.boundingBox()
   expect(top).not.toBeNull()
   expect(bottom).not.toBeNull()
-  // A flex gap can land on a half pixel. Rounding that to the next pixel flakes.
   const gap = bottom!.y - (top!.y + top!.height)
   expect(Math.abs(gap - expected)).toBeLessThanOrEqual(0.5)
 }
@@ -109,7 +100,6 @@ test.describe('password requirements', () => {
     const staysPut = async () => {
       const after = await tops()
       for (const [index, y] of after.entries()) {
-        // Half-pixel positions round either way. A real move is a whole row.
         expect(Math.abs(y - before[index]), `row ${index}`).toBeLessThan(1)
       }
     }
@@ -187,7 +177,6 @@ test.describe('password requirements', () => {
 
     const tops = async () => {
       await page.mouse.move(0, 0)
-      // The pointer scales the button it clicked. Wait until that scale is gone.
       await expect.poll(async () => {
         const box = await createAccountButton(page).boundingBox()
         return Math.round(box!.height)
@@ -203,7 +192,6 @@ test.describe('password requirements', () => {
       later: { list: number; button: number },
       earlier: { list: number; button: number },
     ) => {
-      // Half-pixel positions round either way. A real move is a whole row.
       expect(Math.abs(later.list - earlier.list)).toBeLessThan(1)
       expect(Math.abs(later.button - earlier.button)).toBeLessThan(1)
     }
@@ -364,7 +352,6 @@ test.describe('password requirements', () => {
       range.selectNodeContents(element)
       return range.getBoundingClientRect().left
     })
-    // The error wash stays inside the field. The checklist wash still runs 6px into the card padding.
     expect(Math.abs(textLeft - inputBox!.x)).toBeLessThanOrEqual(1)
     expect(Math.abs(errorBox!.x - inputBox!.x)).toBeLessThanOrEqual(1)
     expect(Math.abs((errorBox!.x + errorBox!.width) - (inputBox!.x + inputBox!.width))).toBeLessThanOrEqual(1)

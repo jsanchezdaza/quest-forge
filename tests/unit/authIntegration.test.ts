@@ -15,7 +15,8 @@ test('authenticated sessions load and synchronize the persisted profile', async 
   assert.match(authStore, /loadAndSyncUserProfile/)
   assert.match(authStore, /from\(['"]user_profiles['"]\)/)
   assert.match(authStore, /onAuthStateChange\(\(event, session\) =>/)
-  assert.match(authStore, /setTimeout\(async/)
+  assert.match(authStore, /function afterAuthCallbackUnlocks\(run: \(\) => Promise<void>\) \{\n {2}setTimeout\(run, 0\)\n\}/)
+  assert.match(authStore, /afterAuthCallbackUnlocks\(async \(\) => \{\n {6}const profile = await loadProfile/)
   assert.doesNotMatch(authStore, /onAuthStateChange\(async/)
 })
 

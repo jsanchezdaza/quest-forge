@@ -9,7 +9,6 @@ interface CardProps {
   ornate?: boolean
 }
 
-// Decorative gold L-shaped brackets, one per corner.
 const cornerBaseClasses = 'pointer-events-none absolute w-4 h-4 border-medieval-gold/70'
 const cornerClasses = [
   'top-1.5 left-1.5 border-t-2 border-l-2 rounded-tl',

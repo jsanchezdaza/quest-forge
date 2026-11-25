@@ -3,7 +3,6 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
   try {
-    // Get Supabase credentials from environment variables
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
@@ -14,11 +13,8 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
       });
     }
 
-    // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Perform a simple query to keep the connection alive
-    // Using a lightweight query on user_profiles table with estimated count
     const { count, error } = await supabase
       .from('user_profiles')
       .select('*', { count: 'estimated', head: true });
@@ -32,7 +28,6 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
       });
     }
 
-    // Success response
     return res.status(200).json({
       status: 'ok',
       message: 'Heartbeat successful',

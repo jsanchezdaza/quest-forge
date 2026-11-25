@@ -2,11 +2,6 @@ interface ErrorMessageProps {
   message: string
 }
 
-/**
- * Inline failure notice for forms. Renders nothing when there is no message, so
- * callers can pass their error state straight in. Announced to screen readers
- * as an alert, since it appears in response to an action the user just took.
- */
 export default function ErrorMessage({ message }: ErrorMessageProps) {
   if (!message) return null
 

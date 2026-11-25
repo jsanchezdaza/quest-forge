@@ -1,4 +1,4 @@
-import { test, expect } from './setup'
+import { test, expect, type TestHooks } from './setup'
 
 test.describe('Game Page Navigation', () => {
   test('should display game page header with title and username', async ({ page }) => {
@@ -45,7 +45,7 @@ test.describe('Game Page Navigation', () => {
       const mockProfile = { id: 'test-user-id', username: 'TestHero', created_at: new Date().toISOString() }
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
 
-      ;(window as any).mockGameSession = null
+      ;(window as TestHooks).mockGameSession = null
     })
 
     await page.goto('/game')
@@ -62,7 +62,7 @@ test.describe('Game Page Navigation', () => {
       const mockUser = { id: 'test-user-id', email: 'test@example.com' }
       const mockProfile = { id: 'test-user-id', username: 'TestHero', created_at: new Date().toISOString() }
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = null
+      ;(window as TestHooks).mockGameSession = null
     })
 
     await page.goto('/game')
@@ -101,7 +101,7 @@ test.describe('Game Page Navigation', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
+      ;(window as TestHooks).mockGameSession = mockSession
     })
 
     await page.goto('/game')
@@ -116,7 +116,7 @@ test.describe('Game Page Navigation', () => {
       const mockProfile = { id: 'test-user-id', username: 'TestHero', created_at: new Date().toISOString() }
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
 
-      ;(window as any).mockLoadingDelay = 1000
+      ;(window as TestHooks).mockLoadingDelay = 1000
     })
 
     await page.goto('/game')
@@ -147,7 +147,7 @@ test.describe('Game Page Navigation', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
+      ;(window as TestHooks).mockGameSession = mockSession
     })
 
     await page.goto('/game')
@@ -178,7 +178,7 @@ test.describe('Game Page Navigation', () => {
         }
       }
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
+      ;(window as TestHooks).mockGameSession = mockSession
     })
 
     await page.goto('/game')
@@ -206,7 +206,7 @@ test.describe('Game Page Navigation', () => {
         }
       }
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
+      ;(window as TestHooks).mockGameSession = mockSession
     })
 
     await page.goto('/game')
@@ -234,7 +234,7 @@ test.describe('Game Page Navigation', () => {
         }
       }
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
+      ;(window as TestHooks).mockGameSession = mockSession
     })
 
     await page.goto('/game')
@@ -263,7 +263,7 @@ test.describe('Game Page Navigation', () => {
         }
       }
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
+      ;(window as TestHooks).mockGameSession = mockSession
     })
 
     await page.goto('/game')
@@ -272,7 +272,7 @@ test.describe('Game Page Navigation', () => {
   })
 
   test('should have responsive header layout on mobile', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 667 }) // iPhone size
+    await page.setViewportSize({ width: 375, height: 667 })
 
     await page.addInitScript(() => {
       const mockUser = { id: 'test-user-id', email: 'test@example.com' }

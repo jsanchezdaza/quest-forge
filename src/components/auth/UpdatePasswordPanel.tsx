@@ -43,7 +43,6 @@ const titleClassName =
 const modeLinkClassName =
   'text-shadow-legible text-medieval-gold-light hover:underline focus-visible:underline font-pixel-body text-sm min-h-[44px] py-2'
 
-// Resting field border below 768. Same token as the login fields.
 const restingInputBorderClassName =
   'max-sm:not-focus-visible:not-aria-invalid:border-auth-input-border-mobile'
 
@@ -430,12 +429,11 @@ async function checkRecoveryLink(link: RecoveryUrl, signal: AbortSignal): Promis
     signal,
   })
   if (result.status !== 'session' || signal.aborted) return result.status === 'session' ? { status: 'aborted' } : result
-  await rememberRecoverySession(result.accessToken, result.refreshToken, signal)
+  await rememberRecoverySessionWithoutBlocking(result.accessToken, result.refreshToken, signal)
   return signal.aborted ? { status: 'aborted' } : result
 }
 
-/** The code is already spent. A storage failure still shows the form. */
-async function rememberRecoverySession(accessToken: string, refreshToken: string, signal: AbortSignal) {
+async function rememberRecoverySessionWithoutBlocking(accessToken: string, refreshToken: string, signal: AbortSignal) {
   try {
     const { error } = await supabase.auth.setSession({
       access_token: accessToken,

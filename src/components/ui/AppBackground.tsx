@@ -5,10 +5,6 @@ interface AppBackgroundProps {
   children: React.ReactNode
   variant?: 'auth' | 'game'
   className?: string
-  /**
-   * Sign-up only. With a fine pointer, at 1024px wide and at most 800px
-   * tall, vertical padding is 8px. Horizontal padding stays 16px.
-   */
   compactOnShortDesktop?: boolean
 }
 
@@ -18,10 +14,6 @@ export default function AppBackground({
   className = '',
   compactOnShortDesktop = false,
 }: AppBackgroundProps) {
-  // The auth page is a min-h-screen column and gives this panel flex-1, leaving
-  // the footer on screen. `relative` anchors the video to the panel. The content
-  // slot is `w-full` so the card's max width is the cap, and the outer padding
-  // sits outside that width.
   const baseClasses = variant === 'auth' ? 'relative app-background overflow-hidden' : 'min-h-screen app-background'
   const variantClasses = {
     auth: 'flex items-center justify-center p-4 [@media(max-height:450px)]:items-start [@media(max-height:450px)]:pt-2',
@@ -46,7 +38,6 @@ export default function AppBackground({
         </>
       )}
 
-      {/* z-10 without position, so an absolute language control anchors to this panel. */}
       <div className={variant === 'auth' ? 'z-10 w-full' : ''}>
         {children}
       </div>

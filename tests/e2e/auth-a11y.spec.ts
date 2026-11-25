@@ -1,18 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { test, expect, type Page } from './setup'
 
-/**
- * Contrast and ARIA on /auth.
- *
- * `wcag143` is the WCAG AA contrast rule (`color-contrast`, 4.5:1). It does
- * not include `color-contrast-enhanced` (WCAG AAA, 7:1), which axe disables
- * by default. Nothing is excluded: the welcome line and the footer author
- * line have to clear 4.5:1 on mobile, where the static background can be
- * measured.
- *
- * Nodes axe cannot measure (the desktop video, a gradient, text-shadow) come
- * back as `incomplete`, not violations. Those stay visible in the test output.
- */
 async function expectAuthAccessible(page: Page, label: string) {
   const results = await new AxeBuilder({ page }).withTags(['cat.aria', 'wcag143']).analyze()
   const incomplete = results.incomplete.flatMap((violation) =>

@@ -11,14 +11,11 @@ function hexToCssRgb(hex: string): string {
   return `rgb(${red}, ${green}, ${blue})`
 }
 
-/** medieval-gold from tailwind.config.js, as Chromium reports outline-color. */
 const goldenRingColor = hexToCssRgb(medievalGold)
-/** Ink bands beside the gold, so the ring stays above 3:1 on the card and the gold button. */
 const inkBlack = hexToCssRgb(tailwindConfig.theme.extend.colors.medieval.inkblack)
 const goldenRingShadow = `${inkBlack} 0px 0px 0px 2px, ${inkBlack} 0px 0px 0px 5px`
 
 const emailField = (page: Page) => page.getByLabel(/email|correo/i)
-// Exact name so the "Show password" button is not treated as the field.
 const passwordField = (page: Page) =>
   page.getByRole('textbox', { name: /^(password|contraseña)$/i })
 const showPasswordButton = (page: Page) =>
@@ -84,9 +81,6 @@ function focusRing(locator: Locator): Promise<FocusRingSnapshot> {
 }
 
 async function resetTabStart(page: Page) {
-  // Clicking the mode toggle leaves the sequential focus start on that button.
-  // Focusing a sentinel at the top of the body and removing it sends the next
-  // Tab back to the first control.
   await page.evaluate(() => {
     const sentinel = document.createElement('span')
     sentinel.tabIndex = -1
@@ -140,7 +134,6 @@ test.describe('auth keyboard focus', () => {
     expect(englishRing.matchesFocusVisible).toBe(false)
     expect(englishRing.outlineStyle).not.toBe('solid')
 
-    // The toggle stays focused after the click, with its sign-up label.
     await switchToSignUp(page).click()
     await expect(switchToSignIn(page)).toBeFocused()
     const toggleRing = await focusRing(switchToSignIn(page))
@@ -200,7 +193,6 @@ test.describe('auth keyboard focus', () => {
     await passwordField(page).fill('password123')
 
     for (const field of [emailField(page), usernameField(page), passwordField(page)]) {
-      // Enter does not submit while the previous attempt still disables the button.
       await expect(createAccountButton(page)).toBeEnabled()
       const before = submissions
       await field.focus()

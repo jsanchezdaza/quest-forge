@@ -8,11 +8,6 @@ interface StatusBarProps {
   gameState: GameState
 }
 
-/**
- * Bottom status bar with cosmetic adventure info. Status is derived from
- * health; location, day/time and gold are placeholders until real tracking
- * exists in game state.
- */
 export default function StatusBar({ gameState }: StatusBarProps) {
   const { t } = useTranslation()
   const { health, maxHealth } = gameState

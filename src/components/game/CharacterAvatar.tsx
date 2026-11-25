@@ -8,11 +8,6 @@ interface CharacterAvatarProps {
   className?: string
 }
 
-/**
- * Renders the per-class avatar image from /images/characters/{class}.png.
- * A silhouette fallback sits behind the image and shows through while the
- * class artwork is missing or fails to load.
- */
 export default function CharacterAvatar({ characterClass, characterName, className = '' }: CharacterAvatarProps) {
   const [hasError, setHasError] = useState(false)
 

@@ -18,7 +18,6 @@ export const useLevelUp = () => {
 
     const { level, pendingLevelUp, levelsGained = 1 } = currentSession.game_state
     
-    // Only show level up modal if pendingLevelUp flag is set
     if (pendingLevelUp) {
       const totalAttributePoints = levelsGained * GAME_CONSTANTS.ATTRIBUTE_POINTS_PER_LEVEL
       
@@ -32,7 +31,6 @@ export const useLevelUp = () => {
 
   const closeLevelUpModal = () => {
     setLevelUpData(prev => ({ ...prev, isOpen: false }))
-    // Clear pendingLevelUp flag when modal is closed
     clearPendingLevelUp()
   }
 

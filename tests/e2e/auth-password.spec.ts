@@ -1,7 +1,5 @@
 import { test, expect, type Page } from './setup'
 
-// Exact name so the show/hide button, whose label also contains "password",
-// is not treated as the field.
 const passwordField = (page: Page) =>
   page.getByRole('textbox', { name: /^(password|contraseña)$/i })
 const showPassword = (page: Page) =>

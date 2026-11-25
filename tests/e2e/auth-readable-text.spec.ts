@@ -1,12 +1,5 @@
 import { test, expect, type Locator, type Page } from './setup'
 
-/**
- * Readable text on /auth (#30).
- *
- * Body text, fields, placeholders, links, and messages are 14–16px.
- * Uppercase is only the title, the primary button, and the field labels.
- */
-
 const MIN_PX = 14
 const MAX_PX = 16
 
@@ -71,8 +64,6 @@ test.describe('readable auth text', () => {
     await expect(heading).toBeVisible()
     await expect(heading).toHaveClass(/dnd-title/)
     expect(await textTransform(heading)).toBe('uppercase')
-    // `.dnd-title` is the game's gold title treatment. The face that actually
-    // paints is the heading stack; this story must not swap it.
     const family = await heading.evaluate((el) => getComputedStyle(el).fontFamily)
     expect(family).toBe('Cinzel, Spectral, serif')
 

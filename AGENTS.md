@@ -39,7 +39,7 @@ Use pnpm only (Node >= 24, pnpm >= 11, lockfile `pnpm-lock.yaml`). Install with 
 
 1. `pnpm test:unit`
 2. `pnpm type-check:api` (`tsc -p tsconfig.api.json`)
-3. `pnpm lint` (ESLint on `src/**/*.{ts,tsx}`, `--max-warnings 0`)
+3. `pnpm lint` (ESLint on `src/`, `api/`, `tests/`, `eslint/`, and root `*.config.js` / `*.config.ts`, `--max-warnings 0`)
 4. `pnpm build` (`tsc && vite build`: app typecheck, then the production bundle)
 
 Coding agents do not run `pnpm test:e2e` locally. CI (`.github/workflows/ci.yml`) runs `pnpm run test:unit`, lint, build, and the full Playwright suite under `tests/e2e/` on `chromium` and `Mobile Chrome` (sharded).
