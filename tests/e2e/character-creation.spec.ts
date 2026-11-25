@@ -1,4 +1,4 @@
-import { test, expect } from './setup'
+import { test, expect, type TestHooks } from './setup'
 
 test.describe('Character Creation', () => {
   test.beforeEach(async ({ page }) => {
@@ -7,7 +7,7 @@ test.describe('Character Creation', () => {
       const mockUser = { id: 'test-user-id', email: 'test@example.com' }
       const mockProfile = { id: 'test-user-id', username: 'TestHero', created_at: new Date().toISOString() }
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = null
+      ;(window as TestHooks).mockGameSession = null
     })
   })
 
@@ -141,7 +141,7 @@ test.describe('Character Creation', () => {
   test('should trim whitespace from character name on submit', async ({ page }) => {
     await page.addInitScript(() => {
 
-      ;(window as any).mockCreateCharacterSuccess = true
+      ;(window as TestHooks).mockCreateCharacterSuccess = true
     })
 
     await page.goto('/game')

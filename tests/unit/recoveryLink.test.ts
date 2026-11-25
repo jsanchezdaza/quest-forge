@@ -112,7 +112,7 @@ test('the recovery check gives up at 10 seconds', () => {
   mock.timers.enable({ apis: ['setTimeout'] })
   try {
     const fired: string[] = []
-    const cancel = armRecoveryCheckTimeout(() => fired.push('timeout'))
+    armRecoveryCheckTimeout(() => fired.push('timeout'))
     mock.timers.tick(RECOVERY_CHECK_TIMEOUT_MS - 1)
     assert.deepEqual(fired, [])
     mock.timers.tick(1)

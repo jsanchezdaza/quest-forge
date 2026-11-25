@@ -97,12 +97,15 @@ test.describe('mobile auth layout', () => {
           }
           return false
         }
-        for (const sheet of document.styleSheets) {
+        const sameOriginSheetHidesScrollbar = (sheet: CSSStyleSheet): boolean => {
           try {
-            if (walk(sheet.cssRules)) return true
+            return walk(sheet.cssRules)
           } catch {
-            // The font stylesheet is cross-origin.
+            return false
           }
+        }
+        for (const sheet of document.styleSheets) {
+          if (sameOriginSheetHidesScrollbar(sheet)) return true
         }
         return false
       })()

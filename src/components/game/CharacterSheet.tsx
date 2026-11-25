@@ -47,12 +47,10 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
         />
       </Card>
 
-      {/* Stats/Attributes - Order 3 on mobile (after narrative) */}
       <Card variant="game" ornate className="order-3 md:order-none mb-4">
         <StatsList stats={stats} />
       </Card>
 
-      {/* Inventory - Order 4 on mobile */}
       <Card variant="game" ornate className="order-4 md:order-none">
         <h3 className="flex items-center gap-2 font-medieval-decorative font-semibold text-lg text-medieval-gold uppercase tracking-wider drop-shadow-lg mb-4">
           <Backpack className="w-5 h-5 shrink-0" aria-hidden="true" />

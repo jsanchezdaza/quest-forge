@@ -1,4 +1,4 @@
-import { test, expect } from './setup'
+import { test, expect, type TestHooks } from './setup'
 
 test.describe('Gameplay and Scene Progression', () => {
   test.beforeEach(async ({ page }) => {
@@ -46,8 +46,8 @@ test.describe('Gameplay and Scene Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [mockScene]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [mockScene]
     })
   })
 
@@ -93,7 +93,7 @@ test.describe('Gameplay and Scene Progression', () => {
   test('should disable choice buttons while loading', async ({ page }) => {
     await page.addInitScript(() => {
 
-      ;(window as any).mockLoading = true
+      ;(window as TestHooks).mockLoading = true
     })
 
     await page.goto('/game')
@@ -134,8 +134,8 @@ test.describe('Gameplay and Scene Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [mockScene]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [mockScene]
     })
 
     await page.goto('/game')
@@ -170,8 +170,8 @@ test.describe('Gameplay and Scene Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [mockScene]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [mockScene]
     })
 
     await page.goto('/game')
@@ -214,8 +214,8 @@ test.describe('Gameplay and Scene Progression', () => {
       ]
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = mockScenes
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = mockScenes
     })
 
     await page.goto('/game')
@@ -270,8 +270,8 @@ test.describe('Gameplay and Scene Progression', () => {
       ]
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = mockScenes
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = mockScenes
     })
 
     await page.goto('/game')
@@ -305,9 +305,9 @@ test.describe('Gameplay and Scene Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [mockScene]
-      ;(window as any).mockIsGenerating = true
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [mockScene]
+      ;(window as TestHooks).mockIsGenerating = true
     })
 
     await page.goto('/game')
@@ -353,8 +353,8 @@ test.describe('Gameplay and Scene Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [mockScene]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [mockScene]
     })
 
     await page.goto('/game')

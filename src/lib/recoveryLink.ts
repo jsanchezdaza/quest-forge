@@ -111,6 +111,14 @@ export function armRecoveryCheckTimeout(
   return () => clearTimeout(id)
 }
 
+async function jsonBodyOrNull(response: Response): Promise<unknown> {
+  try {
+    return await response.json()
+  } catch {
+    return null
+  }
+}
+
 export async function postRecoveryCode(input: {
   supabaseUrl: string
   supabaseKey: string
@@ -137,12 +145,7 @@ export async function postRecoveryCode(input: {
     return { status: 'unreachable' }
   }
 
-  let body: unknown = null
-  try {
-    body = await response.json()
-  } catch {
-    // A non-JSON error page is classified from the status alone.
-  }
+  const body = await jsonBodyOrNull(response)
   if (!response.ok) {
     const failure = classifyRecoveryFailure({
       status: response.status,

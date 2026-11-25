@@ -1,4 +1,4 @@
-import { test, expect } from './setup'
+import { test, expect, type TestHooks } from './setup'
 
 test.describe('Character Level Up and Progression', () => {
   test('should display level up modal when pendingLevelUp is true', async ({ page }) => {
@@ -40,8 +40,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [mockScene]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [mockScene]
     })
 
     await page.goto('/game')
@@ -73,8 +73,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -105,8 +105,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -143,8 +143,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -177,8 +177,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -211,8 +211,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -251,8 +251,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -290,8 +290,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -330,8 +330,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -363,8 +363,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -397,8 +397,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -436,8 +436,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')
@@ -469,8 +469,8 @@ test.describe('Character Level Up and Progression', () => {
       }
 
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
-      ;(window as any).mockGameSession = mockSession
-      ;(window as any).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
+      ;(window as TestHooks).mockGameSession = mockSession
+      ;(window as TestHooks).mockScenes = [{ id: 'scene-1', session_id: 'session-1', narrative: 'Test', choices: [], player_choice: null }]
     })
 
     await page.goto('/game')

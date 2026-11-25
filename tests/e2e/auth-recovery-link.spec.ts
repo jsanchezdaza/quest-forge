@@ -13,6 +13,10 @@ const EXPIRED_BODY =
 const EXPIRED_BODY_ES =
   'Los enlaces de recuperación solo sirven una vez y durante un tiempo limitado. Pide uno nuevo y usa el correo más reciente.'
 
+async function abortIfThePageLeft(route: { abort: (errorCode: string) => Promise<void> }) {
+  await route.abort('failed').catch(() => undefined)
+}
+
 const medievalGold = tailwindConfig.theme.extend.colors.medieval.gold
 
 function hexToCssRgb(hex: string): string {
@@ -353,11 +357,7 @@ test.describe('expired or unreachable recovery link', () => {
     const pending: Array<() => void> = []
     await page.route('**/auth/v1/token**', async (route) => {
       await new Promise<void>((resolve) => pending.push(resolve))
-      try {
-        await route.abort('failed')
-      } catch {
-        // The page already aborted the request when the check gave up.
-      }
+      await abortIfThePageLeft(route)
     })
     await page.goto(CODE_URL)
 
