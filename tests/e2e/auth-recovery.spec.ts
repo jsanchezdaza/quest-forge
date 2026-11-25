@@ -269,31 +269,35 @@ async function sceneContrasts(
 
 /**
  * One sample per static frame, or one per quarter-second of the desktop
- * video. Embers are random, so they are hidden.
+ * video. Embers are random, so they are hidden. Below 768px the desktop
+ * video is not mounted, so the static background is sampled once.
  */
 async function eachSceneFrame<T>(page: Page, measure: () => Promise<T>): Promise<T[]> {
   await page.addStyleTag({
     content: '.ember { animation: none !important; opacity: 0 !important; }',
   })
   const video = page.locator('video.auth-video')
-  const duration = await video.evaluate(async (element: HTMLVideoElement) => {
-    const box = element.getBoundingClientRect()
-    const shown = getComputedStyle(element).display !== 'none' && box.width > 0 && box.height > 0
-    if (!shown) return 0
-    if (element.readyState < 1 || !Number.isFinite(element.duration)) {
-      await new Promise<void>((resolve, reject) => {
-        const timer = window.setTimeout(() => reject(new Error('auth video did not load')), 5000)
-        element.addEventListener('loadedmetadata', () => {
-          window.clearTimeout(timer)
-          resolve()
-        }, { once: true })
+  const desktopVideo = await page.evaluate(() => window.matchMedia('(min-width: 768px)').matches)
+  const duration = desktopVideo
+    ? await video.evaluate(async (element: HTMLVideoElement) => {
+        const box = element.getBoundingClientRect()
+        const shown = getComputedStyle(element).display !== 'none' && box.width > 0 && box.height > 0
+        if (!shown) return 0
+        if (element.readyState < 1 || !Number.isFinite(element.duration)) {
+          await new Promise<void>((resolve, reject) => {
+            const timer = window.setTimeout(() => reject(new Error('auth video did not load')), 5000)
+            element.addEventListener('loadedmetadata', () => {
+              window.clearTimeout(timer)
+              resolve()
+            }, { once: true })
+          })
+        }
+        if (!Number.isFinite(element.duration) || element.duration <= 0) {
+          throw new Error('auth video has no duration')
+        }
+        return element.duration
       })
-    }
-    if (!Number.isFinite(element.duration) || element.duration <= 0) {
-      throw new Error('auth video has no duration')
-    }
-    return element.duration
-  })
+    : 0
   if (duration <= 0) {
     await page.evaluate(() => new Promise((resolve) => {
       requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)))
