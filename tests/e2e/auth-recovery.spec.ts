@@ -22,6 +22,8 @@ const inkBlack = hexToCssRgb(tailwindConfig.theme.extend.colors.medieval.inkblac
 const goldenRingShadow = `${inkBlack} 0px 0px 0px 2px, ${inkBlack} 0px 0px 0px 5px`
 const transparent = 'rgba(0, 0, 0, 0)'
 const legibleTextShadow = 'rgba(0, 0, 0, 0.9) 0px 0px 4px, rgba(0, 0, 0, 0.8) 0px 1px 2px'
+const HIDE_RANDOM_EMBERS = '.ember { animation: none !important; opacity: 0 !important; }'
+const SCENE_SAMPLE_STEP_SECONDS = 0.25
 
 const emailField = (page: Page) => page.getByLabel(/email|correo/i)
 const passwordField = (page: Page) =>
@@ -261,7 +263,7 @@ async function sampleStaticBackgroundOnce<T>(page: Page, measure: () => Promise<
 
 async function eachSceneFrame<T>(page: Page, measure: () => Promise<T>): Promise<T[]> {
   await page.addStyleTag({
-    content: '.ember { animation: none !important; opacity: 0 !important; }',
+    content: HIDE_RANDOM_EMBERS,
   })
   const video = page.locator('video.auth-video')
   const desktopVideoIsMounted = await page.evaluate(
@@ -293,7 +295,7 @@ async function eachSceneFrame<T>(page: Page, measure: () => Promise<T>): Promise
   }
 
   const frames: T[] = []
-  for (let time = 0; time < duration - 0.02; time += 0.25) {
+  for (let time = 0; time < duration - 0.02; time += SCENE_SAMPLE_STEP_SECONDS) {
     await video.evaluate(async (element: HTMLVideoElement, target: number) => {
       element.pause()
       const ready = () => element.readyState >= 2 && Math.abs(element.currentTime - target) < 0.03

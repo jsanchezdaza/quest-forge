@@ -1,9 +1,17 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { Window } from 'happy-dom'
 
-/** Same query AuthVideoBackground uses to decide whether to mount the desktop video. */
-const DESKTOP_AUTH_VIDEO_QUERY = '(min-width: 768px)'
+function mountDesktopVideoQuery(): string {
+  const source = readFileSync(
+    new URL('../../src/components/ui/AuthVideoBackground.tsx', import.meta.url),
+    'utf8',
+  )
+  const match = source.match(/export const MOUNT_DESKTOP_VIDEO_FROM = '([^']+)'/)
+  assert.ok(match)
+  return match[1]
+}
 
 type Harness = {
   text: () => string | null
@@ -56,17 +64,20 @@ async function renderQuery(dom: Window, query: string): Promise<Harness> {
 }
 
 test('the desktop auth video query is off below 768px and on from 768px', async () => {
-  const narrow = await renderQuery(new Window({ width: 767, height: 800 }), DESKTOP_AUTH_VIDEO_QUERY)
+  const query = mountDesktopVideoQuery()
+  assert.equal(query, '(min-width: 768px)')
+
+  const narrow = await renderQuery(new Window({ width: 767, height: 800 }), query)
   assert.equal(narrow.text(), 'no')
   await narrow.unmount()
 
-  const desktop = await renderQuery(new Window({ width: 768, height: 800 }), DESKTOP_AUTH_VIDEO_QUERY)
+  const desktop = await renderQuery(new Window({ width: 768, height: 800 }), query)
   assert.equal(desktop.text(), 'yes')
   await desktop.unmount()
 })
 
 test('crossing 768px updates the desktop auth video query', async () => {
-  const view = await renderQuery(new Window({ width: 375, height: 667 }), DESKTOP_AUTH_VIDEO_QUERY)
+  const view = await renderQuery(new Window({ width: 375, height: 667 }), mountDesktopVideoQuery())
   assert.equal(view.text(), 'no')
 
   await view.resize(1280)

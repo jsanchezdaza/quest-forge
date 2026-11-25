@@ -7,6 +7,16 @@ export const MOUNT_DESKTOP_VIDEO_FROM = '(min-width: 768px)'
 
 export const AUTH_VIDEO_PLAYBACK_RATE = 0.6
 
+const FIREFOX_TABS_INTO_ARIA_HIDDEN_VIDEO = -1
+
+function holdPlaybackRateAcrossLoopAndLaterPlay(video: HTMLVideoElement) {
+  video.playbackRate = AUTH_VIDEO_PLAYBACK_RATE
+}
+
+function startPlaybackAfterReducedMotionTurnsOff(video: HTMLVideoElement) {
+  video.play().catch(() => {})
+}
+
 export default function AuthVideoBackground() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const reduceMotion = usePrefersReducedMotion()
@@ -15,12 +25,12 @@ export default function AuthVideoBackground() {
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
-    video.playbackRate = AUTH_VIDEO_PLAYBACK_RATE
+    holdPlaybackRateAcrossLoopAndLaterPlay(video)
     if (reduceMotion) {
       video.pause()
       return
     }
-    video.play().catch(() => {})
+    startPlaybackAfterReducedMotionTurnsOff(video)
   }, [reduceMotion, mountDesktopVideo])
 
   return (
@@ -29,8 +39,8 @@ export default function AuthVideoBackground() {
         {mountDesktopVideo && (
           <video
             ref={videoRef}
-            className="auth-video"
-            tabIndex={-1}
+            className="auth-video auth-video-crop-watermark"
+            tabIndex={FIREFOX_TABS_INTO_ARIA_HIDDEN_VIDEO}
             autoPlay={!reduceMotion}
             muted
             loop
