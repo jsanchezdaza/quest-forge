@@ -34,14 +34,11 @@ export default function GameSession() {
   return (
     <div className="space-y-4 sm:space-y-6">
     <div className="flex flex-col gap-4 sm:gap-6 md:grid md:grid-cols-4">
-      {/* Character Sheet - Uses contents on mobile for order to work, block on desktop for grid */}
       <div className="contents md:block md:col-span-1">
         <CharacterSheet session={currentSession} />
       </div>
 
-      {/* Main Game Area - Uses contents on mobile for order to work, block on desktop for grid */}
       <div className="contents md:block md:col-span-3 md:space-y-6">
-        {/* Current Scene - Order 2 on mobile (after player data) */}
         {currentScene && (
           <div className="order-2 md:order-none">
             <SceneDisplay
@@ -52,7 +49,6 @@ export default function GameSession() {
           </div>
         )}
 
-        {/* Scene History - Order 5 on mobile (last) */}
         {scenes.length > 1 && (
           <div className="order-5 md:order-none">
             <Card variant="game">

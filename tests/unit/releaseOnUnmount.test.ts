@@ -4,11 +4,6 @@ import { test } from 'node:test'
 import { Window } from 'happy-dom'
 import { createRecoveryHold } from '../../src/lib/updatePassword.ts'
 
-/**
- * The end-to-end check runs in dev with StrictMode, which unmounts the card
- * once during mount and already releases the hold. This renders once, so the
- * hold has to survive mount and drop only on unmount.
- */
 test('unmounting the new-password card releases the recovery hold', async () => {
   const dom = new Window()
   const install = (name: string, value: unknown) => {

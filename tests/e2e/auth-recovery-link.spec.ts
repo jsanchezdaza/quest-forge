@@ -3,17 +3,8 @@ import { test, expect, type Locator, type Page } from './setup'
 import tailwindConfig from '../../tailwind.config.js'
 import { colorContrast, legibleTextContrast, pngPixel } from './pixelContrast'
 
-/**
- * An expired, used, or unreachable recovery link (#38).
- *
- * GoTrue reports a used link and an expired one with the same code, so the
- * card is one combined state. A check that never answers gives up at 10s.
- */
-
 const EXPIRED_HASH =
   '/auth?mode=update-password#error=access_denied&error_code=otp_expired&error_description=Email%20link%20is%20invalid%20or%20has%20expired'
-// Same error in the query. The contrast test uses this form: with a route
-// installed, Playwright can apply a hash after the page has already read it.
 const EXPIRED_QUERY =
   '/auth?mode=update-password&error=access_denied&error_code=otp_expired&error_description=Email%20link%20is%20invalid%20or%20has%20expired'
 const CODE_URL = '/auth?mode=update-password&code=recovery-code'
@@ -60,7 +51,6 @@ async function installRecoverySession(page: Page) {
   })
 }
 
-/** The label sits on one line, inside the button, with 12px clear of each edge. */
 async function expectCtaFits(button: Locator) {
   await expect(button).toBeVisible()
   const fit = await button.evaluate((element) => {
@@ -149,7 +139,6 @@ async function painted(locator: Locator, style: Paint): Promise<Buffer> {
   }
 }
 
-/** Ring contrast, the same three shots as the login links. */
 async function linkContrast(locator: Locator): Promise<number> {
   const box = await locator.boundingBox()
   expect(box).not.toBeNull()
@@ -182,7 +171,6 @@ function medianRgb(colors: [number, number, number][]): [number, number, number]
   ]
 }
 
-/** Resting border against the card just outside it and the fill just inside. */
 async function restingBorderContrast(page: Page, input: Locator) {
   await input.scrollIntoViewIfNeeded()
   const box = await input.boundingBox()
@@ -373,8 +361,6 @@ test.describe('expired or unreachable recovery link', () => {
     })
     await page.goto(CODE_URL)
 
-    // Loading the page can already pass the 300ms mark. Step the clock so the
-    // status line is up, then let the 10s cap fire.
     await page.clock.fastForward(300)
     const checking = page.getByRole('status')
     await expect(checking).toHaveText('Checking your link…')
@@ -601,8 +587,6 @@ test.describe('expired or unreachable recovery link', () => {
     console.log(borderReport)
     expect(short, borderReport).toEqual([])
 
-    // The heading takes focus when the form appears. Wait for that, then
-    // focus the field, or the resting border is what gets measured.
     await page.setViewportSize({ width: 375, height: 667 })
     await page.goto('/auth?mode=update-password')
     await expect(page.getByRole('heading', { level: 2, name: /set a new password|crea una contraseña nueva/i })).toBeVisible()

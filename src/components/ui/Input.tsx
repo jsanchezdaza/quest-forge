@@ -4,15 +4,8 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
   helperText?: string
-  /** Replaces the default label classes. The auth form uses this to keep its current label styling. */
   labelClassName?: string
-  /** Trailing control inside the field, such as a show-password button. */
   endAdornment?: ReactNode
-  /**
-   * Content under the control, such as the password checklist. The error
-   * line stays reserved above it whenever `error` is provided, including
-   * when that string is empty. A longer message grows the line.
-   */
   details?: ReactNode
 }
 

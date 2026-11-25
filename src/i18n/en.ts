@@ -1,15 +1,10 @@
-// English translations — the source of truth for available translation keys.
-// `es.ts` must satisfy `typeof en`, so every key here must also exist there.
 export const en = {
-  // App
   'app.title': 'QUEST FORGE',
   'app.initializing': 'Initializing Quest Forge...',
 
-  // Language selector
   'language.en': 'EN',
   'language.es': 'ES',
 
-  // Auth
   'auth.signInButton': 'Sign in',
   'auth.signUpButton': 'Create account',
   'auth.welcomeReturning': 'Welcome back, adventurer',
@@ -63,7 +58,6 @@ export const en = {
   'auth.updatePasswordTryAgain': 'Try again',
   'auth.updatePasswordRetrying': 'Checking…',
 
-  // Forms
   'form.emailLabel': 'Email',
   'form.emailPlaceholder': 'you@example.com',
   'form.usernameLabel': 'Username',
@@ -77,12 +71,10 @@ export const en = {
   'form.backstoryLabel': 'Backstory (Optional)',
   'form.backstoryPlaceholder': "Write your character's backstory or generate one with AI...",
 
-  // Shared UI
   'ui.loading': 'Loading...',
   'ui.cancel': 'Cancel',
   'ui.confirmChanges': 'Confirm Changes',
 
-  // Game
   'game.loadingAdventure': 'Loading your adventure...',
   'game.welcome': 'WELCOME, {username}',
   'game.newCharacter': 'New Character',
@@ -119,7 +111,6 @@ export const en = {
   'game.statusBadlyWounded': 'Badly wounded',
   'game.statusUnconscious': 'Unconscious',
 
-  // Character creation
   'character.chooseClass': 'Choose Your Class',
   'character.nameRequiredGenerate': 'Please enter a character name first',
   'character.nameRequiredSubmit': 'Character name is required',
@@ -129,7 +120,6 @@ export const en = {
   'character.generateWithAI': 'Generate with AI',
   'character.configureAI': 'Configure OpenRouter API key to enable AI backstory generation',
 
-  // Character classes
   'class.warrior.name': 'Warrior',
   'class.warrior.desc': 'A mighty fighter skilled in combat and weapons',
   'class.warrior.stats': 'High Strength & Constitution',
@@ -149,7 +139,6 @@ export const en = {
   'class.paladin.desc': 'A holy warrior, champion of justice and light',
   'class.paladin.stats': 'High Strength & Charisma',
 
-  // Stats / attributes
   'stat.strength': 'Strength',
   'stat.dexterity': 'Dexterity',
   'stat.intelligence': 'Intelligence',
@@ -157,11 +146,9 @@ export const en = {
   'stat.constitution': 'Constitution',
   'stat.charisma': 'Charisma',
 
-  // Footer
   'footer.copyright': '© {year} Quest Forge. All rights reserved.',
   'footer.author': 'Author: ',
 
-  // Auth failure messages, keyed from Supabase error codes in lib/authErrors.ts
   'error.loginFailed.message': 'Invalid email or password. Please check your credentials and try again.',
   'error.emailNotConfirmed.message': 'Please check your email and click the confirmation link before signing in.',
   'error.userAlreadyExists.message': 'An account with this email already exists. Please sign in instead.',
@@ -173,7 +160,6 @@ export const en = {
   'error.connectionIssue.message': 'Unable to connect to the server. Please check your internet connection and try again.',
   'error.authError.message': 'An unexpected error occurred. Please try again.',
 
-  // Static narrative (fallback when AI is unavailable)
   'narrative.initial':
     'Welcome, {name}! You are {desc}, standing at the edge of the small village of Millhaven. Dark clouds gather on the horizon, and rumors speak of strange happenings in the nearby forest. The villagers look to you with hope in their eyes, for they know that an adventure of great importance is about to begin.\n\nWhat path will you choose to start your quest?',
   'narrative.desc.warrior': 'a mighty warrior with sword and shield',
@@ -204,11 +190,8 @@ export const en = {
   'narrative.choices.default.1': 'Continue your adventure',
   'narrative.choices.default.2': 'Rest and plan your next move',
   'narrative.choices.default.3': 'Seek guidance from locals',
-  // Keywords used to map a chosen action to a static scene (must appear in the
-  // matching choice texts above, in the same language).
   'narrative.keyword.forest': 'forest',
   'narrative.keyword.tavern': 'tavern',
   'narrative.keyword.market': 'market',
-  // Instruction appended to AI prompts so generated text matches the UI language.
   'narrative.aiLanguageInstruction': 'Write your response in English.',
 } satisfies Record<string, string>

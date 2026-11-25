@@ -272,7 +272,7 @@ test.describe('Game Page Navigation', () => {
   })
 
   test('should have responsive header layout on mobile', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 667 }) // iPhone size
+    await page.setViewportSize({ width: 375, height: 667 })
 
     await page.addInitScript(() => {
       const mockUser = { id: 'test-user-id', email: 'test@example.com' }

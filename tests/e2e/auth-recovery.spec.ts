@@ -1,13 +1,7 @@
 import { test, expect, type Locator, type Page } from './setup'
 import tailwindConfig from '../../tailwind.config.js'
+import { MOUNT_DESKTOP_VIDEO_FROM } from '../../src/components/ui/AuthVideoBackground'
 import { colorContrast, legibleTextContrast, minimumContrast, pngPixel } from './pixelContrast'
-
-/**
- * Request a recovery link (#36).
- *
- * The login link sits on the password label from 480px up and on its own row
- * below that. Recovery never says whether the address has an account.
- */
 
 const CONFIRMATION =
   "If an account exists for that email, we've sent a link to reset your password. Check your inbox and your spam folder."
@@ -66,8 +60,6 @@ async function textIsClipped(locator: Locator) {
   return locator.evaluate((element) => {
     const style = getComputedStyle(element)
     if (style.textOverflow === 'ellipsis') return true
-    // The coarse-pointer hit area is an overflowing ::after. Measure the
-    // glyphs against the padding box so that extension is not "clipping".
     const range = document.createRange()
     range.selectNodeContents(element)
     const text = range.getBoundingClientRect()
@@ -203,8 +195,6 @@ async function linkContrast(locator: Locator, textShadow?: string): Promise<numb
     }, textShadow)
   }
   try {
-    // Gold text with no shadow, against transparent text with no shadow, is
-    // the glyph. The ring is read from the real render, text and shadow.
     const rendered = await locator.screenshot()
     const ink = await painted(locator, { textShadow: 'none' })
     const bare = await painted(locator, {
@@ -254,11 +244,6 @@ async function expectTextContrast(locator: Locator, label: string) {
   expect(ratio, `${label} ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
 }
 
-/**
- * Lowest contrast of the link against the scene behind it.
- * Embers are random, so they are hidden and the desktop video is sampled
- * across its loop. The static image is one shot.
- */
 async function sceneContrasts(
   page: Page,
   locator: Locator,
@@ -267,18 +252,23 @@ async function sceneContrasts(
   return eachSceneFrame(page, () => measure(locator))
 }
 
-/**
- * One sample per static frame, or one per quarter-second of the desktop
- * video. Embers are random, so they are hidden. Below 768px the desktop
- * video is not mounted, so the static background is sampled once.
- */
+async function sampleStaticBackgroundOnce<T>(page: Page, measure: () => Promise<T>): Promise<T> {
+  await page.evaluate(() => new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)))
+  }))
+  return measure()
+}
+
 async function eachSceneFrame<T>(page: Page, measure: () => Promise<T>): Promise<T[]> {
   await page.addStyleTag({
     content: '.ember { animation: none !important; opacity: 0 !important; }',
   })
   const video = page.locator('video.auth-video')
-  const desktopVideo = await page.evaluate(() => window.matchMedia('(min-width: 768px)').matches)
-  const duration = desktopVideo
+  const desktopVideoIsMounted = await page.evaluate(
+    (query) => window.matchMedia(query).matches,
+    MOUNT_DESKTOP_VIDEO_FROM,
+  )
+  const duration = desktopVideoIsMounted
     ? await video.evaluate(async (element: HTMLVideoElement) => {
         const box = element.getBoundingClientRect()
         const shown = getComputedStyle(element).display !== 'none' && box.width > 0 && box.height > 0
@@ -299,10 +289,7 @@ async function eachSceneFrame<T>(page: Page, measure: () => Promise<T>): Promise
       })
     : 0
   if (duration <= 0) {
-    await page.evaluate(() => new Promise((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)))
-    }))
-    return [await measure()]
+    return [await sampleStaticBackgroundOnce(page, measure)]
   }
 
   const frames: T[] = []
@@ -395,10 +382,6 @@ function medianRgb(colors: [number, number, number][]): [number, number, number]
   ]
 }
 
-/**
- * Resting border against the card just outside it and the fill just inside.
- * The sample is the middle of the top edge, away from the rounded corners.
- */
 async function restingBorderContrast(page: Page, input: Locator) {
   await input.scrollIntoViewIfNeeded()
   const box = await input.boundingBox()
@@ -423,8 +406,6 @@ async function restingBorderContrast(page: Page, input: Locator) {
     }
     return medianRgb(colors)
   }
-  // A 1px border lands on a different device row at DPR 1 than at DPR 2.75.
-  // The gold row is the one whose red and green stand above its blue.
   let borderY = 0
   let best = -1
   for (let y = 0; y < size.height; y += 1) {
@@ -525,7 +506,6 @@ test.describe('forgot-password link', () => {
           const errorBox = await page.locator('#password-error').boundingBox()
           expect(linkBox && fieldBox && errorBox).toBeTruthy()
           expect(linkBox!.y).toBeGreaterThan(fieldBox!.y + fieldBox!.height)
-          // The 44px row sits against the reserved error slot, not a field below it.
           expect(Math.abs(linkBox!.y - (errorBox!.y + errorBox!.height))).toBeLessThanOrEqual(1)
           expect(await link.evaluate((element) => getComputedStyle(element).alignItems)).toBe('center')
           expect(Math.abs(linkBox!.x + linkBox!.width - (fieldBox!.x + fieldBox!.width))).toBeLessThanOrEqual(1)
@@ -765,7 +745,6 @@ test.describe('reset view', () => {
     await expect(error).toHaveText('Enter a valid email address.')
 
     await page.getByRole('button', { name: 'ES', exact: true }).click()
-    // The same keys as sign-in (#33). Recovery does not keep a second pair.
     await expect(error).toHaveText('Introduce un correo válido.')
     await email.fill('')
     await email.blur()
@@ -944,9 +923,6 @@ test.describe('recovery confirmation', () => {
     await expect(emailField(page)).toHaveAttribute('readonly', '')
     await expect(sending.locator('.animate-spin')).toHaveCount(0)
 
-    // aria-disabled keeps the button out of the accessibility tree's enabled
-    // state, but a real click still reaches the handler. That click must not
-    // send a second request.
     await sending.click({ force: true })
     expect(calls).toBe(1)
 
@@ -955,7 +931,6 @@ test.describe('recovery confirmation', () => {
   })
 
   test('the login links have no backdrop, share one shadow, and are measured beside the letters', async ({ page }, testInfo) => {
-    // Desktop widths sample the video. 1024 sits between the 768 card change and 1280.
     test.setTimeout(240_000)
     const lines: string[] = []
     const shortfalls: string[] = []
@@ -1001,9 +976,6 @@ test.describe('recovery confirmation', () => {
           const where = `${name} ${viewport.width}×${viewport.height} ${locale} ${lowest.toFixed(2)}:1 [${listed}]`
           lines.push(where)
           expect(Number.isFinite(lowest), where).toBe(true)
-          // Below 768 the dark card carries both links to 4.5:1. From 768px
-          // up the translucent card is accepted as-is, including a
-          // forgot-password link under 4.5:1. Those ratios are recorded.
           if (viewport.width < 768 && lowest < 4.5) shortfalls.push(where)
         }
       }
@@ -1045,9 +1017,6 @@ test.describe('recovery confirmation', () => {
   })
 
   test('the new-password field error stays inside the field and clears 4.5:1', async ({ page }) => {
-    // UpdatePasswordPanel passes `error` to PasswordInput, so the shared
-    // field-error wash renders here too. It has to stay inside the input,
-    // the same way the login errors do, and clear 4.5:1 beside the letters.
     await page.addInitScript(() => {
       const session = {
         user: { id: 'recovery-user', email: 'hero@example.com' },
@@ -1125,8 +1094,6 @@ test.describe('recovery confirmation', () => {
   })
 
   test('card text clears 4.5:1 beside the letters below 768', async ({ page }, testInfo) => {
-    // Login, sign-up, and the reset request. The new-password field error is
-    // the test above: it uses the same wash, now that the panel passes `error`.
     test.setTimeout(180_000)
     const desktopCard = 'rgb(255 255 255 / 0.2)'
     const mobileCard = 'rgb(10 10 10 / 0.7)'
@@ -1197,9 +1164,6 @@ test.describe('recovery confirmation', () => {
             }
           }
 
-          // The logo's 1–3px ring is its own gold glow (`.dnd-title`, also
-          // used on the game page). The card token does not move it, and the
-          // same heading is on every view, so it is measured once.
           if (view === 'login') {
             const logo = card.getByRole('heading', { level: 1 })
             try {
@@ -1221,9 +1185,6 @@ test.describe('recovery confirmation', () => {
   })
 
   test('resting input borders clear 3:1 below 768', async ({ page }, testInfo) => {
-    // WCAG 1.4.11. The dark card and the input fill are nearly the same, so
-    // the 1px resting border is the field boundary. Focus and error borders
-    // are a different state.
     const lines: string[] = []
     const failures: string[] = []
     for (const viewport of [
@@ -1300,11 +1261,6 @@ test.describe('recovery confirmation', () => {
   })
 
   test('no shadow and a weak shadow miss 4.5:1 beside the letters', async ({ page }, testInfo) => {
-    // On desktop the stone 1–3px from the letters already clears 4.5:1, so a
-    // missing shadow cannot fail there. Mobile Chrome is the control.
-    // Below 768 the card itself is now dark enough to clear 4.5:1, so this
-    // control sits on the original translucent card. Otherwise removing the
-    // shadow would pass for the wrong reason.
     testInfo.skip(testInfo.project.name !== 'Mobile Chrome', 'the desktop stone already clears 4.5:1')
     await page.setViewportSize({ width: 375, height: 667 })
     await page.goto('/auth')
@@ -1385,8 +1341,6 @@ test.describe('recovery confirmation', () => {
             letterSpacing: style.letterSpacing,
           }
         })
-        // Wide tracking stays from 375px up. Below 360px the auth button
-        // drops it so the longest label fits.
         if (viewport.width >= 360) {
           expect(laidOut.letterSpacing, locale.label).not.toBe('0px')
         }

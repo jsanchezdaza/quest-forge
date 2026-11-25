@@ -2,12 +2,6 @@ import type { CharacterClass, GameSession, GameState } from '../types'
 import { generateExperienceGain, updateGameStateWithLevelUp } from '../utils/levelSystem'
 import { translate, type TranslationKey } from '../i18n'
 
-/**
- * Static narrative generation functions (fallback when AI is unavailable).
- * Text lives in the i18n dictionaries; these helpers resolve it for the
- * current language. When OpenRouter is configured the game uses AI instead.
- */
-
 const classDescription = (characterClass: CharacterClass): string =>
   translate(`narrative.desc.${characterClass}` as TranslationKey)
 

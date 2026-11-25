@@ -31,8 +31,8 @@ export default [
       ],
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',
-      'no-unused-vars': 'off', // Turn off base rule to avoid conflicts
-      'no-undef': 'off', // TypeScript handles this
+      'no-unused-vars': 'off',
+      'no-undef': 'off',
     },
   },
 ]

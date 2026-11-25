@@ -18,7 +18,6 @@ export default function CharacterSheet({ session }: CharacterSheetProps) {
 
   return (
     <>
-      {/* Player Data - Order 1 on mobile */}
       <Card variant="game" ornate className="order-1 md:order-none mb-4">
         <div className="flex items-center gap-4 mb-4">
           <CharacterAvatar characterClass={character_class} characterName={character_name} />

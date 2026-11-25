@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
@@ -7,10 +6,10 @@ export default {
   darkMode: 'class',
   theme: {
     screens: {
-      'sm': '768px',   // tablet
-      'md': '1024px',  // desktop
-      'lg': '1280px',  // large desktop
-      'xl': '1536px',  // extra large
+      'sm': '768px',
+      'md': '1024px',
+      'lg': '1280px',
+      'xl': '1536px',
     },
     extend: {
       colors: {
@@ -55,23 +54,20 @@ export default {
           card: '#1a1a1a',
           modal: '#262626',
         },
-        // Below 768 the auth card uses this instead of white/20. 70% of
-        // near-black keeps the blur visible and clears 4.5:1 beside the type.
         'auth-card-bg-mobile': 'rgb(10 10 10 / 0.7)',
-        // Resting auth field border below 768. 55% gold clears 3:1 on the dark card.
         'auth-input-border-mobile': 'rgb(212 175 55 / 0.55)',
       },
       fontFamily: {
         'pixel': ['Press Start 2P', 'monospace'],
         'pixel-alt': ['Silkscreen', 'monospace'],
         'pixel-body': ['JetBrains Mono', 'Space Mono', 'monospace'],
-        'dnd': ['Orbitron', 'Press Start 2P', 'monospace'], // D&D style main titles
-        'fantasy-epic': ['Cinzel', 'Spectral', 'serif'], // Epic fantasy titles
-        'fantasy-elegant': ['EB Garamond', 'Crimson Text', 'serif'], // Elegant fantasy text
-        'fantasy-classic': ['Spectral', 'Crimson Text', 'serif'], // Classic medieval
-        'medieval-narrative': ['EB Garamond', 'Georgia', 'Crimson Text', 'serif'], // Medieval narrative text - optimized for readability
-        'medieval-options': ['MedievalSharp', 'Caesar Dressing', 'serif'], // Medieval choice options
-        'medieval-decorative': ['Cinzel Decorative', 'Uncial Antiqua', 'serif'], // Decorative medieval
+        'dnd': ['Orbitron', 'Press Start 2P', 'monospace'],
+        'fantasy-epic': ['Cinzel', 'Spectral', 'serif'],
+        'fantasy-elegant': ['EB Garamond', 'Crimson Text', 'serif'],
+        'fantasy-classic': ['Spectral', 'Crimson Text', 'serif'],
+        'medieval-narrative': ['EB Garamond', 'Georgia', 'Crimson Text', 'serif'],
+        'medieval-options': ['MedievalSharp', 'Caesar Dressing', 'serif'],
+        'medieval-decorative': ['Cinzel Decorative', 'Uncial Antiqua', 'serif'],
         'medieval': ['Orbitron', 'JetBrains Mono', 'monospace'], 
         'fantasy': ['Space Mono', 'JetBrains Mono', 'monospace'],
         'sans': ['JetBrains Mono', 'monospace'],

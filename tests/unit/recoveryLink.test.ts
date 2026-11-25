@@ -15,7 +15,7 @@ import {
 
 const ORIGIN = 'https://quest-forge.example'
 
-test('an otp_expired redirect is the combined expired link, in the hash or the query', () => {
+test('an otp_expired redirect is the combined expired link, in the hash, the query, or an older status code', () => {
   const description = 'Email link is invalid or has expired'
   const hash = `${ORIGIN}/auth?mode=update-password#error=access_denied&error_code=otp_expired&error_description=${encodeURIComponent(description)}`
   const query = `${ORIGIN}/auth?mode=update-password&error=access_denied&error_code=otp_expired&error_description=${encodeURIComponent(description)}`
@@ -23,7 +23,6 @@ test('an otp_expired redirect is the combined expired link, in the hash or the q
     assert.equal(readRecoveryUrl(href).kind, 'expired')
     assert.equal(recoveryArrival(href), 'expired')
   }
-  // Older redirects put the HTTP status in error_code and the same sentence in the description.
   const legacy = `${ORIGIN}/auth?mode=update-password#error=unauthorized_client&error_code=401&error_description=${encodeURIComponent(description)}`
   assert.equal(readRecoveryUrl(legacy).kind, 'expired')
 })
@@ -48,7 +47,7 @@ test('a recovery code or an implicit session still has to be checked', () => {
   assert.equal(recoveryArrival(`${ORIGIN}/auth?mode=update-password#access_token=atk&refresh_token=rtk`), 'check')
 })
 
-test('otp_expired and the shared sentence are expired; a dropped connection is not', () => {
+test('otp_expired and the shared sentence are expired; an unknown code and a dropped connection are not', () => {
   assert.equal(
     classifyRecoveryFailure(new AuthApiError('Email link is invalid or has expired', 403, 'otp_expired')),
     'expired',
@@ -62,7 +61,6 @@ test('otp_expired and the shared sentence are expired; a dropped connection is n
     classifyRecoveryFailure({ details: { code: 'otp_expired' }, message: 'Email link is invalid or has expired' }),
     'expired',
   )
-  // Not proof the password was changed: an unknown code fails the same way.
   assert.equal(classifyRecoveryFailure(new AuthApiError('missing', 404, 'flow_state_not_found')), 'invalid')
   assert.equal(classifyRecoveryFailure(new AuthRetryableFetchError('Failed to fetch', 0)), 'unreachable')
   assert.equal(classifyRecoveryFailure({ status: 0 }), 'unreachable')

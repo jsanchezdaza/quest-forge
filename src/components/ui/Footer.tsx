@@ -1,11 +1,6 @@
 import { useTranslation } from '../../i18n'
 
 interface FooterProps {
-  /**
-   * Sign-up only. With a fine pointer, at 1024px wide and at most 800px
-   * tall, the inner container's vertical padding is 6px and the author
-   * link drops its 44px minimum. Horizontal padding stays 16px.
-   */
   compactOnShortDesktop?: boolean
 }
 

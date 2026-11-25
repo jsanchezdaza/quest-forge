@@ -1,13 +1,5 @@
 import { test, expect, type Page } from './setup'
 
-/**
- * Set a new password from the recovery link (#37).
- *
- * The email from #36 opens /auth?mode=update-password. Supabase is mocked:
- * the harness session stands in for the recovery session, and PUT /auth/v1/user
- * stands in for updateUser({ password }).
- */
-
 const EMAIL = 'hero@example.com'
 
 function passwordField(page: Page) {
@@ -18,7 +10,6 @@ function saveButton(page: Page) {
   return page.getByRole('button', { name: /^(save password|guardar contraseña)$/i })
 }
 
-/** The label sits on one line, inside the button, with 12px clear of each edge. */
 async function expectCtaFits(button: ReturnType<Page['getByRole']>) {
   await expect(button).toBeVisible()
   const fit = await button.evaluate((element) => {
@@ -67,9 +58,6 @@ async function installRecoverySession(page: Page, email = EMAIL) {
     localStorage.setItem('sb-mock-auth-token', JSON.stringify(session))
     ;(window as Window & { mockPasswordRecovery?: boolean }).mockPasswordRecovery = true
   }, email)
-  // A language change stores the preference with updateUser. Answer that
-  // metadata write here so it does not depend on the network. Password writes
-  // fall through to the route the spec installs.
   await page.route('**/auth/v1/user**', async (route) => {
     const body = route.request().postDataJSON() as { password?: string } | null
     if (body?.password) {

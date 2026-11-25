@@ -1,8 +1,3 @@
-// Test-only seam. The e2e suite (see tests/e2e) injects mock auth and game
-// data through window globals and localStorage instead of hitting Supabase.
-// This module is the single place production code reads those hooks, keeping
-// the test wiring isolated. It is inert outside the e2e harness because
-// isTestMode() is gated on a flag only the test fixture sets.
 import type { GameSession, Scene, User, UserProfile } from '../types'
 
 interface MockAuth {
@@ -18,7 +13,6 @@ type TestWindow = Window & {
   mockLoading?: boolean
   mockIsGenerating?: boolean
   mockInitialLoading?: boolean
-  /** Recovery link. The real client emits PASSWORD_RECOVERY; tests set this instead. */
   mockPasswordRecovery?: boolean
 }
 

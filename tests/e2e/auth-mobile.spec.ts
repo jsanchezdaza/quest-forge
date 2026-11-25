@@ -1,14 +1,6 @@
 import { test, expect, type Locator, type Page } from './setup'
 import { AUTH_VIDEO_PLAYBACK_RATE } from '../../src/components/ui/AuthVideoBackground'
 
-/**
- * Login usable on a phone (#35).
- *
- * Between 320 and 480px the card fills the width inside the page margins
- * and nothing scrolls sideways, including while the embers move.
- */
-
-/** Page padding (`p-4`) plus the card wrapper's `px-4`, on each side. */
 const MOBILE_SIDE_INSET = 16 + 16
 
 const emailField = (page: Page) => page.getByLabel(/email|correo/i)
@@ -32,7 +24,6 @@ test.describe('mobile auth layout', () => {
 
       const box = await authCard(page).boundingBox()
       expect(box).not.toBeNull()
-      // A classic scrollbar (fine pointer) is part of the layout width.
       const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
       expect(Math.round(box!.width)).toBe(clientWidth - MOBILE_SIDE_INSET * 2)
 
@@ -46,8 +37,6 @@ test.describe('mobile auth layout', () => {
       await page.setViewportSize({ width, height: 700 })
       await showSignIn(page)
 
-      // The rise loop is 9–16s. Twenty samples across two seconds catch an
-      // ember that drifts past the right edge.
       const overflows = await page.evaluate(async () => {
         const samples: number[] = []
         for (let sample = 0; sample < 20; sample += 1) {
@@ -89,7 +78,6 @@ test.describe('mobile auth layout', () => {
 
     const result = await page.evaluate(() => {
       const fine = window.matchMedia('(pointer: fine)').matches
-      // Firefox on this platform computes scrollbar-width as none even when set to thin.
       const probe = document.createElement('div')
       probe.style.scrollbarWidth = 'thin'
       document.body.append(probe)
@@ -146,14 +134,6 @@ test.describe('mobile auth layout', () => {
   })
 })
 
-/**
- * Below sm (768px) the language control sits in normal flow, right-aligned,
- * with an 8px gap above the card. From sm it is absolute in the top-right
- * corner. It is never position:fixed. A short landscape phone from 660px wide
- * is absolute too, so the control does not push the sign-in button off the
- * screen. Narrower than that, the control stays in flow so it does not cover
- * the card.
- */
 const languageSelector = (page: Page) => page.getByRole('group', { name: 'Language' })
 
 const NARROW_VIEWPORTS = [
@@ -232,8 +212,6 @@ test.describe('language selector on a narrow screen', () => {
     expect(boxesOverlap(selectorBox!, cardBox!)).toBe(false)
   })
 
-  // 740×360 still clears. 660×360 is the first width where the control is
-  // absolute. Below that it meets the card's corner (667×375 only just misses it).
   for (const viewport of [
     { width: 568, height: 320 },
     { width: 640, height: 360 },
@@ -280,11 +258,9 @@ test.describe('language selector matches the document language', () => {
   }
 })
 
-/** `text-medieval-gold` (#d4af37). Idle `text-gray-400` paints as #99a1af. */
 const ACTIVE_LANGUAGE_COLOR = '#d4af37'
 const IDLE_LANGUAGE_COLOR = '#99a1af'
 
-/** One read, no retry, so a colour transition still counts as the previous button. */
 async function languageChoice(page: Page) {
   return page.evaluate(() => {
     const normalized = (color: string) => {
@@ -358,7 +334,6 @@ test.describe('portrait auth header', () => {
       const title = page.getByRole('heading', { level: 1, name: /quest forge/i })
       const subtitle = page.getByText(/begin your quest/i)
       const header = title.locator('..')
-      // The title's transform makes its border box about half a pixel short of the margin.
       expect(await cssPx(subtitle, 'margin-top')).toBe(4)
       expect(await cssPx(header, 'margin-bottom')).toBe(16)
       const titleBox = await title.boundingBox()
@@ -574,7 +549,6 @@ test.describe('auth password manager hints', () => {
     await expect(emailField(page)).toHaveAttribute('type', 'email')
     await expect(emailField(page)).toHaveAttribute('autocomplete', 'email')
     await expect(usernameField(page)).toHaveAttribute('type', 'text')
-    // A display name is not the login. `username` would make a password manager store it as one.
     await expect(usernameField(page)).toHaveAttribute('autocomplete', 'nickname')
     await expect(passwordField(page)).toHaveAttribute('type', 'password')
     await expect(passwordField(page)).toHaveAttribute('autocomplete', 'new-password')
@@ -624,19 +598,13 @@ test.describe('reduced motion on the auth background', () => {
     await page.emulateMedia({ reducedMotion: 'no-preference' })
     await expect(video).toHaveJSProperty('paused', false)
     await expect(video).toHaveAttribute('preload', 'auto')
-    // Non-Chromium Playwright builds here never finish loading this H.264 file.
     if (browserName === 'chromium') await whenVideoReady(video)
     await expect(video).toHaveJSProperty('playbackRate', AUTH_VIDEO_PLAYBACK_RATE)
   })
 })
 
-/**
- * Desktop login video pace (#51). The rate lives in one named constant
- * and stays applied after the video loops and after it resumes from pause.
- */
 test.describe('desktop auth video pace', () => {
   test('plays at the configured rate through a loop and a pause', async ({ page, browserName }) => {
-    // Playwright's WebKit and Firefox builds here do not decode this H.264 file.
     test.skip(browserName !== 'chromium', 'Chromium decodes the desktop H.264 loop')
     await page.emulateMedia({ reducedMotion: 'no-preference' })
     await page.setViewportSize({ width: 1280, height: 720 })
@@ -686,11 +654,6 @@ async function whenVideoReady(video: Locator) {
   })
 }
 
-/**
- * Short landscape phones. Login must not scroll to reach the primary button.
- * The greeting is hidden, fields sit 12px apart, the card's vertical padding
- * is 20px, and the card starts 8px from the top. Sign-up may still scroll.
- */
 const LANDSCAPE_VIEWPORTS = [
   { width: 740, height: 360 },
   { width: 852, height: 393 },
@@ -762,11 +725,6 @@ test.describe('auth landscape header', () => {
   }
 })
 
-/**
- * Design accepted vertical scroll at these two landscape widths. The control
- * stays 44×44, the page does not scroll sideways, and the sign-in button is
- * fully visible once scrolled into view. 740px and wider still fit without scrolling.
- */
 const SCROLLING_LANDSCAPE_VIEWPORTS = [
   { width: 568, height: 320 },
   { width: 640, height: 360 },

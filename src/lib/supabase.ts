@@ -8,8 +8,6 @@ export const supabase = createClient(
   supabaseAnonKey || 'placeholder-key',
   {
     auth: {
-      // The update-password page exchanges a recovery code itself. Leaving it
-      // in the URL lets a failed or slow check try again with the same link.
       detectSessionInUrl: false,
     },
   },

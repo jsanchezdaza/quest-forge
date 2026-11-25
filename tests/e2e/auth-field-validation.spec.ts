@@ -2,15 +2,6 @@ import { test, expect, type Locator, type Page } from './setup'
 import { VALIDATION_RULES } from '../../src/constants/validation'
 import { minimumContrast } from './pixelContrast'
 
-/**
- * Format errors under each auth field (#33).
- *
- * The browser bubble is off. A field shows its message after blur or submit,
- * not while the player is typing into it for the first time. One line is
- * reserved under every field so a single-line message does not move the next
- * field. A message that wraps grows in that slot and keeps the 20px group gap.
- */
-
 const LABEL_GAP = 8
 const FIELD_GAP = 20
 
@@ -35,7 +26,6 @@ async function expectGap(above: Locator, below: Locator, expected: number) {
   const bottom = await below.boundingBox()
   expect(top).not.toBeNull()
   expect(bottom).not.toBeNull()
-  // A flex gap can land on a half pixel. Rounding that to the next pixel flakes.
   const gap = bottom!.y - (top!.y + top!.height)
   expect(Math.abs(gap - expected)).toBeLessThanOrEqual(0.5)
 }
@@ -46,7 +36,6 @@ async function topOf(locator: Locator): Promise<number> {
   return box!.y
 }
 
-/** Contrast of the message against the composited card behind it, not a flat color. */
 async function fieldErrorContrast(error: Locator): Promise<number> {
   const box = await error.boundingBox()
   expect(box).not.toBeNull()
@@ -262,7 +251,6 @@ test.describe('auth field validation', () => {
     await usernameField(page).fill('a'.repeat(VALIDATION_RULES.USERNAME_MAX_LENGTH + 1))
     await passwordField(page).fill('short')
     await createAccountButton(page).click()
-    // The pointer stays on the submit button, and its hover scale changes the box.
     await page.mouse.move(0, 0)
 
     const fields = [
@@ -314,7 +302,6 @@ test.describe('auth field validation', () => {
       }
     }
 
-    // Narrow sign-up crosses the brightest part of the static card.
     await page.setViewportSize({ width: 320, height: 900 })
     await page.goto('/auth?mode=signup')
     await expect(usernameField(page)).toBeVisible()
@@ -322,7 +309,6 @@ test.describe('auth field validation', () => {
     await page.mouse.move(0, 0)
     await expectContrasts('320px', ['email', 'username', 'password'])
 
-    // Desktop sign-up sits on the blurred video.
     await page.setViewportSize({ width: 1280, height: 720 })
     await page.goto('/auth?mode=signup')
     await expect(usernameField(page)).toBeVisible()

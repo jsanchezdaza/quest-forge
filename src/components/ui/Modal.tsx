@@ -42,13 +42,11 @@ export default function Modal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
-      {/* Overlay */}
       <div
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Modal */}
       <div className={`relative w-full ${maxWidthClasses[maxWidth]} animate-slide-up max-h-[90vh] overflow-y-auto`}>
         <div className="bg-background-modal border border-medieval-gold/30 rounded-lg shadow-2xl">
           {title && (

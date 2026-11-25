@@ -93,8 +93,6 @@ test.describe('Character Creation', () => {
 
     await page.click('button[type="submit"]:has-text("Create Character")')
 
-    // The name field is `required`, so the browser blocks submission: the modal
-    // stays open and the field reports itself invalid.
     const nameInput = page.locator('input[placeholder*="character\'s name"]')
     expect(await nameInput.evaluate((el: HTMLInputElement) => el.validity.valid)).toBe(false)
     await expect(page.locator('text="Create Your Character"')).toBeVisible()
@@ -154,8 +152,6 @@ test.describe('Character Creation', () => {
 
     await page.click('button[type="submit"]:has-text("Create Character")')
 
-    // Submitting trims the name: the modal closes and the created character's
-    // sheet heading reads "Thorin", not the padded input value.
     await expect(page.locator('text="Create Your Character"')).not.toBeVisible()
     await expect(page.getByRole('heading', { name: 'Thorin' })).toBeVisible()
   })
@@ -173,7 +169,7 @@ test.describe('Character Creation', () => {
     await page.click('button:has-text("Create Character")')
 
     const nameInput = page.locator('input[placeholder*="character\'s name"]')
-    await nameInput.fill('   ') // Only whitespace
+    await nameInput.fill('   ')
 
     await page.click('button[type="submit"]:has-text("Create Character")')
 
@@ -195,7 +191,7 @@ test.describe('Character Creation', () => {
   })
 
   test('should display modal in responsive layout on mobile', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 667 }) // iPhone size
+    await page.setViewportSize({ width: 375, height: 667 })
 
     await page.goto('/game')
     await page.click('button:has-text("Create Character")')

@@ -165,9 +165,6 @@ test.describe('Navigation and Auth Flow', () => {
       localStorage.setItem('sb-mock-auth-token', JSON.stringify({ user: mockUser, profile: mockProfile }))
     })
 
-    // Two full navigations to distinct /game URLs create real history entries
-    // (the root/auth redirects use `replace`, which leaves nothing to go back
-    // to). Going back must keep the authenticated user on /game.
     await page.goto('/game')
     await expect(page).toHaveURL(/\/game/)
 
@@ -237,7 +234,6 @@ test.describe('Navigation and Auth Flow', () => {
         letterSpacing: computed.letterSpacing,
       }
     })
-    // LevelUpModal passes px-8. The shared button must not replace that below 360px.
     expect(style.paddingLeft).toBe('32px')
     expect(style.paddingRight).toBe('32px')
     expect(style.fontSize).toBe('16px')

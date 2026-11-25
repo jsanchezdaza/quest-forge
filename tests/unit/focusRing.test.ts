@@ -5,11 +5,6 @@ import tailwindConfig from '../../tailwind.config.js'
 const colors = tailwindConfig.theme.extend.colors
 const ring = colors.medieval.gold
 
-/**
- * WCAG relative luminance and contrast ratio.
- * The focus ring is non-text, so the floor is 3:1 (WCAG 1.4.11), not the 4.5:1
- * text rule axe already runs on /auth.
- */
 function channel(value: number): number {
   const srgb = value / 255
   return srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4
@@ -45,14 +40,11 @@ test('medieval gold is the opaque focus-ring color', () => {
 test('gold-light is the card text color and clears 4.5:1 on the sampled card', () => {
   const goldLight = colors.medieval['gold-light']
   assert.equal(goldLight, '#f0d27a')
-  // Lightest pixel sampled behind the mode toggle on the desktop card.
   const ratio = contrast(goldLight, '#55534a')
   assert.ok(ratio >= 4.5, `${ratio.toFixed(2)}:1`)
 })
 
 test('the golden focus ring contrasts at least 3:1 with auth surfaces', () => {
-  // The ring is drawn outside the control, so a gold button is measured against
-  // the surface behind it (the card), not against its own fill.
   const surfaces: Record<string, string> = {
     'input and language selector': colors.background.darker,
     'page background': colors.background.dark,

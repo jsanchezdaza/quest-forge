@@ -316,7 +316,7 @@ test.describe('Gameplay and Scene Progression', () => {
   })
 
   test('should have minimum touch-friendly button height on mobile', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 667 }) // iPhone size
+    await page.setViewportSize({ width: 375, height: 667 })
 
     await page.goto('/game')
     await page.waitForSelector('button:has-text("Enter the cave")', { timeout: 5000 })
@@ -341,7 +341,7 @@ test.describe('Gameplay and Scene Progression', () => {
         }
       }
 
-      const longNarrative = 'You enter a vast chamber. '.repeat(50) // Long text
+      const longNarrative = 'You enter a vast chamber. '.repeat(50)
 
       const mockScene = {
         id: 'scene-1',

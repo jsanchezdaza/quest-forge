@@ -62,8 +62,6 @@ test('the ring beside the letters is the reading edge, not the dark core under t
   const glyph = (x: number, y: number) => x >= 20 && x < 60 && y >= 16 && y < 24
   const ink = paint(width, height, glyph, GOLD, () => STONE)
   const bare = paint(width, height, () => false, GOLD, () => STONE)
-  // The glyph itself is black. The 1–3px ring stays the light stone, and the
-  // padding farther out is white. Only the ring may count.
   const rendered = paint(width, height, glyph, BLACK, () => STONE)
   const ratio = legibleTextContrast(rendered, ink, bare, width, height, GOLD)
   assert.ok(ratio < 4.5, `dark core measured ${ratio.toFixed(2)}:1`)

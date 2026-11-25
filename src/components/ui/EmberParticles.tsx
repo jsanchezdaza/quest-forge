@@ -30,12 +30,6 @@ function createEmbers(): Ember[] {
   }))
 }
 
-/**
- * Subtle rising golden embers behind the auth form. Pure CSS animation
- * (transform + opacity only) so it stays on the compositor and runs smoothly.
- * Decorative: pointer-events-none and aria-hidden so it never blocks the form.
- * Reduced motion skips the embers and leaves the static background.
- */
 export default function EmberParticles() {
   const reduceMotion = usePrefersReducedMotion()
   const embers = useMemo(createEmbers, [])

@@ -9,12 +9,6 @@ interface Rect {
   height: number
 }
 
-/**
- * Lowest contrast between `foreground` and the card pixels in an element
- * screenshot. Glyph pixels, plus a margin around them, are skipped so
- * antialiasing is not treated as the background. Rects are CSS pixels
- * relative to the element.
- */
 export function minimumContrast(
   png: Buffer,
   elementWidth: number,
@@ -24,9 +18,6 @@ export function minimumContrast(
 ): number {
   const image = decodePng(png)
   const scale = image.width / elementWidth
-  // A fractional device pixel makes the screenshot a little larger than the
-  // element, so the outer CSS pixel can be the scene beside it. Inset from
-  // the CSS box, not the inflated screenshot, or the extra row stays in.
   let lowest = Number.POSITIVE_INFINITY
   let samples = 0
 
@@ -60,17 +51,6 @@ export function minimumContrast(
 const MIN_RING_SAMPLES = 100
 const GLYPH_CHANNEL_DELTA = 12
 
-/**
- * Lowest contrast of `foreground` against the background 1–3 CSS pixels
- * outside the glyph.
- *
- * `inkPng` is the link drawn in its text color with no shadow. `barePng` is
- * the same link with the text transparent and no shadow. Pixels that differ
- * are the glyph, including its antialiased edge. `renderedPng` is the real
- * link, text and shadow together. The sample is the ring just outside that
- * mask. The dark pixels under the letters, and the empty padding farther
- * than 3px out, are not part of it.
- */
 export function legibleTextContrast(
   renderedPng: Buffer,
   inkPng: Buffer,
@@ -126,7 +106,6 @@ export function legibleTextContrast(
   return lowest
 }
 
-/** Device-pixel Chebyshev distance to the nearest glyph pixel. */
 function chebyshevDistance(glyph: Uint8Array, width: number, height: number): Int32Array {
   const distance = new Int32Array(width * height)
   distance.fill(1_000_000)
@@ -171,7 +150,6 @@ export function colorContrast(foreground: Rgb, background: Rgb): number {
   return contrastRatio(foreground, background)
 }
 
-/** One device pixel of a PNG, for a border sitting on the card. */
 export function pngPixel(png: Buffer, x: number, y: number): Rgb {
   const image = decodePng(png)
   if (x < 0 || y < 0 || x >= image.width || y >= image.height) {
@@ -266,7 +244,6 @@ function decodePng(buffer: Buffer): DecodedPng {
   return { width, height, pixels }
 }
 
-/** Rectangle of `png`, in device pixels. Used to read several texts from one card shot. */
 export function cropPng(png: Buffer, x: number, y: number, width: number, height: number): Buffer {
   const image = decodePng(png)
   const left = Math.max(0, Math.min(image.width, Math.floor(x)))

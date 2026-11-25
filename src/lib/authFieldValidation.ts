@@ -10,10 +10,6 @@ export interface AuthFieldValues {
   password: string
 }
 
-/**
- * HTML's email grammar, the same one `input type="email"` uses. A dot in the
- * domain is not required (`a@b` is valid).
- */
 const EMAIL_PATTERN =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
 
@@ -24,7 +20,6 @@ const FIELD_ORDER: Record<AuthMode, readonly AuthField[]> = {
   'update-password': ['password'],
 }
 
-/** Format error for one auth field, or null when the current rules accept it. */
 export function authFieldError(
   field: AuthField,
   value: string,
@@ -46,10 +41,8 @@ export function authFieldError(
     return null
   }
 
-  // Recovery asks for an email only. The new-password card uses the sign-up rules.
   if (mode === 'reset') return null
   if (!value) return 'auth.passwordRequired'
-  // Existing passwords stay valid. Length, a letter, and a number apply to new ones.
   if (mode === 'signin') return null
   const status = passwordRequirementStatus(value)
   if (!status.minLength) return 'auth.passwordTooShort'
@@ -58,7 +51,6 @@ export function authFieldError(
   return null
 }
 
-/** First field that fails the current rules, in form order, or null when all pass. */
 export function firstInvalidAuthField(
   values: AuthFieldValues,
   mode: AuthMode,
