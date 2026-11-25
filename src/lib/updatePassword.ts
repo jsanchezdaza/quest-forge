@@ -163,6 +163,10 @@ export function isUpdatePasswordSearch(search: string): boolean {
   return parseAuthMode(new URLSearchParams(query).get('mode')) === 'update-password'
 }
 
+export function showFullScreenInitializing(initializing: boolean, search: string): boolean {
+  return initializing && !isUpdatePasswordSearch(search)
+}
+
 /**
  * `PASSWORD_RECOVERY` starts the hold. Later session events must not clear it:
  * `INITIAL_SESSION` can be observed first, and `USER_UPDATED` follows a save.

@@ -16,6 +16,9 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   details?: ReactNode
 }
 
+const fieldErrorTextClassName = 'min-h-5 text-left text-sm leading-5 text-red-200'
+const fieldErrorWashClassName = 'bg-background-darker/75'
+
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   {
     label,
@@ -81,12 +84,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         <p
           id={errorId}
           className={[
-            // The wash stays inside the field. A negative margin let it run
-            // past the input into the card padding, beside the forgot-password link.
-            'min-h-5 text-left text-sm leading-5 text-red-200',
-            // Light red misses 4.5:1 on the brightest part of the card.
-            // The empty slot stays clear.
-            hasError ? 'bg-background-darker/75' : '',
+            fieldErrorTextClassName,
+            hasError ? fieldErrorWashClassName : '',
           ].filter(Boolean).join(' ')}
           aria-hidden={hasError ? undefined : true}
         >

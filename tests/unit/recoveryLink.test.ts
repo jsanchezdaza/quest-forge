@@ -70,7 +70,7 @@ test('otp_expired and the shared sentence are expired; a dropped connection is n
   assert.equal(classifyRecoveryFailure(new AuthApiError('nope', 400, 'unexpected_failure')), 'invalid')
 })
 
-test('the stored verifier is the PKCE value, without the recovery marker', () => {
+test('the stored verifier drops the recovery marker, and a flow id does not borrow another flow', () => {
   assert.equal(readStoredVerifier(JSON.stringify('verifier-value/recovery')), 'verifier-value')
   assert.equal(readStoredVerifier('plain-verifier'), 'plain-verifier')
   assert.equal(readStoredVerifier(null), null)

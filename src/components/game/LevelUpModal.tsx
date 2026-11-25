@@ -54,8 +54,7 @@ export default function LevelUpModal({
     }
   }
 
-  const handleClose = () => {
-    // Prevent closing if points remain unspent
+  const closeWhenPointsAreSpent = () => {
     if (pointsRemaining > 0) return
     onClose()
   }
@@ -65,7 +64,7 @@ export default function LevelUpModal({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={handleClose}
+      onClose={closeWhenPointsAreSpent}
       title={t('game.levelUpTitle')}
       maxWidth="md"
     >

@@ -14,6 +14,7 @@ import {
   shouldRedirectSignedInToGame,
   signOutInBackground,
   signOutLocalSession,
+  showFullScreenInitializing,
   showUpdatePasswordChecking,
   updatePasswordHelp,
   updatePasswordReducer,
@@ -257,4 +258,12 @@ test('PASSWORD_RECOVERY holds the session and a following sign-in event keeps th
 
 test('english and spanish use the same translation keys', () => {
   assert.deepEqual(Object.keys(es).sort(), Object.keys(en).sort())
+})
+
+test('the full-screen spinner stays off on the recovery card, which checks the link itself', () => {
+  assert.equal(showFullScreenInitializing(true, ''), true)
+  assert.equal(showFullScreenInitializing(true, '?mode=signin'), true)
+  assert.equal(showFullScreenInitializing(true, '?mode=update-password'), false)
+  assert.equal(showFullScreenInitializing(false, ''), false)
+  assert.equal(showFullScreenInitializing(false, '?mode=update-password'), false)
 })

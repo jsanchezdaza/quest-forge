@@ -1,4 +1,4 @@
-import { GAME_CONSTANTS } from '../constants/game'
+import { GAME_CONSTANTS } from '../constants/game.ts'
 import type { TranslationKey } from '../i18n'
 
 /**

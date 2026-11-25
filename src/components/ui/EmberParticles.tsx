@@ -2,7 +2,9 @@ import { useMemo } from 'react'
 import usePrefersReducedMotion from '../../hooks/usePrefersReducedMotion'
 
 const EMBER_COUNT = 18
-const EMBER_COLORS = ['#d4af37', '#b87333'] // medieval-gold, medieval-copper
+const MEDIEVAL_GOLD = '#d4af37'
+const MEDIEVAL_COPPER = '#b87333'
+const EMBER_COLORS = [MEDIEVAL_GOLD, MEDIEVAL_COPPER]
 
 interface Ember {
   left: number

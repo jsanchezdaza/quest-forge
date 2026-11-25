@@ -10,6 +10,10 @@ import type { AuthState, User } from '../types'
 
 const recoveryHold = createRecoveryHold()
 
+function afterAuthCallbackUnlocks(run: () => Promise<void>) {
+  setTimeout(run, 0)
+}
+
 const userProfileRepository: UserProfileRepository = {
   findById: async (id) => {
     const { data, error } = await supabase
@@ -195,9 +199,7 @@ if (isTestMode()) {
       return
     }
 
-    // Supabase advises deferring other client calls until its auth callback releases its lock.
-    // Read the hold when the timer runs: Enter the game may have released it.
-    setTimeout(async () => {
+    afterAuthCallbackUnlocks(async () => {
       const profile = await loadProfile(session.user)
       if (sequence !== authSequence) return
       useAuthStore.setState({
@@ -206,6 +208,6 @@ if (isTestMode()) {
         initializing: false,
         passwordRecovery: recoveryHold.current(),
       })
-    }, 0)
+    })
   })
 }
