@@ -8,8 +8,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co', 
-  supabaseAnonKey || 'placeholder-key'
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-key',
+  {
+    auth: {
+      // The update-password page exchanges a recovery code itself. Leaving it
+      // in the URL lets a failed or slow check try again with the same link.
+      detectSessionInUrl: false,
+    },
+  },
 )
 
 export type Database = {
