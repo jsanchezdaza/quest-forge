@@ -115,6 +115,25 @@
       background-image:
         url('/images/backgrounds/background-mobile.png'),
         linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
+      background-image:
+        image-set(
+          url('/images/backgrounds/background-mobile-864.avif') type('image/avif'),
+          url('/images/backgrounds/background-mobile-864.webp') type('image/webp'),
+          url('/images/backgrounds/background-mobile.png') type('image/png')
+        ),
+        linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
+    }
+  }
+
+  @media (max-width: 480px) and (max-resolution: 1dppx) {
+    .app-background {
+      background-image:
+        image-set(
+          url('/images/backgrounds/background-mobile-480.avif') type('image/avif'),
+          url('/images/backgrounds/background-mobile-480.webp') type('image/webp'),
+          url('/images/backgrounds/background-mobile.png') type('image/png')
+        ),
+        linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
     }
   }
 
